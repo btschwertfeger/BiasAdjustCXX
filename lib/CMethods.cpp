@@ -133,39 +133,38 @@ void CMethods::Linear_Scaling(float* output, float* reference, float* control, f
 void CMethods::Variance_Scaling(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind) {
     if (kind == "add" || kind == "+") {
         float
-            X_LS_contr[n_time],
-            X_LS_scen[n_time];
+            LS_contr[n_time],
+            LS_scen[n_time];
 
-        Linear_Scaling(X_LS_contr, reference, control, control, n_time, "+");  // Eq. 1
-        Linear_Scaling(X_LS_scen, reference, control, scenario, n_time, "+");  // Eq. 2
-
-        float
-            X_LS_contr_mean = MyMath::mean(X_LS_contr, n_time),
-            X_LS_scen_mean = MyMath::mean(X_LS_scen, n_time);
+        Linear_Scaling(LS_contr, reference, control, control, n_time, "+");  // Eq. 1
+        Linear_Scaling(LS_scen, reference, control, scenario, n_time, "+");  // Eq. 2
 
         float
-            X_VS_1_contr[n_time],
-            X_VS_1_scen[n_time];
+            LS_contr_mean = MyMath::mean(LS_contr, n_time),
+            LS_scen_mean = MyMath::mean(LS_scen, n_time);
+
+        float
+            VS1_contr[n_time],
+            VS1_scen[n_time];
 
         for (unsigned ts = 0; ts < n_time; ts++) {
-            X_VS_1_contr[ts] = X_LS_contr[ts] - X_LS_contr_mean;  // Eq. 3
-            X_VS_1_scen[ts] = X_LS_scen[ts] - X_LS_scen_mean;     // Eq. 4
+            VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
+            VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;     // Eq. 4
         }
 
         float
             ref_sd = MyMath::sd(reference, n_time),
-            X_VS_1_contr_sd = MyMath::sd(X_VS_1_contr, n_time);
+            VS1_contr_sd = MyMath::sd(VS1_contr, n_time);
 
-        float X_VS_2_scen[n_time];
-
+        float VS2_scen[n_time];
         for (unsigned ts = 0; ts < n_time; ts++) {
-            X_VS_2_scen[ts] = X_VS_1_scen[ts] * (ref_sd / X_VS_1_contr_sd);  // Eq. 6
-            output[ts] = X_VS_2_scen[ts] + X_LS_scen_mean;                   // Eq. 7
+            VS2_scen[ts] = VS1_scen[ts] * (ref_sd / VS1_contr_sd);  // Eq. 6
+            output[ts] = VS2_scen[ts] + LS_scen_mean;               // Eq. 7
         }
 
-    } else if (kind == "mult" || kind == "*") {
+    } else if (kind == "mult" || kind == "*")
         std::runtime_error("Multiplicative Variance Scaling Method not implemented!");
-    } else
+    else
         std::runtime_error("Invalid adjustment kind " + kind + "!");
 }
 

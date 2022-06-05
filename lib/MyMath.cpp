@@ -146,30 +146,30 @@ float MyMath::ioa(float* x, float* y, unsigned n) {
     return (1 - (upper / lower));
 }
 
-/** Returns the standard deviation
+/** Returns the variance
  *  $\sigma^{2}(x) = \frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}$
  *
  * @param x reference
- * @param y prediction
  * @param n length
  */
-float MyMath::sd(float* x, unsigned n) {
+float MyMath::variance(float* x, unsigned n) {
     float* v = new float[n];
     const float m = mean(x, n);
     for (unsigned i = 0; i < n; i++) v[i] = pow(x[i] - m, 2);
     return mean(v, n);
 }
-/** Returns the variance
+/** Returns the standard deviation
  *  $$\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$$
  *
  * @param x reference
- * @param y prediction
  * @param n length
  */
-float MyMath::variance(float* x, unsigned n) {
-    return sqrt(sd(x, n));
+float MyMath::sd(float* x, unsigned n) {
+    return sqrt(variance(x, n));
 }
+
 /** Mean
+ *
  * @param a 1D array of floats to get the mean from
  * @param n length of a
  */
@@ -200,7 +200,7 @@ std::vector<int> MyMath::get_pdf(float* arr, std::vector<double> bins, unsigned 
 }
 
 /**
- * Cumulative distributionn function
+ * Cumulative distribution function
  */
 std::vector<int> MyMath::get_cdf(float* arr, std::vector<double> bins, unsigned length) {
     std::vector<int> v_pdf = MyMath::get_pdf(arr, bins, length);
