@@ -17,11 +17,13 @@ Collection of different scale- and distribution-based bias adjustments for clima
 ```
 The scipt `example_all_methods.run.sh` serves as an aexample on how to adjust the example data using all implemented methods. 
 
-## Help:
+## Help
 ```bash
 ./DoBiasAdjustment -h
 ```
 
+## Notes
+- For adjusting data using the linear scaling, variance scaling or delta method, you have to separate the files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to create a data set that contains all data for all januarys and then apply the adjustment for this data set. After that you have to do the same for the rest of the months.
 
 
 ## Requirements:

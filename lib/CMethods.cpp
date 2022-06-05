@@ -2,15 +2,16 @@
 
 /**
  * @file CMethods.cpp
- * @brief Implementation of Bias Adjustment methods
+ * @brief
  * @author Benjamin Thomas Schwertfeger
- * @copyright Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
  * * Description:
- *   Class implementation that implements bias adjustment
- *   procedures for climate data adjustments
+
+ * * Notes:
+
+ * * Usage:
+
  */
 
 /**
@@ -77,21 +78,20 @@ CM_Func_ptr_quantile CMethods::get_cmethod_quantile(std::string method_name) {
 /**
  * Method to adjust 1 dimensional climate data by the linear scaling method.
  *
- * @param output output array (1d sequence)
- * @param reference observational data
- * @param control histprical simulated data
+ * @param output output array where to save the adjusted data
+ * @param reference observation data (control period)
+ * @param control modeled data of the control period
  * @param scenario data to adjust
- * @param n_time length of time series
- * @param kind additive or mult
+ * @param n_time length of input and output arrays
+ * @param kind type of adjustment; additive or multiplicative
  *
- * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
- * Bias correction of regional climate model simulations for hydrological
- * climate-change impact studies: Review and evaluation of different methods
- * https://doi.org/10.1016/j.jhydrol.2012.05.052
  * Add ('+'):
- *   (1.) X^{*LS}_{sim,p}(i) = X_{sim,p}(i) + \mu_{m}(X_{obs,h}(i)) - \mu_{m}(X_{sim,h}(i))
+ *  (1.)    $T^{*}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
+ *  (2.)    $T^{*}_{scen}(d)=T_{scen}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{scen}(d))$
  * Mult ('*'):
- *   (2.) X^{*LS}_{sim,h}(i) = X_{sim,h}(i) + \mu_{m}(X_{obs,h}(i)) - \mu_{m}(X_{sim,h}(i))
+ *  (3.)    $ T_{contr}^{*}(d) = \mu_{m}(T_{obs}(d))\cdot\left[\frac{T_{contr}(d)}{\mu_{m}(T_{contr}(d))}\right]$
+ *  (4.)    $ T_{scen}^{*}(d) = \mu_{m}(T_{obs}(d))\cdot\left[\frac{T_{contr}(d)}{\mu_{m}(T_{scen}(d))}\right]$
+ *
  */
 void CMethods::Linear_Scaling(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind) {
     const float
@@ -100,10 +100,10 @@ void CMethods::Linear_Scaling(float* output, float* reference, float* control, f
 
     if (kind == "add" || kind == "+") {
         for (unsigned ts = 0; ts < n_time; ts++)
-            output[ts] = scenario[ts] + (ref_mean - contr_mean);  // Eq. 1
+            output[ts] = scenario[ts] + (ref_mean - contr_mean);  // Eq. 1f.
     } else if (kind == "mult" || kind == "*") {
         for (unsigned ts = 0; ts < n_time; ts++)
-            output[ts] = scenario[ts] * (ref_mean / contr_mean);  // Eq. 2
+            output[ts] = scenario[ts] * (ref_mean / contr_mean);  // Eq. 3f.
     } else
         std::runtime_error("Invalid adjustment kind " + kind + "!");
 }
@@ -111,27 +111,24 @@ void CMethods::Linear_Scaling(float* output, float* reference, float* control, f
 /**
  * Method to adjust 1 dimensional climate data by variance scaling method.
  *
- * @param output output array (1d sequence)
- * @param reference observational data
- * @param control histprical simulated data
+ * @param output output array where to save the adjusted data
+ * @param reference observation data (control period)
+ * @param control modeled data of the control period
  * @param scenario data to adjust
- * @param n_time length of time series
- * @param kind additive or mult
+ * @param n_time length of input and output arrays
+ * @param kind type of adjustment; additive or multiplicative
  *
- * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
- * Bias correction of regional climate model simulations for hydrological
- * climate-change impact studies: Review and evaluation of different methods
- * https://doi.org/10.1016/j.jhydrol.2012.05.052
+ * (1.) $T^{*1}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
+ * (2.) $T^{*1}_{scen}(d)=T_{scen}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{scen}(d))$
  *
- * (1.) X^{*LS}_{sim,h}(i) = X_{sim,h}(i) + \mu_{m}(X_{obs,h}(i)) - \mu_{m}(X_{sim,h}(i))
- * (2.) X^{*LS}_{sim,p}(i) = X_{sim,p}(i) + \mu_{m}(X_{obs,h}(i)) - \mu_{m}(X_{sim,h}(i))
+ * (3.) $T^{*2}_{contr}(d)=T^{*1}_{contr}(d)-\mu_{m}(T^{*1}_{contr}(d))$
+ * (4.) $T^{*2}_{scen}(d)=T^{*1}_{scen}(d)-\mu_{m}(T^{*1}_{scen}(d))$
  *
- * (3.) X^{VS(1)}_{sim,h}(i) = X^{*LS}_{sim,h}(i) - \mu_{m}(X^{*LS}_{sim,h}(i))
- * (4.) X^{VS(1)}_{sim,p}(i) = X^{*LS}_{sim,p}(i) - \mu_{m}(X^{*LS}_{sim,p}(i))
+ * (5.) $T^{*3}_{contr}(d)=T^{*2}_{scen}(d)\cdot\left[\frac{\sigma_{m}(T_{obs}(d))}{\sigma_{m}(T^{*2}_{contr}(d))}\right]$
+ * (6.) $T^{*3}_{scen}(d)=T^{*2}_{scen}(d)\cdot\left[\frac{\sigma_{m}(T_{obs}(d))}{\sigma_{m}(T^{*2}_{contr}(d))}\right]$
  *
- * (5.) X^{VS(2)}_{sim,p}(i) = X^{VS(1)}_{sim,p}(i) \cdot \left[\frac{\sigma_{m}(X_{obs,h}(i))}{\sigma_{m}(X^{VS(1)}_{sim,h}(i))}\right]
- *
- * (6.) X^{*VS}_{sim,p}(i) = X^{VS(2)}_{sim,p}(i) + \mu_{m}(X^{*LS}_{sim,p}(i))
+ * (7.) $T^{*}_{contr}(d)=T^{*3}_{contr}(d)+\mu_{m}(T^{*1}_{contr}(d))$
+ * (8.) $T^{*}_{scen}(d)=T^{*3}_{scen}(d)+\mu_{m}(T^{*1}_{scen}(d))$
  */
 void CMethods::Variance_Scaling(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind) {
     if (kind == "add" || kind == "+") {
@@ -162,8 +159,8 @@ void CMethods::Variance_Scaling(float* output, float* reference, float* control,
         float X_VS_2_scen[n_time];
 
         for (unsigned ts = 0; ts < n_time; ts++) {
-            X_VS_2_scen[ts] = X_VS_1_scen[ts] * (ref_sd / X_VS_1_contr_sd);  // Eq. 5
-            output[ts] = X_VS_2_scen[ts] + X_LS_scen_mean;                   // Eq. 6
+            X_VS_2_scen[ts] = X_VS_1_scen[ts] * (ref_sd / X_VS_1_contr_sd);  // Eq. 6
+            output[ts] = X_VS_2_scen[ts] + X_LS_scen_mean;                   // Eq. 7
         }
 
     } else if (kind == "mult" || kind == "*") {
@@ -175,19 +172,18 @@ void CMethods::Variance_Scaling(float* output, float* reference, float* control,
 /**
  * Method to adjust 1 dimensional climate data by delta method.
  *
- * @param output output array (1d sequence)
- * @param reference observational data
- * @param control histprical simulated data
+ * @param output output array where to save the adjusted data
+ * @param reference observation data (control period)
+ * @param control modeled data of the control period
  * @param scenario data to adjust
- * @param n_time length of time series
- * @param kind additive or mult
+ * @param n_time length of input and output arrays
+ * @param kind type of adjustment; additive or multiplicative
  *
- * based on: https://svn.oss.deltares.nl/repos/openearthtools/trunk/python/applications/hydrotools/hydrotools/statistics/bias_correction.py
  * Add (+):
- *   (1.) X^{*DM}_{sim,p}(i) = X_{obs,h}(i) + (\mu_{m}(X_{sim,p}(i)) - \mu_{m}(X_{sim,h}(i)))
+ *   (1.) $T^{*}_{contr}(d) = T_{contr}(d) + (\mu_{m}(T_{scen}(d)) - \mu_{m}(T_{obs}(d)))$
  * Mult (*):
- *   (2.) X^{*DM}_{sim,p}(i) = X_{obs,h}(i) \cdot \frac{ \mu_{m}(X_{sim,p}(i)) }{ \mu_{m}(X_{sim,h}(i))}
-
+ *   (2.) $T^{*}_{contr}(d) = T_{contr}(d) \cdot \left[\frac{\mu_{m}(T_{scen}(d))}{\mu_{m}(T_{obs}(d))}\right]$
+ *
  */
 void CMethods::Delta_Change(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind) {
     const float
@@ -204,46 +200,44 @@ void CMethods::Delta_Change(float* output, float* reference, float* control, flo
         std::runtime_error("Invalid adjustment kind " + kind + "!");
 }
 
+std::vector<double> CMethods::get_xbins(float* a, float* b, unsigned n_quantiles, unsigned length) {
+    const double
+        a_max = *std::max_element(a, a + length),
+        a_min = *std::min_element(a, a + length),
+        b_max = *std::max_element(b, b + length),
+        b_min = *std::min_element(b, b + length);
+
+    const double
+        global_max = std::max(a_max, b_max),
+        global_min = std::min(a_min, b_min);
+    const double wide = std::abs(global_max - global_min) / n_quantiles;
+
+    std::vector<double> v_xbins(0);
+    v_xbins.push_back((double)global_min);
+    while (v_xbins[v_xbins.size() - 1] < global_max)
+        v_xbins.push_back(v_xbins[v_xbins.size() - 1] + wide);
+    return v_xbins;
+}
 /**
- * Quantile Mapping Bias Correction
+ * Quantile Mapping bias correction
+ * based on
+ * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
- * @param output output array (1d sequence)
- * @param reference observational data
- * @param control histprical simulated data
+ *
+ * @param output output array where to save the adjusted data
+ * @param reference observation data (control period)
+ * @param control modeled data of the control period
  * @param scenario data to adjust
- * @param n_time length of time series
- * @param n_quantiles number of quantiles to use for interpolation
+ * @param n_time length of input and output arrays
+ * @param kind type of adjustment; additive or multiplicative
+ * @param n_quantiles number of quantiles to use
  *
- * Based on:
- * Tong, Y., Gao, X., Han, Z. et al.
- * Bias correction of temperature and precipitation over China
- * for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021).
- * https://doi.org/10.1007/s00382-020-05447-4
- *
- * Add (+):
- *   (1.) X^{*QM}_{sim,p}(i) = F^{-1}_{obs,h} \left\{F_{sim,h}\left[X_{sim,p}(i)\right]\right\}
+ * add:
+ *      (1.) $T^{*QM}_{sim,p}(d)=F^{-1}_{obs,h} \left\{F_{sim,h}\left[T_{sim,p}(d)\right]\right\}$
  */
 void CMethods::Quantile_Mapping(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind, unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
-        const double
-            ref_max = *std::max_element(reference, reference + n_time),
-            ref_min = *std::min_element(reference, reference + n_time),
-            contr_max = *std::max_element(control, control + n_time),
-            contr_min = *std::min_element(control, control + n_time);
-
-        const double
-            global_max = std::max(ref_max, contr_max),
-            global_min = std::min(ref_min, contr_min);
-
-        const double wide = std::abs(global_max - global_min) / n_quantiles;
-
-        // std::cout << "min: " << global_min << " max: " << global_max << " wide: " << wide << std::endl;
-
-        std::vector<double> v_xbins(0);
-        v_xbins.push_back((double)global_min);
-        while (v_xbins[v_xbins.size() - 1] < global_max)
-            v_xbins.push_back(v_xbins[v_xbins.size() - 1] + wide);
-
+        std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time);
         // ? create CDF
         std::vector<int>
             vi_ref_cdf = MyMath::get_cdf(reference, v_xbins, n_time),
@@ -258,7 +252,7 @@ void CMethods::Quantile_Mapping(float* output, float* reference, float* control,
         for (unsigned ts = 0; ts < n_time; ts++)
             cdf_values.push_back(MyMath::interpolate(v_xbins, contr_cdf, (double)scenario[ts], false));
 
-        // ? Inert in inversed CDF and return
+        // ? Invert in inversed CDF and return
         for (unsigned ts = 0; ts < n_time; ts++)
             output[ts] = (float)MyMath::interpolate(ref_cdf, v_xbins, cdf_values[ts], false);
 
@@ -271,42 +265,41 @@ void CMethods::Quantile_Mapping(float* output, float* reference, float* control,
 /**
  * Quantile Delta Mapping Bias Correction based on
  *
- * @param output output array (1d sequence)
- * @param reference observational data
- * @param control histprical simulated data
- * @param scenario data to adjust
- * @param n_time length of time series
- * @param n_quantiles number of quantiles to use for interpolation
+ * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
- * Based on:
- * Tong, Y., Gao, X., Han, Z. et al.
- * Bias correction of temperature and precipitation over China
- * for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021).
- * https://doi.org/10.1007/s00382-020-05447-4
+ * @param output output array where to save the adjusted data
+ * @param reference observation data (control period)
+ * @param control modeled data of the control period
+ * @param scenario data to adjust
+ * @param n_time length of input and output arrays
+ * @param kind type of adjustment; additive or multiplicative
+ * @param n_quantiles number of quantiles to use
  *
  * Add (+):
- *  (1) \varepsilon(i) = F_{sim,p}\left[X_{sim,p}(i)\right], \hspace{1em} \varepsilon(i)\in\{0,1\}
- *  (2) X^{QDM(1)}_{sim,p}(i) = F^{-1}_{obs,h}\left[\varepsilon(i)\right]
- *  (3) \Delta(i) & = F^{-1}_{sim,p}\left[\varepsilon(i)\right] - F^{-1}_{sim,h}\left[\varepsilon(i)\right] \\[1pt]
- *                 & = X_{sim,p}(i) - F^{-1}_{sim,h}\left\{F^{}_{sim,p}\left[X_{sim,p}(i)\right]\right\}
- *  (4) X^{*QDM}_{sim,p}(i) = X^{QDM(1)}_{sim,p}(i) + \Delta(i)
+ *  (1) $\varepsilon(t) = F^{(t)}_{sim,p}\left[T_{sim,p}(t)\right]$
+ *  (2) $\T^{*1QDM}_{sim,p}(t) = F^{-1}_{obs,h}\left[\varepsilon(t)\right]$
+ *  (3) $\Delta(t) = F^{-1}_{sim,p}(t)\left[\varepsilon(t)\right] = T_{sim,p}(t)-F^{-1}_{sim,h} \left\{F^{}_{sim,p}(t)\left[T_{sim,p}(t)\right]\right\}$
+ *  (4) $T^{*QDM}_{sim,p}(t) = T^{*1QDM}_{sim,p}(t) + \Delta(t)$
+ *
  */
 void CMethods::Quantile_Delta_Mapping(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind, unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
-        const double
-            ref_max = *std::max_element(reference, reference + n_time),
-            ref_min = *std::min_element(reference, reference + n_time),
-            contr_max = *std::max_element(control, control + n_time),
-            contr_min = *std::min_element(control, control + n_time);
+        // const double
+        //     ref_max = *std::max_element(reference, reference + n_time),
+        //     ref_min = *std::min_element(reference, reference + n_time),
+        //     contr_max = *std::max_element(control, control + n_time),
+        //     contr_min = *std::min_element(control, control + n_time);
 
-        const double
-            global_max = std::max(ref_max, contr_max),
-            global_min = std::min(ref_min, contr_min);
+        // const double
+        //     global_max = std::max(ref_max, contr_max),
+        //     global_min = std::min(ref_min, contr_min);
 
-        const double wide = std::abs(global_max - global_min) / n_quantiles;
+        // const double wide = std::abs(global_max - global_min) / n_quantiles;
 
-        std::vector<double> v_xbins;
-        for (unsigned i = 0; i <= n_quantiles; i++) v_xbins.push_back(global_min + wide * i);
+        // std::vector<double> v_xbins;
+        // for (unsigned i = 0; i <= n_quantiles; i++) v_xbins.push_back(global_min + wide * i);
+
+        std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time);
 
         // ? create CDF
         std::vector<int>

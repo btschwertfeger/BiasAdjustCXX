@@ -284,9 +284,9 @@ static void do_quantile_adjustment(float*** data_out) {
         delete[] control_lon_data;
         delete[] scenario_lon_data;
 
-        utils::progress_bar((float)lat, (float)(ds_reference.n_lat - 1));
+        utils::progress_bar((float)lat, (float)(ds_reference.n_lat));
     }
-    utils::progress_bar((float)ds_reference.n_lat, (float)(ds_reference.n_lat - 1));
+    utils::progress_bar((float)ds_reference.n_lat, (float)(ds_reference.n_lat));
 }
 
 static void do_adjustment(float*** data_out) {
