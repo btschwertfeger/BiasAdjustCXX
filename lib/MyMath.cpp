@@ -147,7 +147,7 @@ float MyMath::ioa(float* x, float* y, unsigned n) {
 }
 
 /** Returns the standard deviation
- *  $$\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$$
+ *  $\sigma^{2}(x) = \frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}$
  *
  * @param x reference
  * @param y prediction
@@ -157,7 +157,17 @@ float MyMath::sd(float* x, unsigned n) {
     float* v = new float[n];
     const float m = mean(x, n);
     for (unsigned i = 0; i < n; i++) v[i] = pow(x[i] - m, 2);
-    return sqrt(mean(v, n));
+    return mean(v, n);
+}
+/** Returns the variance
+ *  $$\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$$
+ *
+ * @param x reference
+ * @param y prediction
+ * @param n length
+ */
+float MyMath::variance(float* x, unsigned n) {
+    return sqrt(sd(x, n));
 }
 /** Mean
  * @param a 1D array of floats to get the mean from

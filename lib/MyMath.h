@@ -34,6 +34,7 @@ class MyMath {
     static float mbe(float* x, float* y, unsigned n);
     static float ioa(float* x, float* y, unsigned n);
     static float sd(float* x, unsigned n);
+    static float variance(float* x, unsigned n);
     static float mean(float* a, unsigned n);
     static double lerp(double a, double b, double x);
 
