@@ -2,7 +2,7 @@
 
 /**
  * @file MyMath.cpp
- * @brief implementation of the MyMath class
+ * @brief Implementation of the MyMath class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
@@ -73,10 +73,10 @@ Func_two MyMath::get_method_for_2_ds(std::string name) {
  */
 
 /** Returns the correlation coefficient for given x and y arrays
- * https://www.geeksforgeeks.org/program-find-correlation-coefficient/
+ *  https://www.geeksforgeeks.org/program-find-correlation-coefficient/
  *
  * AgriMetSoft (2019). Online Calculators. Available on: https://agrimetsoft.com/calculators/R-squared%20correlation
- * $$r^{2} = \frac{ n(\sum(xy))-\sum(x)\sum(y)}{\sqrt{\left[n\sum{x^{2}}-\sum(x)^{2}\right]\left[n\sum{y^{2}}-(\sum{y})^{2}\right]}}$$
+ * $r^{2} = \frac{ n(\sum(xy))-\sum(x)\sum(y)}{\sqrt{\left[n\sum{x^{2}}-\sum(x)^{2}\right]\left[n\sum{y^{2}}-(\sum{y})^{2}\right]}}$
  *
  * @param x reference
  * @param y prediction
@@ -101,7 +101,7 @@ float MyMath::correlation_coefficient(float* x, float* y, unsigned n) {
 }
 
 /** Returns the Root Mean Square Error
- *  $$RMSE = \sqrt{\frac{\sum_{i=1}^{n}(T_{y,i}-T_{x,i})^{2}}{n}}$$
+ *  $RMSE = \sqrt{\frac{\sum_{i=1}^{n}(T_{y,i}-T_{x,i})^{2}}{n}}$
  *
  * @param x reference
  * @param y prediction
@@ -114,7 +114,7 @@ float MyMath::rmse(float* x, float* y, unsigned n) {
 }
 
 /** Returns the mean bias error
- *  $$MBE=\frac{1}{n}\sum_{i=1}^{n}(T_{y,i}-T_{x,i})$$
+ *  $MBE=\frac{1}{n}\sum_{i=1}^{n}(T_{y,i}-T_{x,i})$
  *
  * @param x reference
  * @param y prediction
@@ -126,11 +126,12 @@ float MyMath::mbe(float* x, float* y, unsigned n) {
     return result * (float(1.0) / n);
 }
 /** Returns the index of agreement
- *  $$d = 1 - \frac{
- * \sum^{n}_{i=1}(T_{obs,p,i} - T_{sim,p}(i))^{2}
- * }{
- * \sum^{n}_{i=1}(| T_{sim,p}(i) - \mu({T_{obs,p}})|+|T_{obs,p}(i) - \mu({T_{obs,p}})|)
- * },  \hspace{1em}  d\in \{0,1\}$$
+ *  $d = 1 - \frac{
+ *              \sum^{n}_{i=1}(T_{obs,p,i} - T_{sim,p}(i))^{2}
+ *           }{
+ *              \sum^{n}_{i=1}(| T_{sim,p}(i) - \mu({T_{obs,p}})|+|T_{obs,p}(i) - \mu({T_{obs,p}})|)
+ *           },  \hspace{1em}  d\in \{0,1\}
+ *  $
  *
  * @param x reference
  * @param y prediction
@@ -159,7 +160,7 @@ float MyMath::variance(float* x, unsigned n) {
     return mean(v, n);
 }
 /** Returns the standard deviation
- *  $$\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$$
+ *  $\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$
  *
  * @param x reference
  * @param n length
@@ -188,12 +189,16 @@ std::vector<int> MyMath::get_pdf(float* arr, std::vector<double> bins, unsigned 
     std::vector<int> v_pdf(bins.size() - 1);
     for (unsigned ts = 0; ts < length; ts++) {
         for (unsigned i = 0; i < v_pdf.size() - 1; i++) {
-            if (i == 0 && arr[ts] <= bins[i])
+            if (i == 0 && arr[ts] <= bins[i]) {
                 ++v_pdf[i];
-            else if (arr[ts] >= bins[i] && arr[ts] < bins[i + 1])
+                break;
+            } else if (arr[ts] >= bins[i] && arr[ts] < bins[i + 1]) {
                 ++v_pdf[i];
-            else if (i == v_pdf.size() - 2 && arr[ts] >= bins[i + 1])
+                break;
+            } else if (i == v_pdf.size() - 2 && arr[ts] >= bins[i + 1]) {
                 ++v_pdf[i + 1];
+                break;
+            }
         }
     }
     return v_pdf;
@@ -219,7 +224,7 @@ double MyMath::lerp(double a, double b, double x) {
  * Returns interpolated value at x from parallel arrays ( xData, yData )
  *  Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
  *  boolean argument extrapolate determines behaviour beyond ends of array (if needed)
- * https://www.cplusplus.com/forum/general/216928/
+ *  source: https://www.cplusplus.com/forum/general/216928/
  *
  * @param xData increasing vector of double values
  * @param yData y values corresponding to xData
@@ -245,11 +250,8 @@ double MyMath::interpolate(std::vector<double>& xData, std::vector<double>& yDat
         if (x < xL) yR = yL;
         if (x > xR) yL = yR;
     }
+
     double dydx;
-    // if ((yR - yL == 0) || (xR - xL == 0)) {
-    //     dydx = 0;
-    //     // return MyMath::lerp(xR - xL, yR - yL, x);  // regular interpolation
-    // } else
     if (xR - xL == 0)
         dydx = 0;
     else

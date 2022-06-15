@@ -1,3 +1,5 @@
+// -*- lsst-c++ -*-
+
 /**
  * @file Utils.h
  * @brief Utility functions

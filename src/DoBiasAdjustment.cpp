@@ -1,4 +1,3 @@
-
 // -*- lsst-c++ -*-
 
 /**
@@ -23,7 +22,7 @@
  *        ../lib/MyMath.cpp \
  *        ../lib/CMethods.cpp \
  *        ../lib/NCFileHandler.cpp \
- *        -lnetcdf-cxx4
+ *        -l netcdf-cxx4
  *
  */
 

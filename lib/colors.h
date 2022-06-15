@@ -1,8 +1,8 @@
-
+// -*- lsst-c++ -*-
 namespace colors {
 /**
  * Colors for cmd output (only tested on ubuntu, centOS and macOS)
- * References: https://stackoverflow.com/a/9158263/13618168
+ * Source: https://stackoverflow.com/a/9158263/13618168
  */
 #define RESET "\033[0m"
 #define BLACK "\033[30m"              /* Black */
