@@ -29,3 +29,10 @@ The scipt `example_all_methods.run.sh` serves as an aexample on how to adjust th
 ## Requirements:
 - Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 - Installed NetCDF4 C++ Library ([How to install NetCDF4 for C++](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
+
+### Optional for working examples in notebook (`examples.ipynb`)
+```bash
+conda create --name clingenv
+conda activate clingenv
+conda install xeus-cling notebook -c conda-forge/label/gcc7
+```
