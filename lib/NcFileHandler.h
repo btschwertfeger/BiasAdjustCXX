@@ -23,6 +23,7 @@ class NcFileHandler {
     void load_whole_dataset(float***, std::string);
     void fill_lon_timeseries_for_lat(float**, unsigned);
     void fill_timeseries_for_location(float*, unsigned, unsigned);
+    void save_to_netcdf(std::string, std::string, float*);
     void save_to_netcdf(std::string, std::string, float**);
     void save_to_netcdf(std::string, std::string, double**);
     void save_to_netcdf(std::string, std::string, float***);
