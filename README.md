@@ -1,10 +1,22 @@
 # Bias-Adjustment-Cpp
-Collection of different scale- and distribution-based bias adjustments for climatic research. This methods are part of the bachelor thesis of Benjamin T. Schwertfeger. During this thesis, many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
+Collection of different scale- and distribution-based bias adjustments for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
 
 ## Compile:
 ```bash
 ./build.sh
 ```
+OR
+```bash
+g++ -std=c++17 \
+    src/DoBiasAdjustment.cpp \
+    -o DoBiasAdjustment \
+    lib/Utils.cpp \
+    lib/MyMath.cpp \
+    lib/CMethods.cpp \
+    lib/NCFileHandler.cpp \
+    -lnetcdf-cxx4
+```
+
 ## Example
 ```bash
 ./DoBiasAdjustment                   \

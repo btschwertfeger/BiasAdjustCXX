@@ -31,7 +31,7 @@ class CMethods {
 
     static void Linear_Scaling(float*, float*, float*, float*, unsigned, std::string);
     static void Variance_Scaling(float*, float*, float*, float*, unsigned, std::string);
-    static void Delta_Change(float*, float*, float*, float*, unsigned, std::string);
+    static void Delta_Method(float*, float*, float*, float*, unsigned, std::string);
 
     static std::vector<double> get_xbins(float*, float*, unsigned, unsigned);
     static void Quantile_Mapping(float*, float*, float*, float*, unsigned, std::string, unsigned);

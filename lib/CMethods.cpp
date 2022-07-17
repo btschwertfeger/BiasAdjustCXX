@@ -58,7 +58,7 @@ CM_Func_ptr_simple CMethods::get_cmethod_simple(std::string method_name) {
     else if (method_name == "variance_scaling")
         return Variance_Scaling;
     else if (method_name == "delta_method")
-        return Delta_Change;
+        return Delta_Method;
     return NULL;
 }
 CM_Func_ptr_quantile CMethods::get_cmethod_quantile(std::string method_name) {
@@ -184,7 +184,7 @@ void CMethods::Variance_Scaling(float* output, float* reference, float* control,
  *   (2.) $T^{*}_{contr}(d) = T_{contr}(d) \cdot \left[\frac{\mu_{m}(T_{scen}(d))}{\mu_{m}(T_{obs}(d))}\right]$
  *
  */
-void CMethods::Delta_Change(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind) {
+void CMethods::Delta_Method(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind) {
     const float
         contr_mean = MyMath::mean(control, n_time),
         scen_mean = MyMath::mean(scenario, n_time);
