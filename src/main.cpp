@@ -32,10 +32,10 @@
 
 #include <math.h>
 
-#include "../lib/CMethods.h"
-#include "../lib/NcFileHandler.h"
-#include "../lib/Utils.h"
-#include "../lib/colors.h"
+#include "../include/CMethods.h"
+#include "../include/NcFileHandler.h"
+#include "../include/Utils.h"
+#include "../include/colors.h"
 /*
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */

@@ -17,7 +17,7 @@
 /*
  * ----- ----- ----- I N C L U D E ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
-#include "NcFileHandler.h"
+#include "NcFileHandler.hpp"
 
 #include <fstream>
 
@@ -89,10 +89,6 @@ NcFileHandler::~NcFileHandler() {}
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-void NcFileHandler::load_whole_dataset(float*** data_out, std::string variable_name) {
-    // netCDF::NcVar d = dataFile->getVar(variable_name);
-    // d.getVar(*data_out);
-}
 /** Fills out_arr with timeseries of all location for given latitude (lat).
  * Reading data costs a lot of time so it's better to load multiple locations in one step.
  *
@@ -147,51 +143,7 @@ void NcFileHandler::fill_timeseries_for_location(float* out_arr, unsigned lat, u
  * *                        Data saving management
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
-/** Saves a dataset with one variable for one grid cell for entire time period (dimensions: time)
- *
- * @param out_fpath output file path
- * @param variable_name name of the output variable
- * @param out_data 1d array of data
- */
-void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_name, float* out_data) {
-    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
-
-    // Create netCDF dimensions
-    netCDF::NcDim out_time_dim = output_file.addDim(time_name, n_time);
-
-    // Create dimension names
-    netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
-
-    // Sett attributes
-    for (std::pair<std::string, netCDF::NcVarAtt> att : time_var.getAtts()) {
-        if (att.second.getType().getName() == "char") {
-            char value[att.second.getAttLength()];
-            att.second.getValues(value);
-            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
-        } else if (att.second.getType().getName() == "double") {
-            double value[att.second.getAttLength()];
-            att.second.getValues(value);
-            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
-        }
-    }
-
-    // Define the netCDF variables for the minCorr and location data.
-    std::vector<netCDF::NcDim> dim_vector;
-    dim_vector.push_back(out_time_dim);
-
-    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
-
-    // Write the coordinate variable data to the file.
-    out_time_var.putVar(time_values);
-
-    std::vector<size_t> startp, countp;
-    startp.push_back(0);
-    countp.push_back(n_time);
-
-    output_var.putVar(startp, countp, out_data);
-}
-
-/** Saves a dataset with one variable and only one timestep to file (dimensions: lat, lon)
+/** Saves a dataset with one variable and only one timestep to file
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
@@ -240,10 +192,11 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
 
     // Write data into output file
     output_var.putVar(startp, countp, data_to_save);
+
     // file closes in destructor of output_var
 }
 
-/** Saves a dataset to file (3 dimensions, time, lat, lon)
+/** Saves a dataset to file (3 dimensions)
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
@@ -252,19 +205,17 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
 void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
-    // Create netCDF dimensions
     netCDF::NcDim
         out_time_dim = output_file.addDim(time_name, n_time),
         out_lat_dim = output_file.addDim(lat_name, n_lat),
         out_lon_dim = output_file.addDim(lon_name, n_lon);
 
-    // Create dimension names
     netCDF::NcVar
         out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim),
         out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
         out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
 
-    // Sett attributes
+    // Set attributes
     for (std::pair<std::string, netCDF::NcVarAtt> att : time_var.getAtts()) {
         if (att.second.getType().getName() == "char") {
             char value[att.second.getAttLength()];
@@ -293,7 +244,6 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
         }
     }
 
-    // Define the netCDF variables for the minCorr and location data.
     std::vector<netCDF::NcDim> dim_vector;
     dim_vector.push_back(out_time_dim);
     dim_vector.push_back(out_lat_dim);
@@ -302,7 +252,6 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
     netCDF::NcVar
         output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
 
-    // Write the coordinate variable data to the file.
     out_time_var.putVar(time_values);
     out_lat_var.putVar(lat_values);
     out_lon_var.putVar(lon_values);
@@ -326,7 +275,6 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
         }
         output_var.putVar(startp, countp, tmp);
     }
-    // file closes in destructor of output_var
 }
 
 /** Saves a dataset containing multiple variables for only one timestep to file
@@ -338,21 +286,17 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
 void NcFileHandler::save_to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
-    // Create netCDF dimensions
     netCDF::NcDim
         out_lat_dim = output_file.addDim(lat_name, n_lat),
         out_lon_dim = output_file.addDim(lon_name, n_lon);
 
-    // Create dimension names
     netCDF::NcVar
         out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
         out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
 
-    // Write the coordinate variable data to the file.
     out_lat_var.putVar(lat_values);
     out_lon_var.putVar(lon_values);
 
-    // Sett attributes
     for (std::pair<std::string, netCDF::NcVarAtt> att : lon_var.getAtts()) {
         char value[att.second.getAttLength()];
         att.second.getValues(value);
@@ -365,7 +309,6 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::vector<std::strin
         out_lat_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
     }
 
-    // Define the netCDF variables for the minCorr and location data.
     std::vector<netCDF::NcDim> dim_vector;
     dim_vector.push_back(out_lat_dim);
     dim_vector.push_back(out_lon_dim);
@@ -389,7 +332,6 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::vector<std::strin
         // Write data into output file
         output_var.putVar(startp, countp, data_to_save);
     }
-    // file closes in destructor of output_var
 }
 
 /**

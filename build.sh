@@ -7,12 +7,12 @@
 # @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
 
 g++ -std=c++17 \
-    src/DoBiasAdjustment.cpp \
+    src/main.cpp \
     -o DoBiasAdjustment \
-    lib/Utils.cpp \
-    lib/MyMath.cpp \
-    lib/CMethods.cpp \
-    lib/NCFileHandler.cpp \
+    include/Utils.cpp \
+    include/MyMath.cpp \
+    include/CMethods.cpp \
+    include/NCFileHandler.cpp \
     -lnetcdf-cxx4
 
 echo "Done!"

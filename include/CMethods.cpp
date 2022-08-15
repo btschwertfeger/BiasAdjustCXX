@@ -237,6 +237,7 @@ std::vector<double> CMethods::get_xbins(float* a, float* b, unsigned n_quantiles
 void CMethods::Quantile_Mapping(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind, unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
         std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time);
+
         // ? create CDF
         std::vector<int>
             vi_ref_cdf = MyMath::get_cdf(reference, v_xbins, n_time),
@@ -283,21 +284,6 @@ void CMethods::Quantile_Mapping(float* output, float* reference, float* control,
  */
 void CMethods::Quantile_Delta_Mapping(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind, unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
-        // const double
-        //     ref_max = *std::max_element(reference, reference + n_time),
-        //     ref_min = *std::min_element(reference, reference + n_time),
-        //     contr_max = *std::max_element(control, control + n_time),
-        //     contr_min = *std::min_element(control, control + n_time);
-
-        // const double
-        //     global_max = std::max(ref_max, contr_max),
-        //     global_min = std::min(ref_min, contr_min);
-
-        // const double wide = std::abs(global_max - global_min) / n_quantiles;
-
-        // std::vector<double> v_xbins;
-        // for (unsigned i = 0; i <= n_quantiles; i++) v_xbins.push_back(global_min + wide * i);
-
         std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time);
 
         // ? create CDF
@@ -311,7 +297,6 @@ void CMethods::Quantile_Delta_Mapping(float* output, float* reference, float* co
             contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end()),
             scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());
 
-        // ? Interpolate
         std::vector<double> cdf_values;
         for (unsigned ts = 0; ts < n_time; ts++)
             cdf_values.push_back(MyMath::interpolate(v_xbins, scen_cdf, scenario[ts], false));
