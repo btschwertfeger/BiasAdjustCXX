@@ -18,10 +18,8 @@
 # ? - no commands except for help can be passed
 # * -------------------------------------------------------------------
 
-
-echo "="
-exit 0
 work_dir=$(pwd)
+mkdir -p "${work_dir}/output"
 output_dir="${work_dir}/output"
 rm -rf tmp/
 
@@ -34,7 +32,7 @@ variable="tas"
 kind="+"
 n_quantiles=100  
 
-exec_file="${work_dir}/src/DoBiasAdjustment"
+exec_file="${work_dir}/Main"
 
 declare -a month_methods=("delta_method" "linear_scaling" "variance_scaling")
 declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")
@@ -81,7 +79,7 @@ done
 echo "Staring adjusting data ..."
 # ? this should not be done in parallel because this could lead to excessive memory usage
 for method in "${month_methods[@]}"; do
-    # ? Apply bias adjustment per month
+    # ? Apply scaling-based bias adjustment per month
     for (( month=1; month<13; month++ )); do
         $exec_file                                          \
             --ref "${tmp_obs}/${month}.nc"                  \
@@ -99,7 +97,7 @@ for method in "${month_methods[@]}"; do
         "${output_dir}/${variable}_${method}_kind-${kind}_${quant}result_${timespan}.nc"
 done
 
-# ? now quantile adjustments
+# ? now the distribution-based adjustments
 for method in "${quant_methods[@]}"; do
     $exec_file                                  \
         --ref $observations                     \
@@ -119,6 +117,7 @@ done
 rm -rf $tmp_path
 echo "Finished adjusting datasets!"
 exit 0
+
 # * -------------------------------------------------------------------
 # *                         E O F 
 # * -------------------------------------------------------------------
