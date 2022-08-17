@@ -26,8 +26,8 @@ class MyMath {
     static std::vector<std::string> requires_1_ds;
     static std::vector<std::string> requires_2_ds;
 
-    static Func_one get_method_for_1_ds(std::string);
-    static Func_two get_method_for_2_ds(std::string);
+    static Func_one get_method_for_1_ds(std::string name);
+    static Func_two get_method_for_2_ds(std::string name);
 
     static float correlation_coefficient(float* x, float* y, unsigned n);
     static float rmse(float* x, float* y, unsigned n);

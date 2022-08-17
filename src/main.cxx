@@ -15,14 +15,15 @@
  *      - Application of the selected adjustment
  *      - Save to file after adjustment
  * * Compilaition
- *    g++ -std=c++17 \
- *        DoBiasAdjustment.cpp \
- *        -o DoBiasAdjustment \
- *        ../lib/Utils.cpp \
- *        ../lib/MyMath.cpp \
- *        ../lib/CMethods.cpp \
- *        ../lib/NCFileHandler.cpp \
- *        -l netcdf-cxx4
+ *      g++ -std=c++11 -Wall -v\
+ *          src/main.cxx \
+ *          -o Main.app \
+ *          src/Utils.cxx \
+ *          src/MyMath.cxx \
+ *          src/CMethods.cxx \
+ *          src/NcFileHandler.cxx \
+ *          -I include \
+ *          -lnetcdf-cxx4
  *
  */
 
@@ -32,10 +33,10 @@
 
 #include <math.h>
 
-#include "../include/CMethods.hxx"
-#include "../include/NcFileHandler.hxx"
-#include "../include/Utils.hxx"
-#include "../include/colors.h"
+#include "CMethods.hxx"
+#include "NcFileHandler.hxx"
+#include "Utils.hxx"
+#include "colors.h"
 /*
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -101,8 +102,8 @@ static void show_usage(std::string name) {
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
     std::cout << std::endl;
     std::cerr << YELLOW << "\nNotes: " << RESET
-              << "\n- Linear Scaling, Variance Scaling and Delta method need a wrapper script to apply this program on monthly separated files i.e. "
-              << "you want to adjust 30 years of data, you have to separate all inputfiles in 12 groups, one group for each month and then you apply this "
+              << "\n- Linear Scaling, Variance Scaling and Delta Method need a wrapper script to apply this program on monthly separated files i.e. "
+              << "if you want to adjust 30 years of data, you have to separate all input files in 12 groups, one group for each month and then you apply this "
               << "program on every individual monthly separated data set.";
     std::cout.flush();
 }
@@ -239,12 +240,22 @@ static void do_simple_adjustment(float*** data_out) {
                 ds_reference.n_time,
                 adjustment_kind);
 
+        for (unsigned xlon = 0; xlon < ds_reference.n_lon; xlon++) {
+            delete reference_lon_data[xlon];
+            delete control_lon_data[xlon];
+            delete scenario_lon_data[xlon];
+        }
+        delete[] reference_lon_data;
+        delete[] control_lon_data;
+        delete[] scenario_lon_data;
+
         utils::progress_bar((float)lat, (float)ds_reference.n_lat);
     }
     utils::progress_bar((float)ds_reference.n_lat, (float)ds_reference.n_lat);
 }
 
 static void do_quantile_adjustment(float*** data_out) {
+    Log.info("INFIDIFBLSK");
     CM_Func_ptr_quantile apply_adjustment = CMethods::get_cmethod_quantile(adjustment_method_name);
 
     for (unsigned lat = 0; lat < ds_reference.n_lat; lat++) {
@@ -262,7 +273,7 @@ static void do_quantile_adjustment(float*** data_out) {
         ds_reference.fill_lon_timeseries_for_lat(reference_lon_data, lat);
         ds_control.fill_lon_timeseries_for_lat(control_lon_data, lat);
         ds_scenario.fill_lon_timeseries_for_lat(scenario_lon_data, lat);
-
+        Log.info("INFIDIFBLSK");
         for (unsigned lon = 0; lon < ds_reference.n_lon; lon++) {
             apply_adjustment(
                 data_out[lat][lon],
@@ -274,10 +285,10 @@ static void do_quantile_adjustment(float*** data_out) {
                 n_quantiles);
         }
 
-        for (unsigned xlat = 0; xlat < ds_reference.n_lat; xlat++) {
-            delete reference_lon_data[xlat];
-            delete control_lon_data[xlat];
-            delete scenario_lon_data[xlat];
+        for (unsigned xlon = 0; xlon < ds_reference.n_lon; xlon++) {
+            delete reference_lon_data[xlon];
+            delete control_lon_data[xlon];
+            delete scenario_lon_data[xlon];
         }
         delete[] reference_lon_data;
         delete[] control_lon_data;

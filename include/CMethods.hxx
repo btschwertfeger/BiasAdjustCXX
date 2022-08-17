@@ -22,20 +22,20 @@ class CMethods {
     CMethods();
     ~CMethods();
 
-    static CM_Func_ptr_simple get_cmethod_simple(std::string);
-    static CM_Func_ptr_quantile get_cmethod_quantile(std::string);
+    static CM_Func_ptr_simple get_cmethod_simple(std::string method_name);
+    static CM_Func_ptr_quantile get_cmethod_quantile(std::string method_name);
 
     static std::vector<std::string> simple_method_names;
     static std::vector<std::string> quantile_method_names;
     static std::vector<std::string> all_method_names;
 
-    static void Linear_Scaling(float*, float*, float*, float*, unsigned, std::string);
-    static void Variance_Scaling(float*, float*, float*, float*, unsigned, std::string);
-    static void Delta_Method(float*, float*, float*, float*, unsigned, std::string);
+    static void Linear_Scaling(float* output, float* reference, float* control, float* scenario, unsigned, std::string n_time);
+    static void Variance_Scaling(float* output, float* reference, float* control, float* scenario, unsigned, std::string n_time);
+    static void Delta_Method(float* output, float* reference, float* control, float* scenario, unsigned, std::string n_time);
 
-    static std::vector<double> get_xbins(float*, float*, unsigned, unsigned, std::string);
-    static void Quantile_Mapping(float*, float*, float*, float*, unsigned, std::string, unsigned);
-    static void Quantile_Delta_Mapping(float*, float*, float*, float*, unsigned, std::string, unsigned);
+    static std::vector<double> get_xbins(float* a, float* b, unsigned n_quantiles, unsigned length, std::string kind);
+    static void Quantile_Mapping(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind, unsigned n_quantiles);
+    static void Quantile_Delta_Mapping(float* output, float* reference, float* control, float* scenario, unsigned n_time, std::string kind, unsigned n_quantiles);
 };
 
 #endif

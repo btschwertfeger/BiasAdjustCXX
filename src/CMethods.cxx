@@ -20,12 +20,12 @@
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-#include "../include/CMethods.hxx"
+#include "CMethods.hxx"
 
 #include <iostream>
 #include <vector>
 
-#include "../include/MyMath.hxx"
+#include "MyMath.hxx"
 #include "math.h"
 
 /**
@@ -234,8 +234,10 @@ std::vector<double> CMethods::get_xbins(float* a, float* b, unsigned n_quantiles
         while (v_xbins[v_xbins.size() - 1] < global_max)
             v_xbins.push_back(v_xbins[v_xbins.size() - 1] + wide);
         return v_xbins;
-    } else
+    } else {
         std::runtime_error("Unknown kind for get_xbins-function.");
+        return std::vector<double>(0);  // just to avoid warnings ...
+    }
 }
 /**
  * Quantile Mapping bias correction based on

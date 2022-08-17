@@ -17,7 +17,7 @@
 /*
  * ----- ----- ----- I N C L U D E ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
-#include "../include/NcFileHandler.hxx"
+#include "NcFileHandler.hxx"
 
 #include <fstream>
 
@@ -143,6 +143,32 @@ void NcFileHandler::fill_timeseries_for_location(float* out_arr, unsigned lat, u
  * *                        Data saving management
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
+
+/** Saves a dataset with one variable for one time dimension (1d vector)
+ *
+ * @param out_fpath output file path
+ * @param variable_name name of the output variable
+ * @param out_data 1d array of data
+ * @param n_time custom length of the <out_data> array
+ */
+void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time) {
+    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
+    netCDF::NcDim out_time_dim = output_file.addDim(time_name, n_time);
+    netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
+
+    std::vector<netCDF::NcDim> dim_vector;
+    dim_vector.push_back(out_time_dim);
+    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
+
+    out_time_var.putVar(time_values);
+
+    std::vector<size_t> startp, countp;
+    startp.push_back(0);
+    countp.push_back(n_time);
+
+    output_var.putVar(startp, countp, out_data);
+}
+
 /** Saves a dataset with one variable and only one timestep to file
  *
  * @param out_fpath output file path
@@ -196,7 +222,7 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
     // file closes in destructor of output_var
 }
 
-/** Saves a dataset to file (3 dimensions)
+/** Saves a dataset to file (3 dimensions: time x lat x lon )
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
@@ -332,16 +358,6 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::vector<std::strin
         // Write data into output file
         output_var.putVar(startp, countp, data_to_save);
     }
-}
-
-/**
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *                       TEST
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- */
-
-void NcFileHandler::test() {
-    std::cout << "TEST" << std::endl;
 }
 
 /*

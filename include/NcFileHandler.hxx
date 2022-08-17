@@ -17,18 +17,17 @@
 class NcFileHandler {
    public:
     NcFileHandler();
-    NcFileHandler(std::string, std::string);
+    NcFileHandler(std::string filepath, std::string variable_name);
     ~NcFileHandler();
 
-    void load_whole_dataset(float***, std::string);
-    void fill_lon_timeseries_for_lat(float**, unsigned);
-    void fill_timeseries_for_location(float*, unsigned, unsigned);
-    void save_to_netcdf(std::string, std::string, float**);
-    void save_to_netcdf(std::string, std::string, double**);
-    void save_to_netcdf(std::string, std::string, float***);
-    void save_to_netcdf(std::string, std::vector<std::string>, std::vector<float**>);
-
-    void test();
+    void load();  // TODO: laod whole dataset into 1, 2+ array
+    void fill_lon_timeseries_for_lat(float** out_arr, unsigned lat);
+    void fill_timeseries_for_location(float* out_arr, unsigned lat, unsigned lon);
+    void save_to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time);
+    void save_to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
+    void save_to_netcdf(std::string out_fpath, std::string, double** out_data);
+    void save_to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data);
+    void save_to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data);
 
     static std::string time_name;
     static std::string lat_name;

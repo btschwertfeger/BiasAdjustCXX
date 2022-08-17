@@ -15,7 +15,7 @@
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-#include "../include/MyMath.hxx"
+#include "MyMath.hxx"
 
 #include <cmath>
 #include <iostream>

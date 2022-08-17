@@ -21,13 +21,13 @@ class Log {
     Log();
     ~Log();
 
-    static void debug(std::string);
-    static void info(std::string);
-    static void warning(std::string);
-    static void error(std::string);
+    static void debug(std::string message);
+    static void info(std::string message);
+    static void warning(std::string message);
+    static void error(std::string message);
 };
 
-void progress_bar(float, float);
+void progress_bar(float part, float all);
 
 }  // namespace utils
 
