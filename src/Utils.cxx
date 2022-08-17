@@ -14,11 +14,11 @@
 /*
  * ----- ----- ----- I N C L U D E ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
-#include "Utils.h"
+#include "../include/Utils.hxx"
 
 #include <iostream>
 
-#include "colors.h"
+#include "../include/colors.h"
 
 /*
  * ----- ----- ----- L O G G E R ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
