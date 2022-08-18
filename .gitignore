@@ -38,3 +38,4 @@ build/
 test/
 output/
 *tmp*
+qdm_result.nc

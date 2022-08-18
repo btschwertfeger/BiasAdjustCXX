@@ -33,7 +33,7 @@ ____
 - Quantile Mapping (additive and multiplicative)
 - Quantile Delta Mapping (additive and multuplicative)
 ____
-## Compiltion:
+## Compilation:
 ```bash
 ./build.sh
 ```
@@ -44,7 +44,7 @@ cmake .. && cmake --build .
 ```
 
 ____
-## Example
+## Usage example
 ```bash
 ./Main                               \
     --ref input_data/observations.nc \
@@ -55,6 +55,8 @@ ____
     -q 100
 ```
 The scipt `example_all_methods.run.sh` serves as an aexample on how to adjust the example data using all implemented methods. 
+
+All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with c++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
 ____
 ## Help
 ```bash
@@ -75,3 +77,6 @@ conda create --name clingenv
 conda activate clingenv
 conda install xeus-cling notebook -c conda-forge/label/gcc7
 ```
+_____
+## Contributions
+... are welcome (:
