@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file NcFileHandler.h
+ * @file NcFileHandler.hxx
  * @brief File to declare NcFileHandler Class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
@@ -20,14 +20,14 @@ class NcFileHandler {
     NcFileHandler(std::string filepath, std::string variable_name);
     ~NcFileHandler();
 
-    void load();  // TODO: laod whole dataset into 1, 2+ array
     void fill_lon_timeseries_for_lat(float** out_arr, unsigned lat);
     void fill_timeseries_for_location(float* out_arr, unsigned lat, unsigned lon);
-    void save_to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time);
-    void save_to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
-    void save_to_netcdf(std::string out_fpath, std::string, double** out_data);
-    void save_to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data);
-    void save_to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data);
+    void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data);
+    void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time);
+    void to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
+    void to_netcdf(std::string out_fpath, std::string variable_name, double** out_data);
+    void to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data);
+    void to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data);
 
     static std::string time_name;
     static std::string lat_name;
@@ -57,6 +57,8 @@ class NcFileHandler {
     netCDF::NcVar lon_var;
     netCDF::NcVar lat_var;
     netCDF::NcVar time_var;
+
+    bool handles_file;
 };
 
 #endif

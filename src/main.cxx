@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file DoBiasAdjustment
+ * @file main
  * @brief Main program to bias adjust climate data
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
@@ -341,7 +341,7 @@ int main(int argc, char** argv) {
     }
 
     Log.info("Saving " + output_filepath);
-    ds_scenario.save_to_netcdf(output_filepath, variable_name, data_to_save);
+    ds_scenario.to_netcdf(output_filepath, variable_name, data_to_save);
     Log.info("SUCCESS!");
 
     return 0;

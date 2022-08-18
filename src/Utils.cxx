@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file Utils.cpp
+ * @file Utils.cxx
  * @brief
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de

@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file MyMath.cpp
+ * @file MyMath.cxx
  * @brief Implementation of the MyMath class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger

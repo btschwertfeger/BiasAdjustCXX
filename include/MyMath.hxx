@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file MyMath.h
+ * @file MyMath.hxx
  * @brief declaration of the MyMath class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger

@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file CMethods.h
+ * @file CMethods.hxx
  * @brief declaration of the CMethod class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger

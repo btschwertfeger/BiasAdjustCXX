@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file NcFileHandler.cpp
+ * @file NcFileHandler.cxx
  * @brief Class to store, manage and save netCDF datasets
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
@@ -35,9 +35,10 @@ std::string NcFileHandler::lon_unit = "degrees_east";
 /*
  * ----- ----- ----- C L A S S - I M P L E M E N T A T I O N ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
-NcFileHandler::NcFileHandler() {}
+NcFileHandler::NcFileHandler() : handles_file(false) {}
 NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name) : in_filename(filepath),
-                                                                                var_name(variable_name) {
+                                                                                var_name(variable_name),
+                                                                                handles_file(true) {
     try {
         std::ifstream ifile;
         ifile.open(in_filename);
@@ -145,21 +146,36 @@ void NcFileHandler::fill_timeseries_for_location(float* out_arr, unsigned lat, u
  */
 
 /** Saves a dataset with one variable for one time dimension (1d vector)
+ *  -> time dimension gets same attributes as handled file
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
  * @param out_data 1d array of data
- * @param n_time custom length of the <out_data> array
  */
-void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time) {
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float* out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
+
+    // ? Save vector with time attributes from handled file
     netCDF::NcDim out_time_dim = output_file.addDim(time_name, n_time);
     netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
 
+    // Set attributes
+    for (std::pair<std::string, netCDF::NcVarAtt> att : time_var.getAtts()) {
+        if (att.second.getType().getName() == "char") {
+            char value[att.second.getAttLength()];
+            att.second.getValues(value);
+            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+        } else if (att.second.getType().getName() == "double") {
+            double value[att.second.getAttLength()];
+            att.second.getValues(value);
+            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+        }
+    }
+
     std::vector<netCDF::NcDim> dim_vector;
     dim_vector.push_back(out_time_dim);
-    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
 
+    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
     out_time_var.putVar(time_values);
 
     std::vector<size_t> startp, countp;
@@ -169,13 +185,39 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
     output_var.putVar(startp, countp, out_data);
 }
 
-/** Saves a dataset with one variable and only one timestep to file
+/** Saves a dataset with one variable for one time dimension (1d vector)
+ *  -> else no time attributes and values will be saved (empty)
+ *
+ * @param out_fpath output file path
+ * @param variable_name name of the output variable
+ * @param out_data 1d array of data
+ * @param n_time custom length of the <out_data> array
+ */
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time) {
+    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
+
+    // ? Save vector as new file without any time attributes and values
+    netCDF::NcDim out_time_dim = output_file.addDim("time", n_time);
+    netCDF::NcVar out_time_var = output_file.addVar("time", netCDF::ncDouble, out_time_dim);
+
+    std::vector<netCDF::NcDim> dim_vector;
+    dim_vector.push_back(out_time_dim);
+    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
+
+    std::vector<size_t> startp, countp;
+    startp.push_back(0);
+    countp.push_back(n_time);
+
+    output_var.putVar(startp, countp, out_data);
+}
+
+/** Saves a dataset with one variable for one lat and one lon and only one timestep to file
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
  * @param out_data 2d array of data
  */
-void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_name, float** out_data) {
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float** out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
     // Create netCDF dimensions
@@ -228,7 +270,7 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
  * @param variable_name name of the output variable
  * @param out_data 3d array of data
  */
-void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data) {
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
     netCDF::NcDim
@@ -309,7 +351,7 @@ void NcFileHandler::save_to_netcdf(std::string out_fpath, std::string variable_n
  * @param variable_names names of the output variables
  * @param out_data vector of 2d arrays of data
  */
-void NcFileHandler::save_to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data) {
+void NcFileHandler::to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
     netCDF::NcDim

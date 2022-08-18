@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file Utils.h
+ * @file Utils.hxx
  * @brief Utility functions
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger

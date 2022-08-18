@@ -1,7 +1,7 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file CMethods.cpp
+ * @file CMethods.cxx
  * @brief
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
@@ -77,6 +77,9 @@ CM_Func_ptr_quantile CMethods::get_cmethod_quantile(std::string method_name) {
 
 /**
  * Method to adjust 1 dimensional climate data by the linear scaling method.
+ * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
+ * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
+ * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
  *
  * @param output output array where to save the adjusted data
  * @param reference observation data (control period)
@@ -110,6 +113,9 @@ void CMethods::Linear_Scaling(float* output, float* reference, float* control, f
 
 /**
  * Method to adjust 1 dimensional climate data by variance scaling method.
+ * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
+ * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
+ * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
  *
  * @param output output array where to save the adjusted data
  * @param reference observation data (control period)
