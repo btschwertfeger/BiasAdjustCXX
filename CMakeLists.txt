@@ -18,7 +18,7 @@ include(FindnetCDFCxx)
 
 if(netCDFCxx_FOUND)
     message (STATUS "netCDFCxx found!")
-    include_directories(${etCDFCxx_INCLUDE_DIRS})
+    include_directories(${NetCDFCxx_INCLUDE_DIRS})
 else()
     message (FATAL_ERROR "Cannot find netCDFCxx!")
 endif()
@@ -31,8 +31,6 @@ set(SOURCES
     src/NcFileHandler.cxx
     src/MyMath.cxx
 )
-
-include_directories(${NetCDFCxx_INCLUDE_DIRS})
 
 # add executable
 add_executable( Main ${SOURCES})

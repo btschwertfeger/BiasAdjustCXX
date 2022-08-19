@@ -1,11 +1,15 @@
 # Bias-Adjustment-Cpp
+
+[![Generic badge](https://img.shields.io/badge/license-MIT-green.svg)](https://shields.io/)
+[![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
+
 Collection of different scale- and distribution-based bias adjustments for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
 
 ____
 ## About
-This repository started in 2022 as part of a Bachelor Thesis with the topic: [The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe](https://b-schwertfeger.de/downloads/thesis_.pdf)
+This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://b-schwertfeger.de/downloads/thesis_.pdf)
 
-These programs and data structures are intended to help minimize discrepancies between modeled and observed climate data, using data from past periods to adjust variables of future time series so that their distribution characteristics approcimate possible actual values.
+These programs and data structures are designed to help minimize discrepancies between modeled and observed climate data. Data from past periods are used to adjust variables from current and future time series so that their distributional properties approximate possible actual values.
 
 <figure>
   <img
