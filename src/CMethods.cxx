@@ -176,6 +176,7 @@ void CMethods::Variance_Scaling(float* output, float* reference, float* control,
 
 /**
  * Method to adjust 1 dimensional climate data by delta method.
+ * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
  *
  * @param output output array where to save the adjusted data
  * @param reference observation data (control period)

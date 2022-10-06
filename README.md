@@ -7,7 +7,7 @@ Collection of different scale- and distribution-based bias adjustments for clima
 
 ____
 ## About
-This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://b-schwertfeger.de/downloads/thesis_.pdf)
+This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://b-schwertfeger.de/downloads/thesis.pdf)
 
 These programs and data structures are designed to help minimize discrepancies between modeled and observed climate data. Data from past periods are used to adjust variables from current and future time series so that their distributional properties approximate possible actual values.
 
@@ -58,7 +58,7 @@ ____
     -m quantile_delta_mapping        \
     -q 100
 ```
-The scipt `example_all_methods.run.sh` serves as an aexample on how to adjust the example data using all implemented methods. 
+The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods. 
 
 All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with c++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
 ____
@@ -69,6 +69,7 @@ ____
 ____
 ## Notes
 - For adjusting data using the linear scaling, variance scaling or delta method, you have to separate the files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to create a data set that contains all data for all januarys and then apply the adjustment for this data set. After that you have to do the same for the rest of the months.
+- Formulas and references can be found in the implementations of the corresponding functions.
 
 ____
 ## Requirements:
@@ -81,6 +82,14 @@ conda create --name clingenv
 conda activate clingenv
 conda install xeus-cling notebook -c conda-forge/label/gcc7
 ```
+
+____
+## Equation references
+
+- Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
+- Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
+- Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes? (https://doi.org/10.1175/JCLI-D-14-00754.1)
+- Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
 _____
 ## Contributions
 ... are welcome (:
