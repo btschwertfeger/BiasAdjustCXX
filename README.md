@@ -3,7 +3,7 @@
 [![Generic badge](https://img.shields.io/badge/license-MIT-green.svg)](https://shields.io/)
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
 
-Collection of different scale- and distribution-based bias adjustments for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
+Collection of different scale- and distribution-based bias adjustment techniques for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
 
 ____
 ## About
@@ -34,7 +34,7 @@ ____
 - Linear Scaling (additive and multiplicative)
 - Variance Scaling (additive)
 - Delta (Change) Method (additive and multiplicative)
-- Quantile Mapping (additive and multiplicative)
+- Quantile Mapping
 - Quantile Delta Mapping (additive and multuplicative)
 ____
 ## Compilation:
@@ -51,12 +51,12 @@ ____
 ## Usage example
 ```bash
 ./Main                               \
-    --ref input_data/observations.nc \
-    --contr input_data/control.nc    \
-    --scen input_data/scenario.nc    \
-    -v tas                           \
-    -m quantile_delta_mapping        \
-    -q 100
+    --ref input_data/observations.nc \ # observations/reference time series of the control period
+    --contr input_data/control.nc    \ # simulated time series of the control period
+    --scen input_data/scenario.nc    \ # time series to adjust
+    -v tas                           \ # variable to adjust
+    -m quantile_delta_mapping        \ # adjustment method
+    -q 100                             # quantiles to respect 
 ```
 The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods. 
 
@@ -90,6 +90,3 @@ ____
 - Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
 - Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes? (https://doi.org/10.1175/JCLI-D-14-00754.1)
 - Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
-_____
-## Contributions
-... are welcome (:
