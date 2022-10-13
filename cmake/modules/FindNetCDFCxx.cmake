@@ -1,15 +1,12 @@
 # 
-# Find the netCDF C++ API
+# Find the netCDF C++ API cmake files
 # 
 # ----- R E F E R E N C E S -----
 # Inspired by:
 #   Peter Hill (2021) 
-#   @Source: https://gitlab.mpcdf.mpg.de/dave/BOUT-dev/-/blob/manylinux/cmake/FindnetCDFCxx.cmake
+#   @source: https://gitlab.mpcdf.mpg.de/dave/BOUT-dev/-/blob/manylinux/cmake/FindnetCDFCxx.cmake
 #
-# This module uses the ``ncxx4-config`` helper script as a hint for
-# the location of the NetCDF C++ library. It should be in your PATH.
-#
-# Exports:
+# Exports the following variables:
 #   netCDFCxx_FOUND - true || false if netCDFCxx was found
 #   netCDFCxx_INCLUDE_DIRS - path of netCDFCxx includes
 #   netCDFCxx_LIBRARIES - netCDFCxx libraries

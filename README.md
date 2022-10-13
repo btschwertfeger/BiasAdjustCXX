@@ -50,12 +50,13 @@ cmake .. && cmake --build .
 ____
 ## Usage example
 ```bash
-./Main                               \
+./Main.app                           \
     --ref input_data/observations.nc \ # observations/reference time series of the control period
     --contr input_data/control.nc    \ # simulated time series of the control period
     --scen input_data/scenario.nc    \ # time series to adjust
     -v tas                           \ # variable to adjust
     -m quantile_delta_mapping        \ # adjustment method
+    -k "+"                           \ # kind of qdjustment ("+" == "add" and "*" == "mult")
     -q 100                             # quantiles to respect 
 ```
 The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods. 
@@ -64,7 +65,7 @@ All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. The
 ____
 ## Help
 ```bash
-./Main -h
+./Main.app -h
 ```
 ____
 ## Notes
@@ -84,8 +85,8 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 ```
 
 ____
-## Equation references
-
+## References
+- Schwertfeger, Benjamin Thomas (2022) The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe (https://epic.awi.de/id/eprint/56689/)
 - Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
 - Delta Method based on: Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
 - Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes? (https://doi.org/10.1175/JCLI-D-14-00754.1)

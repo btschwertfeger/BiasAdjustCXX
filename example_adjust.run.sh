@@ -6,14 +6,14 @@
 # @link https://b-schwertfeger.de
 # @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
 
-# ? ------- ------- ------- ------- ------- ------- ------- ------- ------- 
+# ? ------- ------- ------- ------- ------- ------- ------- ------- -------
 # * -------------------------------------------------------------------
 # *                           Description
 # * -------------------------------------------------------------------
-# ? USAGE: ./example.run.adjust.sh 
-# ? - This script separates datasets by month and then 
+# ? USAGE: ./example.run.adjust.sh
+# ? - This script separates datasets by month and then
 # ?   applies all bias adjustment methods.
-# ? - interim results are saved in some tmp folder 
+# ? - interim results are saved in some tmp folder
 # ? - clean up after computation will be done
 # ? - no commands except for help can be passed
 # * -------------------------------------------------------------------
@@ -24,15 +24,15 @@ output_dir="${work_dir}/output"
 rm -rf tmp/
 
 timespan="19810101_20101231"
-observations="${work_dir}/input_data/obs.nc"
-control="${work_dir}/input_data/contr.nc"
-scenario="${work_dir}/input_data/scen.nc"
+observations="${work_dir}/input_data/observations.nc"
+control="${work_dir}/input_data/control.nc"
+scenario="${work_dir}/input_data/scenario.nc"
 
 variable="tas"
 kind="+"
-n_quantiles=100  
+n_quantiles=100
 
-exec_file="${work_dir}/Main"
+exec_file="${work_dir}/build/Main.app"
 
 declare -a month_methods=("delta_method" "linear_scaling" "variance_scaling")
 declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")
@@ -66,13 +66,13 @@ echo "Separating months ..."
 # ? Separate months
 for (( month=1; month<13; month++ ));do
     declare -i index=0
-    for dataset in "${datasets[@]}"; do 
+    for dataset in "${datasets[@]}"; do
         cdo -f nc -s \
             -selvar,$variable \
             -selmon,$month $dataset \
             "${ds_paths[index]}/${month}.nc" &
         ((++index))
-    done 
+    done
     wait
 done
 
@@ -91,7 +91,7 @@ for method in "${month_methods[@]}"; do
             -q $n_quantiles
     done
 
-    # ? Merge corrected datasets 
+    # ? Merge corrected datasets
     cdo -f nc \
         -mergetime $tmp_path/results/*${method}.nc \
         "${output_dir}/${variable}_${method}_kind-${kind}_${quant}result_${timespan}.nc"
@@ -114,11 +114,11 @@ done
 # *                         Clean-Up
 # * -------------------------------------------------------------------
 
-rm -rf $tmp_path
+rm -rf tmp/
 echo "Finished adjusting datasets!"
 exit 0
 
 # * -------------------------------------------------------------------
-# *                         E O F 
+# *                         E O F
 # * -------------------------------------------------------------------
-# * ------- ------- ------- ------- ------- ------- ------- ------- ------- 
+# * ------- ------- ------- ------- ------- ------- ------- ------- -------

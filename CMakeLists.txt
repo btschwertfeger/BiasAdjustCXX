@@ -12,7 +12,7 @@ set(CMAKE_CXX_COMPILER g++)
 
 # add_compile_options(-Wall -v)
 
-# find_package(netCDFCxx REQUIRED) # missing in cmake modules list
+# find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 include(FindnetCDFCxx)
 
@@ -33,15 +33,15 @@ set(SOURCES
 )
 
 # add executable
-add_executable( Main ${SOURCES})
+add_executable( Main.app ${SOURCES})
 
 # Include the netcdf headers
-target_include_directories( Main
+target_include_directories( Main.app
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
     PRIVATE include
 )
 
-target_link_libraries( Main
+target_link_libraries( Main.app
     PUBLIC
-        ${netCDFCxx_LIBRARIES} 
+        ${netCDFCxx_LIBRARIES}
 )

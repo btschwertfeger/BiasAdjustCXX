@@ -81,9 +81,9 @@ static void show_usage(std::string name) {
               << GREEN << "\t--scen, --scenario\t" << RESET << "Scenario / data to adjust => Inputfile or Filepath\n"
               << GREEN << "\t-o, --output\t\t" << RESET << "Outputfile / Filepath\n"
               << GREEN << "\t-v, --variable\t\t" << RESET << "Variablename (e.g.: tas, tsurf, pr) \n"
+              << GREEN << "\t-k, --kind\t\t" << RESET << "Kind of adjustment (e.g. '+' or '*' for additive or multiplicative method)\n"
               << "    optional:\n"
               << GREEN << "\t-h, --help\t\t" << RESET << "Show this help message\n"
-              << GREEN << "\t-k, --kind\t\t" << RESET << "Kind of adjustment (e.g. '+' or '*' for additive or multiplicative method)\n"
               << GREEN << "\t-q, --quantiles\t\t" << RESET << "Number of quantiles to use when using a quantile adjustment\n"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
@@ -158,7 +158,7 @@ static int parse_args(int argc, char** argv) {
                 Log.error(arg + " requires one argument!");
                 return 1;
             }
-        } else if (arg == "k" || arg == "--kind") {
+        } else if (arg == "-k" || arg == "--kind") {
             if (i + 1 < argc)
                 adjustment_kind = argv[++i];
             else {
