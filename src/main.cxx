@@ -255,7 +255,6 @@ static void do_simple_adjustment(float*** data_out) {
 }
 
 static void do_quantile_adjustment(float*** data_out) {
-    Log.info("INFIDIFBLSK");
     CM_Func_ptr_quantile apply_adjustment = CMethods::get_cmethod_quantile(adjustment_method_name);
 
     for (unsigned lat = 0; lat < ds_reference.n_lat; lat++) {
@@ -273,7 +272,7 @@ static void do_quantile_adjustment(float*** data_out) {
         ds_reference.fill_lon_timeseries_for_lat(reference_lon_data, lat);
         ds_control.fill_lon_timeseries_for_lat(control_lon_data, lat);
         ds_scenario.fill_lon_timeseries_for_lat(scenario_lon_data, lat);
-        Log.info("INFIDIFBLSK");
+
         for (unsigned lon = 0; lon < ds_reference.n_lon; lon++) {
             apply_adjustment(
                 data_out[lat][lon],

@@ -268,12 +268,11 @@ void CMethods::Quantile_Mapping(float* output, float* reference, float* control,
     if (kind == "add" || kind == "+") {
         std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time, "regular");
 
-        // ? create CDF
-        std::vector<int>
+        std::vector<int>  // ? create CDF
             vi_ref_cdf = MyMath::get_cdf(reference, v_xbins, n_time),
             vi_contr_cdf = MyMath::get_cdf(control, v_xbins, n_time);
 
-        std::vector<double>
+        std::vector<double>  // ? change to double
             ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
             contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end());
 
@@ -289,12 +288,11 @@ void CMethods::Quantile_Mapping(float* output, float* reference, float* control,
     } else if (kind == "mult" || kind == "*") {
         std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time, "bounded");
 
-        // ? create CDF
-        std::vector<int>
+        std::vector<int>  // ? create CDF
             vi_ref_cdf = MyMath::get_cdf(reference, v_xbins, n_time),
             vi_contr_cdf = MyMath::get_cdf(control, v_xbins, n_time);
 
-        std::vector<double>
+        std::vector<double>  // ? change to double
             ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
             contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end());
 
@@ -310,7 +308,6 @@ void CMethods::Quantile_Mapping(float* output, float* reference, float* control,
             float y = (float)MyMath::interpolate(ref_cdf, v_xbins, cdf_values[ts], true);
             output[ts] = (y >= 0) ? y : 0;
         }
-
     } else
         std::runtime_error("Adjustment kind " + kind + " unknown for Quantile Mapping!");
 }
@@ -345,13 +342,12 @@ void CMethods::Quantile_Delta_Mapping(float* output, float* reference, float* co
     if (kind == "add" || kind == "+") {
         std::vector<double> v_xbins = get_xbins(reference, control, n_quantiles, n_time, "regular");
 
-        // ? create CDF
-        std::vector<int>
+        std::vector<int>  // ? create CDF
             vi_ref_cdf = MyMath::get_cdf(reference, v_xbins, n_time),
             vi_contr_cdf = MyMath::get_cdf(control, v_xbins, n_time),
             vi_scen_cdf = MyMath::get_cdf(scenario, v_xbins, n_time);
 
-        std::vector<double>
+        std::vector<double>  // ? change to double
             ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
             contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end()),
             scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());

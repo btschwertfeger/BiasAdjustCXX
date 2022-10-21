@@ -1,8 +1,11 @@
 # Bias-Adjustment-Cpp
 
-[![Generic badge](https://img.shields.io/badge/license-MIT-green.svg)](https://shields.io/)
-[![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
+<div style="text-align: center">
 
+[![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
+[![Generic badge](https://img.shields.io/badge/license-MIT-green.svg)](https://shields.io/)
+
+</div>
 Collection of different scale- and distribution-based bias adjustment techniques for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
 
 ____
