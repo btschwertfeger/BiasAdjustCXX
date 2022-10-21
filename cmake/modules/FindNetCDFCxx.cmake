@@ -11,6 +11,7 @@
 #   netCDFCxx_INCLUDE_DIRS - path of netCDFCxx includes
 #   netCDFCxx_LIBRARIES - netCDFCxx libraries
 
+message (STATUS "searching netCDFCxx...")
 find_package(netCDF REQUIRED)
 find_program(NCXX4_CONFIG "ncxx4-config")
 
