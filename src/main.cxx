@@ -33,10 +33,13 @@
 
 #include <math.h>
 
+#include <vector>
+
 #include "CMethods.hxx"
 #include "NcFileHandler.hxx"
 #include "Utils.hxx"
 #include "colors.h"
+
 /*
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -95,8 +98,8 @@ static void show_usage(std::string name) {
 
     std::cerr << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
     std::vector<std::string> all_methods;
-    all_methods.reserve(CMethods::simple_method_names.size() + CMethods::quantile_method_names.size());  // preallocate memory
-    all_methods.insert(all_methods.end(), CMethods::simple_method_names.begin(), CMethods::simple_method_names.end());
+    all_methods.reserve(CMethods::scaling_method_names.size() + CMethods::quantile_method_names.size());  // preallocate memory
+    all_methods.insert(all_methods.end(), CMethods::scaling_method_names.begin(), CMethods::scaling_method_names.end());
     all_methods.insert(all_methods.end(), CMethods::quantile_method_names.begin(), CMethods::quantile_method_names.end());
 
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
@@ -205,110 +208,84 @@ static int parse_args(int argc, char** argv) {
         std::runtime_error("Longitude dimension of input files does not have the same length!");
     else if (ds_reference.n_time != ds_control.n_time || ds_reference.n_time != ds_scenario.n_time)
         std::runtime_error("Time dimension input files does not have the same length!");
-
     return 0;
 }
 
 /*
  * ----- ----- ----- C O M P U T A T I O N ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
-static void do_simple_adjustment(float*** data_out) {
-    CM_Func_ptr_simple apply_adjustment = CMethods::get_cmethod_simple(adjustment_method_name);
+static void do_scaling_adjustment(std::vector<std::vector<std::vector<float>>>& v_data_out) {
+    CM_Func_ptr_scaling apply_adjustment = CMethods::get_cmethod_scaling(adjustment_method_name);
 
-    for (unsigned lat = 0; lat < ds_reference.n_lat; lat++) {
-        // ? Fill whole row of data for each dataset
-        float** reference_lon_data = new float*[ds_reference.n_lon];
-        float** control_lon_data = new float*[ds_control.n_lon];
-        float** scenario_lon_data = new float*[ds_scenario.n_lon];
+    for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
+        std::vector<std::vector<float>> v_reference_lon_data(
+            v_data_out.at(lat).size(),
+            std::vector<float>(v_data_out.at(0).at(0).size()));
+        std::vector<std::vector<float>> v_control_lon_data(
+            v_data_out.at(lat).size(),
+            std::vector<float>(v_data_out.at(0).at(0).size()));
+        std::vector<std::vector<float>> v_scenario_lon_data(
+            v_data_out.at(lat).size(),
+            std::vector<float>(v_data_out.at(0).at(0).size()));
 
-        for (unsigned i = 0; i < ds_reference.n_lon; i++) {
-            reference_lon_data[i] = new float[ds_reference.n_time];
-            control_lon_data[i] = new float[ds_control.n_time];
-            scenario_lon_data[i] = new float[ds_scenario.n_time];
-        }
+        ds_reference.fill_lon_timeseries_for_lat(v_reference_lon_data, lat);
+        ds_control.fill_lon_timeseries_for_lat(v_control_lon_data, lat);
+        ds_scenario.fill_lon_timeseries_for_lat(v_scenario_lon_data, lat);
 
-        ds_reference.fill_lon_timeseries_for_lat(reference_lon_data, lat);
-        ds_control.fill_lon_timeseries_for_lat(control_lon_data, lat);
-        ds_scenario.fill_lon_timeseries_for_lat(scenario_lon_data, lat);
-
-        for (unsigned lon = 0; lon < ds_reference.n_lon; lon++)
+        for (unsigned lon = 0; lon < v_data_out.at(0).size(); lon++)
             apply_adjustment(
-                data_out[lat][lon],
-                reference_lon_data[lon],
-                control_lon_data[lon],
-                scenario_lon_data[lon],
-                ds_reference.n_time,
+                v_data_out[lat][lon],
+                v_reference_lon_data[lon],
+                v_control_lon_data[lon],
+                v_scenario_lon_data[lon],
                 adjustment_kind);
 
-        for (unsigned xlon = 0; xlon < ds_reference.n_lon; xlon++) {
-            delete reference_lon_data[xlon];
-            delete control_lon_data[xlon];
-            delete scenario_lon_data[xlon];
-        }
-        delete[] reference_lon_data;
-        delete[] control_lon_data;
-        delete[] scenario_lon_data;
-
-        utils::progress_bar((float)lat, (float)ds_reference.n_lat);
+        utils::progress_bar((float)lat, (float)(v_data_out.size()));
     }
-    utils::progress_bar((float)ds_reference.n_lat, (float)ds_reference.n_lat);
+    utils::progress_bar((float)(v_data_out.size()), (float)(v_data_out.size()));
 }
 
-static void do_quantile_adjustment(float*** data_out) {
-    Log.info("INFIDIFBLSK");
+static void do_quantile_adjustment(std::vector<std::vector<std::vector<float>>>& v_data_out) {
     CM_Func_ptr_quantile apply_adjustment = CMethods::get_cmethod_quantile(adjustment_method_name);
 
-    for (unsigned lat = 0; lat < ds_reference.n_lat; lat++) {
-        float** reference_lon_data = new float*[ds_reference.n_lon];
-        float** control_lon_data = new float*[ds_control.n_lon];
-        float** scenario_lon_data = new float*[ds_scenario.n_lon];
+    for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
+        std::vector<std::vector<float>> v_reference_lon_data(
+            v_data_out.at(lat).size(),
+            std::vector<float>(v_data_out.at(0).at(0).size()));
+        std::vector<std::vector<float>> v_control_lon_data(
+            v_data_out.at(lat).size(),
+            std::vector<float>(v_data_out.at(0).at(0).size()));
+        std::vector<std::vector<float>> v_scenario_lon_data(
+            v_data_out.at(lat).size(),
+            std::vector<float>(v_data_out.at(0).at(0).size()));
 
-        for (unsigned i = 0; i < ds_reference.n_lon; i++) {
-            reference_lon_data[i] = new float[ds_reference.n_time];
-            control_lon_data[i] = new float[ds_control.n_time];
-            scenario_lon_data[i] = new float[ds_scenario.n_time];
-        }
+        ds_reference.fill_lon_timeseries_for_lat(v_reference_lon_data, lat);
+        ds_control.fill_lon_timeseries_for_lat(v_control_lon_data, lat);
+        ds_scenario.fill_lon_timeseries_for_lat(v_scenario_lon_data, lat);
 
-        // ? Fill whole row of data for each dataset
-        ds_reference.fill_lon_timeseries_for_lat(reference_lon_data, lat);
-        ds_control.fill_lon_timeseries_for_lat(control_lon_data, lat);
-        ds_scenario.fill_lon_timeseries_for_lat(scenario_lon_data, lat);
-        Log.info("INFIDIFBLSK");
-        for (unsigned lon = 0; lon < ds_reference.n_lon; lon++) {
+        for (unsigned lon = 0; lon < v_data_out.at(0).size(); lon++) {
             apply_adjustment(
-                data_out[lat][lon],
-                reference_lon_data[lon],
-                control_lon_data[lon],
-                scenario_lon_data[lon],
-                ds_reference.n_time,
+                v_data_out[lat][lon],
+                v_reference_lon_data[lon],
+                v_control_lon_data[lon],
+                v_scenario_lon_data[lon],
                 adjustment_kind,
                 n_quantiles);
         }
-
-        for (unsigned xlon = 0; xlon < ds_reference.n_lon; xlon++) {
-            delete reference_lon_data[xlon];
-            delete control_lon_data[xlon];
-            delete scenario_lon_data[xlon];
-        }
-        delete[] reference_lon_data;
-        delete[] control_lon_data;
-        delete[] scenario_lon_data;
-
-        utils::progress_bar((float)lat, (float)(ds_reference.n_lat));
+        utils::progress_bar((float)lat, (float)(v_data_out.size()));
     }
-    utils::progress_bar((float)ds_reference.n_lat, (float)(ds_reference.n_lat));
+    utils::progress_bar((float)(v_data_out.size()), (float)(v_data_out.size()));
 }
 
-static void do_adjustment(float*** data_out) {
-    if (isInStrV(CMethods::simple_method_names, adjustment_method_name))
-        do_simple_adjustment(data_out);
+static void do_adjustment(std::vector<std::vector<std::vector<float>>>& v_data_out) {
+    if (isInStrV(CMethods::scaling_method_names, adjustment_method_name))
+        do_scaling_adjustment(v_data_out);
     if (isInStrV(CMethods::quantile_method_names, adjustment_method_name))
-        do_quantile_adjustment(data_out);
+        do_quantile_adjustment(v_data_out);
     else
         std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
     std::cout << std::endl;
 }
-
 /*
  * ----- ----- ----- M A I N ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -319,29 +296,34 @@ int main(int argc, char** argv) {
     if (args_result != 0) return args_result;
 
     // ? prepare memory lat x lon x time
-    float*** data_out = new float**[(int)ds_reference.n_lat];
-    for (unsigned lat = 0; lat < (int)ds_reference.n_lat; lat++) {
-        data_out[lat] = new float*[(int)ds_reference.n_lon];
-        for (unsigned lon = 0; lon < (int)ds_reference.n_lon; lon++)
-            data_out[lat][lon] = new float[(int)ds_reference.n_time];
-    }
+    std::vector<std::vector<std::vector<float>>> v_data_out(
+        (int)ds_reference.n_lat,
+        std::vector<std::vector<float>>(
+            (int)ds_reference.n_lon,
+            std::vector<float>(
+                (int)ds_reference.n_time)));
 
     // ? apply adjustment
-    do_adjustment(data_out);
+    do_adjustment(v_data_out);
+
+    std::vector<std::vector<std::vector<float>>> v_data_to_save(
+        (int)ds_reference.n_time,
+        std::vector<std::vector<float>>(
+            (int)ds_reference.n_lat,
+            std::vector<float>(
+                (int)ds_reference.n_lon)));
 
     // ? reshape to lat x lon x time
-    float*** data_to_save = new float**[ds_scenario.n_time];
-    for (unsigned time = 0; time < ds_scenario.n_time; time++) {
-        data_to_save[time] = new float*[ds_scenario.n_lat];
-        for (unsigned lat = 0; lat < ds_scenario.n_lat; lat++) {
-            data_to_save[time][lat] = new float[ds_scenario.n_lon];
-            for (unsigned lon = 0; lon < ds_scenario.n_lon; lon++)
-                data_to_save[time][lat][lon] = data_out[lat][lon][time];
+    for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
+        for (unsigned lon = 0; lon < v_data_out.at(lat).size(); lon++) {
+            for (unsigned time = 0; time < v_data_out.at(lat).at(lon).size(); time++) {
+                v_data_to_save.at(time).at(lat).at(lon) = v_data_out.at(lat).at(lon).at(time);
+            }
         }
     }
 
     Log.info("Saving " + output_filepath);
-    ds_scenario.to_netcdf(output_filepath, variable_name, data_to_save);
+    ds_scenario.to_netcdf(output_filepath, variable_name, v_data_to_save);
     Log.info("SUCCESS!");
 
     return 0;

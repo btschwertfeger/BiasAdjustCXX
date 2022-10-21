@@ -96,7 +96,7 @@ NcFileHandler::~NcFileHandler() {}
  * @param out_arr output array
  * @param lat latitude of desired locations
  */
-void NcFileHandler::fill_lon_timeseries_for_lat(float** out_arr, unsigned lat) {
+void NcFileHandler::fill_lon_timeseries_for_lat(std::vector<std::vector<float>>& v_out_arr, unsigned lat) {
     std::vector<size_t> startp, countp;
     startp.push_back(0);
     startp.push_back(lat);
@@ -110,7 +110,7 @@ void NcFileHandler::fill_lon_timeseries_for_lat(float** out_arr, unsigned lat) {
     data.getVar(startp, countp, *tmp);
     for (unsigned ts = 0; ts < n_time; ts++)
         for (unsigned lon = 0; lon < n_lon; lon++)
-            out_arr[lon][ts] = tmp[ts][lon];
+            v_out_arr[lon][ts] = tmp[ts][lon];
 }
 
 /** Filles out_arr with all timesteps of one location
@@ -119,7 +119,7 @@ void NcFileHandler::fill_lon_timeseries_for_lat(float** out_arr, unsigned lat) {
  * @param lat latitude of desired location
  * @param lon longitude of desired location
  */
-void NcFileHandler::fill_timeseries_for_location(float* out_arr, unsigned lat, unsigned lon) {
+void NcFileHandler::fill_timeseries_for_location(std::vector<float>& v_out_arr, unsigned lat, unsigned lon) {
     std::vector<size_t>
         startp,  // start point
         countp;  // end point
@@ -135,7 +135,7 @@ void NcFileHandler::fill_timeseries_for_location(float* out_arr, unsigned lat, u
     for (unsigned day = 0; day < n_time; day++) {
         startp[0] = day;
         data.getVar(startp, countp, *tmp);
-        out_arr[day] = tmp[lat][lon];
+        v_out_arr[day] = tmp[lat][lon];
     }
 }
 
@@ -209,6 +209,31 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
     countp.push_back(n_time);
 
     output_var.putVar(startp, countp, out_data);
+}
+
+/** Saves a dataset with one variable for one time dimension (1d vector)
+ *  -> else no time attributes and values will be saved (empty)
+ *
+ * @param out_fpath output file path
+ * @param variable_name name of the output variable
+ * @param out_data 1d array of data
+ * @param n_time custom length of the <out_data> array
+ */
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data) {
+    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
+
+    // ? Save vector as new file without any time attributes and values
+    netCDF::NcDim out_time_dim = output_file.addDim("time", n_time);
+    netCDF::NcVar out_time_var = output_file.addVar("time", netCDF::ncDouble, out_time_dim);
+
+    std::vector<netCDF::NcDim> dim_vector;
+    dim_vector.push_back(out_time_dim);
+    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
+
+    std::vector<size_t> startp, countp;
+    startp.push_back(0);
+    countp.push_back(n_time);
+    output_var.putVar(startp, countp, &v_out_data[0]);
 }
 
 /** Saves a dataset with one variable for one lat and one lon and only one timestep to file
@@ -340,6 +365,86 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
         for (unsigned lat = 0; lat < n_lat; lat++) {
             for (unsigned lon = 0; lon < n_lon; lon++)
                 tmp[lat][lon] = out_data[time][lat][lon];
+        }
+        output_var.putVar(startp, countp, tmp);
+    }
+}
+/** Saves a dataset to file (3 dimensions: time x lat x lon )
+ *
+ * @param out_fpath output file path
+ * @param variable_name name of the output variable
+ * @param out_data 3d vector of data
+ */
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<std::vector<float>>>& v_out_data) {
+    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
+
+    netCDF::NcDim
+        out_time_dim = output_file.addDim(time_name, n_time),
+        out_lat_dim = output_file.addDim(lat_name, n_lat),
+        out_lon_dim = output_file.addDim(lon_name, n_lon);
+
+    netCDF::NcVar
+        out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim),
+        out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
+        out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
+
+    // Set attributes
+    for (std::pair<std::string, netCDF::NcVarAtt> att : time_var.getAtts()) {
+        if (att.second.getType().getName() == "char") {
+            char value[att.second.getAttLength()];
+            att.second.getValues(value);
+            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+        } else if (att.second.getType().getName() == "double") {
+            double value[att.second.getAttLength()];
+            att.second.getValues(value);
+            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+        }
+    }
+
+    for (std::pair<std::string, netCDF::NcVarAtt> att : lon_var.getAtts()) {
+        if (att.second.getType().getName() == "char") {
+            char value[att.second.getAttLength()];
+            att.second.getValues(value);
+            out_lon_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+        }
+    }
+
+    for (std::pair<std::string, netCDF::NcVarAtt> att : lat_var.getAtts()) {
+        if (att.second.getType().getName() == "char") {
+            char value[att.second.getAttLength()];
+            att.second.getValues(value);
+            out_lat_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+        }
+    }
+
+    std::vector<netCDF::NcDim> dim_vector;
+    dim_vector.push_back(out_time_dim);
+    dim_vector.push_back(out_lat_dim);
+    dim_vector.push_back(out_lon_dim);
+
+    netCDF::NcVar
+        output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
+
+    out_time_var.putVar(time_values);
+    out_lat_var.putVar(lat_values);
+    out_lon_var.putVar(lon_values);
+
+    std::vector<size_t> startp, countp;
+    startp.push_back(0);
+    startp.push_back(0);
+    startp.push_back(0);
+    countp.push_back(1);
+    countp.push_back(n_lat);
+    countp.push_back(n_lon);
+
+    // ? workaround, because putVar does not work with pointer
+    // ? -> it works but creates random incostances and destroys the result
+    for (size_t time = 0; time < n_time; time++) {
+        startp[0] = time;
+        float tmp[n_lat][n_lon];
+        for (unsigned lat = 0; lat < n_lat; lat++) {
+            for (unsigned lon = 0; lon < n_lon; lon++)
+                tmp[lat][lon] = v_out_data[time][lat][lon];
         }
         output_var.putVar(startp, countp, tmp);
     }

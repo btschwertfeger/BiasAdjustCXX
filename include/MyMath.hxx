@@ -13,9 +13,10 @@
 #define __MYMATH__
 
 #include <iostream>
+#include <vector>
 
-typedef float (*Func_one)(float* x, unsigned n);
-typedef float (*Func_two)(float* x, float* y, unsigned n);
+typedef float (*Func_one)(std::vector<float>& x);
+typedef float (*Func_two)(std::vector<float>& x, std::vector<float>& y);
 
 class MyMath {
    public:
@@ -29,18 +30,18 @@ class MyMath {
     static Func_one get_method_for_1_ds(std::string name);
     static Func_two get_method_for_2_ds(std::string name);
 
-    static float correlation_coefficient(float* x, float* y, unsigned n);
-    static float rmse(float* x, float* y, unsigned n);
-    static float mbe(float* x, float* y, unsigned n);
-    static float ioa(float* x, float* y, unsigned n);
-    static float sd(float* x, unsigned n);
-    static float variance(float* x, unsigned n);
-    static float mean(float* a, unsigned n);
+    static float correlation_coefficient(std::vector<float>& x, std::vector<float>& y);
+    static float rmse(std::vector<float>& x, std::vector<float>& y);
+    static float mbe(std::vector<float>& x, std::vector<float>& y);
+    static float ioa(std::vector<float>& x, std::vector<float>& y);
+    static float sd(std::vector<float>& x);
+    static float variance(std::vector<float>& x);
+    static float mean(std::vector<float>& a);
     static double lerp(double a, double b, double x);
 
-    static std::vector<int> get_pdf(float* arr, std::vector<double> bins, unsigned length);
-    static std::vector<int> get_cdf(float* arr, std::vector<double> bins, unsigned length);
-    static double interp(std::vector<double>& xData, std::vector<double>& yData, double x);
+    static std::vector<int> get_pdf(std::vector<float>& arr, std::vector<double>& bins);
+    static std::vector<int> get_cdf(std::vector<float>& arr, std::vector<double>& bins);
+    // static double interp(std::vector<double>& xData, std::vector<double>& yData, double x);
     static double interpolate(std::vector<double>& xData, std::vector<double>& yData, double x, bool extrapolate);
 };
 

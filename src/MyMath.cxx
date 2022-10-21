@@ -20,7 +20,6 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
-
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  * *                        Attributes
@@ -80,16 +79,16 @@ Func_two MyMath::get_method_for_2_ds(std::string name) {
  *
  * @param x reference
  * @param y prediction
- * @param n length
  */
-float MyMath::correlation_coefficient(float* x, float* y, unsigned n) {
+float MyMath::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
     float
         sum_X = 0,
         sum_Y = 0,
         sum_XY = 0,
-        squareSum_X = 0, squareSum_Y = 0;
+        squareSum_X = 0,
+        squareSum_Y = 0;
 
-    for (unsigned ts = 0; ts < n; ts++) {
+    for (unsigned ts = 0; ts < x.size(); ts++) {
         sum_X = sum_X + x[ts];            // sum of elements of array x.
         sum_Y = sum_Y + y[ts];            // sum of elements of array y.
         sum_XY = sum_XY + x[ts] * y[ts];  // sum of x[i] * y[i].
@@ -97,7 +96,7 @@ float MyMath::correlation_coefficient(float* x, float* y, unsigned n) {
         squareSum_X = squareSum_X + x[ts] * x[ts];
         squareSum_Y = squareSum_Y + y[ts] * y[ts];
     }
-    return (n * sum_XY - sum_X * sum_Y) / sqrt((n * squareSum_X - sum_X * sum_X) * (n * squareSum_Y - sum_Y * sum_Y));
+    return (x.size() * sum_XY - sum_X * sum_Y) / sqrt((x.size() * squareSum_X - sum_X * sum_X) * (x.size() * squareSum_Y - sum_Y * sum_Y));
 }
 
 /** Returns the Root Mean Square Error
@@ -107,9 +106,9 @@ float MyMath::correlation_coefficient(float* x, float* y, unsigned n) {
  * @param y prediction
  * @param n length
  */
-float MyMath::rmse(float* x, float* y, unsigned n) {
+float MyMath::rmse(std::vector<float>& x, std::vector<float>& y) {
     float result = 0;
-    for (unsigned ts = 0; ts < n; ts++) result += pow(y[ts] - x[ts], 2) / (float)n;
+    for (unsigned ts = 0; ts < x.size(); ts++) result += pow(y[ts] - x[ts], 2) / (float)x.size();
     return sqrt(result);
 }
 
@@ -118,12 +117,11 @@ float MyMath::rmse(float* x, float* y, unsigned n) {
  *
  * @param x reference
  * @param y prediction
- * @param n length
  */
-float MyMath::mbe(float* x, float* y, unsigned n) {
+float MyMath::mbe(std::vector<float>& x, std::vector<float>& y) {
     float result = 0;
-    for (unsigned ts = 0; ts < n; ts++) result += y[ts] - x[ts];
-    return result * (float(1.0) / n);
+    for (unsigned ts = 0; ts < x.size(); ts++) result += y[ts] - x[ts];
+    return result * (float(1.0) / x.size());
 }
 /** Returns the index of agreement
  *  $d = 1 - \frac{
@@ -135,12 +133,11 @@ float MyMath::mbe(float* x, float* y, unsigned n) {
  *
  * @param x reference
  * @param y prediction
- * @param n length
  */
-float MyMath::ioa(float* x, float* y, unsigned n) {
+float MyMath::ioa(std::vector<float>& x, std::vector<float>& y) {
     float upper = 0, lower = 0;
-    const double m = mean(x, n);
-    for (unsigned i = 0; i < n; i++) {
+    const double m = mean(x);
+    for (unsigned i = 0; i < x.size(); i++) {
         upper += pow(x[i] - y[i], 2);
         lower += pow(abs(y[i] - m) + abs(x[i] - m), 2);
     }
@@ -151,43 +148,40 @@ float MyMath::ioa(float* x, float* y, unsigned n) {
  *  $\sigma^{2}(x) = \frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}$
  *
  * @param x reference
- * @param n length
  */
-float MyMath::variance(float* x, unsigned n) {
-    float* v = new float[n];
-    const float m = mean(x, n);
-    for (unsigned i = 0; i < n; i++) v[i] = pow(x[i] - m, 2);
-    return mean(v, n);
+float MyMath::variance(std::vector<float>& x) {
+    std::vector<float> v(x.size());
+    const float m = mean(x);
+    for (unsigned i = 0; i < x.size(); i++) v[i] = pow(x[i] - m, 2);
+    return mean(v);
 }
 /** Returns the standard deviation
  *  $\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$
  *
  * @param x reference
- * @param n length
  */
-float MyMath::sd(float* x, unsigned n) {
-    return sqrt(variance(x, n));
+float MyMath::sd(std::vector<float>& x) {
+    return sqrt(variance(x));
 }
 
 /** Mean
  *
  * @param a 1D array of floats to get the mean from
- * @param n length of a
  */
 
-float MyMath::mean(float* a, unsigned n) {
+float MyMath::mean(std::vector<float>& a) {
     float sum = 0;
-    for (unsigned i = 0; i < n; i++) sum += a[i];
-    return sum / n;
+    for (unsigned i = 0; i < a.size(); i++) sum += a[i];
+    return sum / a.size();
 }
 
 /**
  * Probabillity density function
  *
  */
-std::vector<int> MyMath::get_pdf(float* arr, std::vector<double> bins, unsigned length) {
+std::vector<int> MyMath::get_pdf(std::vector<float>& arr, std::vector<double>& bins) {
     std::vector<int> v_pdf(bins.size() - 1);
-    for (unsigned ts = 0; ts < length; ts++) {
+    for (unsigned ts = 0; ts < arr.size(); ts++) {
         for (unsigned i = 0; i < v_pdf.size() - 1; i++) {
             if (i == 0 && arr[ts] <= bins[i]) {
                 ++v_pdf[i];
@@ -207,9 +201,11 @@ std::vector<int> MyMath::get_pdf(float* arr, std::vector<double> bins, unsigned 
 /**
  * Cumulative distribution function
  */
-std::vector<int> MyMath::get_cdf(float* arr, std::vector<double> bins, unsigned length) {
-    std::vector<int> v_pdf = MyMath::get_pdf(arr, bins, length);
-    std::vector<int> v_cdf(v_pdf.size() + 1);
+std::vector<int> MyMath::get_cdf(std::vector<float>& arr, std::vector<double>& bins) {
+    std::vector<int>
+        v_pdf = MyMath::get_pdf(arr, bins);
+    std::vector<int>
+        v_cdf(v_pdf.size() + 1);
     v_cdf[0] = 0;
     for (unsigned i = 0; i < v_pdf.size(); i++)
         v_cdf[i + 1] = v_cdf[i] + v_pdf[i];

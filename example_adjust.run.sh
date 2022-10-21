@@ -45,18 +45,18 @@ declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")
 { setopt KSH_ARRAYS || : ; } 2> /dev/null
 
 tmp_path=${work_dir}/tmp/$(uuidgen | tr '[:upper:]' '[:lower:]' | head -c 12)
-tmp_obs="${tmp_path}/obs"
+tmp_ref="${tmp_path}/ref"
 tmp_contr="${tmp_path}/contr"
 tmp_scen="${tmp_path}/scen"
 tmp_results="${tmp_path}/results"
 
-mkdir -p $tmp_obs
+mkdir -p $tmp_ref
 mkdir -p $tmp_contr
 mkdir -p $tmp_scen
 mkdir -p $tmp_results
 
 declare -a datasets=("${observations}" "${control}" "${scenario}")
-declare -a ds_paths=("${tmp_obs}" "${tmp_contr}" "${tmp_scen}")
+declare -a ds_paths=("${tmp_ref}" "${tmp_contr}" "${tmp_scen}")
 
 # * -------------------------------------------------------------------
 # *                         Computation
@@ -82,7 +82,7 @@ for method in "${month_methods[@]}"; do
     # ? Apply scaling-based bias adjustment per month
     for (( month=1; month<13; month++ )); do
         $exec_file                                          \
-            --ref "${tmp_obs}/${month}.nc"                  \
+            --ref "${tmp_ref}/${month}.nc"                  \
             --contr "${tmp_contr}/${month}.nc"              \
             --scen "${tmp_scen}/${month}.nc"                \
             -v $variable                                    \
