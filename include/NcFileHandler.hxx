@@ -17,13 +17,15 @@
 class NcFileHandler {
    public:
     NcFileHandler();
-    NcFileHandler(std::string filepath, std::string variable_name);
+    NcFileHandler(std::string filepath, std::string variable_name, unsigned n_dimensions);
     ~NcFileHandler();
 
-    void fill_lon_timeseries_for_lat(std::vector<std::vector<float>>& v_out_arr, unsigned lat);
-    void fill_timeseries_for_location(std::vector<float>& v_out_arr, unsigned lat, unsigned lon);
+    void get_lon_timeseries_for_lat(std::vector<std::vector<float>>& v_out_arr, unsigned lat);
+    void get_timeseries_for_location(std::vector<float>& v_out_arr, unsigned lat, unsigned lon);
+    void get_timeseries(std::vector<float>& v_out_arr);
+
     void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data);
-    void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time);
+    // void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time);
     void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, double** out_data);
@@ -50,17 +52,18 @@ class NcFileHandler {
     unsigned int n_lon;
     unsigned int n_time;
 
-    float* lat_values;
-    float* lon_values;
-    double* time_values;
+    float* lat_values = nullptr;
+    float* lon_values = nullptr;
+    double* time_values = nullptr;
 
-    netCDF::NcFile* dataFile;
+    netCDF::NcFile* dataFile = nullptr;
     netCDF::NcVar data;
     netCDF::NcVar lon_var;
     netCDF::NcVar lat_var;
     netCDF::NcVar time_var;
 
     bool handles_file;
+    unsigned n_dimensions;  // file contains only one dimension -> data is one vector
 };
 
 #endif

@@ -55,8 +55,11 @@ static std::string
     adjustment_method_name = "",
     adjustment_kind = "add";
 
-static unsigned n_quantiles = 100;
+static CM_Func_ptr_scaling scaling_func = NULL;
+static CM_Func_ptr_quantile quantile_func = NULL;
 
+static unsigned n_quantiles = 100;
+static bool one_dim = false;
 static utils::Log Log = utils::Log();
 
 /*
@@ -70,30 +73,32 @@ static bool isInStrV(std::vector<std::string> v, std::string string) {
 }
 
 static void show_usage(std::string name) {
-    std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\\\n"
+    std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\t\\\n"
               << GREEN << "\t --ref " << RESET << "observation_data.nc\t\\\n"
               << GREEN << "\t --contr " << RESET << "control_data.nc\t\\\n"
               << GREEN << "\t --scen " << RESET << "data_to_adjust.nc\t\\\n"
               << GREEN << "\t -v " << RESET << "tas\t\t\t\t\\\n"
-              << GREEN << "\t -m " << RESET << "linear_scaling\n\n"
+              << GREEN << "\t -m " << RESET << "linear_scaling\t\t\\\n"
+              << GREEN << "\t -o " << RESET << "result_linear_scaling.nc\n\n"
               << BOLDBLUE << "Parameters:\n"
               << RESET
               << "    required:\n"
-              << GREEN << "\t--ref, --reference\t" << RESET << "Observation / Reanalysis => Inputfile or Filepath\n"
-              << GREEN << "\t--contr, --control\t" << RESET << "Control period => Inputfile or Filepath\n"
-              << GREEN << "\t--scen, --scenario\t" << RESET << "Scenario / data to adjust => Inputfile or Filepath\n"
-              << GREEN << "\t-o, --output\t\t" << RESET << "Outputfile / Filepath\n"
-              << GREEN << "\t-v, --variable\t\t" << RESET << "Variablename (e.g.: tas, tsurf, pr) \n"
-              << GREEN << "\t-k, --kind\t\t" << RESET << "Kind of adjustment (e.g. '+' or '*' for additive or multiplicative method)\n"
+              << GREEN << "\t--ref, --reference\t" << RESET << "observation/reanalysis data => input file/file path\n"
+              << GREEN << "\t--contr, --control\t" << RESET << "modeled control period data => input file/file path\n"
+              << GREEN << "\t--scen, --scenario\t" << RESET << "modeled scenario period data to adjust => input file/file path\n"
+              << GREEN << "\t-o, --output\t\t" << RESET << "output file/file path\n"
+              << GREEN << "\t-v, --variable\t\t" << RESET << "variable name (e. g.: tas, tsurf, pr) \n"
               << "    optional:\n"
-              << GREEN << "\t-h, --help\t\t" << RESET << "Show this help message\n"
-              << GREEN << "\t-q, --quantiles\t\t" << RESET << "Number of quantiles to use when using a quantile adjustment\n"
+              << GREEN << "\t-h, --help\t\t" << RESET << "show this help message\n"
+              << GREEN << "\t-q, --quantiles\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
+              << GREEN << "\t-k, --kind\t\t" << RESET << "kind of adjustment (e. g. '+' or '*' for additive or multiplicative method (default: '+'))\n"
+              << GREEN << "\t    --1dim\t\t" << RESET << "select this, when all input data sets only contain the <time> dimension (i. e. no spatial dimensions)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
-              << "-> Data sets must be filetype NetCDF\n"
-              << "-> All data must be in format: [time][lat][lon] and values type float\n"
-              << "-> Latitudes and longitudes must be named 'lat' and 'lon', Time = 'time'\n"
+              << "-> data sets must be filetype NetCDF\n"
+              << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values type float\n"
+              << "-> latitudes and longitudes must be named 'lat' and 'lon', Time = 'time'\n"
               << RESET << std::endl;
 
     std::cerr << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
@@ -108,6 +113,16 @@ static void show_usage(std::string name) {
               << "\n- Linear Scaling, Variance Scaling and Delta Method need a wrapper script to apply this program on monthly separated files i.e. "
               << "if you want to adjust 30 years of data, you have to separate all input files in 12 groups, one group for each month and then you apply this "
               << "program on every individual monthly separated data set.";
+
+    std::cerr << YELLOW << "\n\n====== References ======" << RESET
+              << "\n- Creator: Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
+              << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
+              << "\n- Mathematical foundations:"
+              << "\n\t (1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
+              << "\n\t (2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?, Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
+              << "\n\t (3) Maraun, D.: Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums, Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
+              << "\n\t (4) Teutschbein, C. and Seibert, J.: Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods, Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
+              << "\n\t (5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021.";
     std::cout.flush();
 }
 
@@ -155,9 +170,11 @@ static int parse_args(int argc, char** argv) {
             if (i + 1 < argc)
                 n_quantiles = (unsigned)std::stoi(argv[++i]);
         } else if (arg == "-m" || arg == "--method") {
-            if (i + 1 < argc)
+            if (i + 1 < argc) {
                 adjustment_method_name = argv[++i];
-            else {
+                scaling_func = CMethods::get_cmethod_scaling(adjustment_method_name);
+                quantile_func = CMethods::get_cmethod_quantile(adjustment_method_name);
+            } else {
                 Log.error(arg + " requires one argument!");
                 return 1;
             }
@@ -175,7 +192,9 @@ static int parse_args(int argc, char** argv) {
                 Log.error(arg + " requires one argument!");
                 return 1;
             }
-        } else if (arg == "-h" || arg == "--help") {
+        } else if (arg == "--1dim")
+            one_dim = true;
+        else if (arg == "-h" || arg == "--help") {
             show_usage(argv[0]);
             return 1;
         } else
@@ -197,9 +216,15 @@ static int parse_args(int argc, char** argv) {
     else if (adjustment_kind.empty())
         throw std::runtime_error("Adjustmend kind is empty!");
     else {
-        ds_reference = NcFileHandler(reference_fpath, variable_name),
-        ds_control = NcFileHandler(control_fpath, variable_name),
-        ds_scenario = NcFileHandler(scenario_fpath, variable_name);
+        if (one_dim) {
+            ds_reference = NcFileHandler(reference_fpath, variable_name, 1),
+            ds_control = NcFileHandler(control_fpath, variable_name, 1),
+            ds_scenario = NcFileHandler(scenario_fpath, variable_name, 1);
+        } else {
+            ds_reference = NcFileHandler(reference_fpath, variable_name, 3),
+            ds_control = NcFileHandler(control_fpath, variable_name, 3),
+            ds_scenario = NcFileHandler(scenario_fpath, variable_name, 3);
+        }
     }
 
     if (ds_reference.n_lat != ds_control.n_lat || ds_reference.n_lat != ds_scenario.n_lat)
@@ -212,11 +237,34 @@ static int parse_args(int argc, char** argv) {
 }
 
 /*
- * ----- ----- ----- C O M P U T A T I O N ----- ----- ----- ----- ----- ----- ----- ----- ----- */
+ * ----- ----- ----- C O M P U T A T I O N ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
 
-static void do_scaling_adjustment(std::vector<std::vector<std::vector<float>>>& v_data_out) {
-    CM_Func_ptr_scaling apply_adjustment = CMethods::get_cmethod_scaling(adjustment_method_name);
+static void adjust_1d(
+    std::vector<float>& v_data_out,
+    std::vector<float>& v_reference,
+    std::vector<float>& v_control,
+    std::vector<float>& v_scenario) {
+    if (scaling_func != NULL) {
+        scaling_func(
+            v_data_out,
+            v_reference,
+            v_control,
+            v_scenario,
+            adjustment_kind);
+    } else if (quantile_func != NULL) {
+        quantile_func(
+            v_data_out,
+            v_reference,
+            v_control,
+            v_scenario,
+            adjustment_kind,
+            n_quantiles);
+    } else
+        std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
+}
 
+static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) {
     for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
         std::vector<std::vector<float>> v_reference_lon_data(
             v_data_out.at(lat).size(),
@@ -228,64 +276,22 @@ static void do_scaling_adjustment(std::vector<std::vector<std::vector<float>>>& 
             v_data_out.at(lat).size(),
             std::vector<float>(v_data_out.at(0).at(0).size()));
 
-        ds_reference.fill_lon_timeseries_for_lat(v_reference_lon_data, lat);
-        ds_control.fill_lon_timeseries_for_lat(v_control_lon_data, lat);
-        ds_scenario.fill_lon_timeseries_for_lat(v_scenario_lon_data, lat);
+        ds_reference.get_lon_timeseries_for_lat(v_reference_lon_data, lat);
+        ds_control.get_lon_timeseries_for_lat(v_control_lon_data, lat);
+        ds_scenario.get_lon_timeseries_for_lat(v_scenario_lon_data, lat);
 
         for (unsigned lon = 0; lon < v_data_out.at(0).size(); lon++)
-            apply_adjustment(
+            adjust_1d(
                 v_data_out[lat][lon],
                 v_reference_lon_data[lon],
                 v_control_lon_data[lon],
-                v_scenario_lon_data[lon],
-                adjustment_kind);
+                v_scenario_lon_data[lon]);
 
         utils::progress_bar((float)lat, (float)(v_data_out.size()));
     }
     utils::progress_bar((float)(v_data_out.size()), (float)(v_data_out.size()));
 }
 
-static void do_quantile_adjustment(std::vector<std::vector<std::vector<float>>>& v_data_out) {
-    CM_Func_ptr_quantile apply_adjustment = CMethods::get_cmethod_quantile(adjustment_method_name);
-
-    for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
-        std::vector<std::vector<float>> v_reference_lon_data(
-            v_data_out.at(lat).size(),
-            std::vector<float>(v_data_out.at(0).at(0).size()));
-        std::vector<std::vector<float>> v_control_lon_data(
-            v_data_out.at(lat).size(),
-            std::vector<float>(v_data_out.at(0).at(0).size()));
-        std::vector<std::vector<float>> v_scenario_lon_data(
-            v_data_out.at(lat).size(),
-            std::vector<float>(v_data_out.at(0).at(0).size()));
-
-        ds_reference.fill_lon_timeseries_for_lat(v_reference_lon_data, lat);
-        ds_control.fill_lon_timeseries_for_lat(v_control_lon_data, lat);
-        ds_scenario.fill_lon_timeseries_for_lat(v_scenario_lon_data, lat);
-
-        for (unsigned lon = 0; lon < v_data_out.at(0).size(); lon++) {
-            apply_adjustment(
-                v_data_out[lat][lon],
-                v_reference_lon_data[lon],
-                v_control_lon_data[lon],
-                v_scenario_lon_data[lon],
-                adjustment_kind,
-                n_quantiles);
-        }
-        utils::progress_bar((float)lat, (float)(v_data_out.size()));
-    }
-    utils::progress_bar((float)(v_data_out.size()), (float)(v_data_out.size()));
-}
-
-static void do_adjustment(std::vector<std::vector<std::vector<float>>>& v_data_out) {
-    if (isInStrV(CMethods::scaling_method_names, adjustment_method_name))
-        do_scaling_adjustment(v_data_out);
-    if (isInStrV(CMethods::quantile_method_names, adjustment_method_name))
-        do_quantile_adjustment(v_data_out);
-    else
-        std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
-    std::cout << std::endl;
-}
 /*
  * ----- ----- ----- M A I N ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -295,35 +301,52 @@ int main(int argc, char** argv) {
     int args_result = parse_args(argc, argv);
     if (args_result != 0) return args_result;
 
-    // ? prepare memory lat x lon x time
-    std::vector<std::vector<std::vector<float>>> v_data_out(
-        (int)ds_reference.n_lat,
-        std::vector<std::vector<float>>(
-            (int)ds_reference.n_lon,
-            std::vector<float>(
-                (int)ds_reference.n_time)));
+    if (one_dim) {  // adjustment of data set containing only one grid cell
+        std::vector<float>
+            v_data_out((int)ds_reference.n_time),
+            v_reference((int)ds_reference.n_time),
+            v_control((int)ds_control.n_time),
+            v_scenario((int)ds_scenario.n_time);
 
-    // ? apply adjustment
-    do_adjustment(v_data_out);
+        ds_reference.get_timeseries(v_reference);
+        ds_control.get_timeseries(v_control);
+        ds_scenario.get_timeseries(v_scenario);
 
-    std::vector<std::vector<std::vector<float>>> v_data_to_save(
-        (int)ds_reference.n_time,
-        std::vector<std::vector<float>>(
+        adjust_1d(v_data_out, v_reference, v_control, v_scenario);
+        Log.info("Saving " + output_filepath);
+        ds_scenario.to_netcdf(output_filepath, variable_name, v_data_out);
+
+    } else {  // adjustment of 3-dimensional data set
+        // ? prepare lat x lon x time
+        std::vector<std::vector<std::vector<float>>> v_data_out(
             (int)ds_reference.n_lat,
-            std::vector<float>(
-                (int)ds_reference.n_lon)));
+            std::vector<std::vector<float>>(
+                (int)ds_reference.n_lon,
+                std::vector<float>(
+                    (int)ds_reference.n_time)));
 
-    // ? reshape to lat x lon x time
-    for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
-        for (unsigned lon = 0; lon < v_data_out.at(lat).size(); lon++) {
-            for (unsigned time = 0; time < v_data_out.at(lat).at(lon).size(); time++) {
-                v_data_to_save.at(time).at(lat).at(lon) = v_data_out.at(lat).at(lon).at(time);
+        // ? apply adjustment
+        adjust_3d(v_data_out);
+
+        std::vector<std::vector<std::vector<float>>> v_data_to_save(
+            (int)ds_reference.n_time,
+            std::vector<std::vector<float>>(
+                (int)ds_reference.n_lat,
+                std::vector<float>(
+                    (int)ds_reference.n_lon)));
+
+        // ? reshape to lat x lon x time
+        for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
+            for (unsigned lon = 0; lon < v_data_out.at(lat).size(); lon++) {
+                for (unsigned time = 0; time < v_data_out.at(lat).at(lon).size(); time++) {
+                    v_data_to_save.at(time).at(lat).at(lon) = v_data_out.at(lat).at(lon).at(time);
+                }
             }
         }
-    }
 
-    Log.info("Saving " + output_filepath);
-    ds_scenario.to_netcdf(output_filepath, variable_name, v_data_to_save);
+        Log.info("Saving " + output_filepath);
+        ds_scenario.to_netcdf(output_filepath, variable_name, v_data_to_save);
+    }
     Log.info("SUCCESS!");
 
     return 0;

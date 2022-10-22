@@ -261,10 +261,6 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
  */
 void CMethods::Quantile_Mapping(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind, unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
-        for (auto i : v_reference) {
-            std::cout << i << " ";
-        }
-
         std::vector<double>
             v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
 

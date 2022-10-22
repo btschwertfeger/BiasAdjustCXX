@@ -27,7 +27,6 @@ class CMethods {
 
     static std::vector<std::string> scaling_method_names;
     static std::vector<std::string> quantile_method_names;
-    static std::vector<std::string> all_method_names;
 
     static void Linear_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
     static void Variance_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
