@@ -105,10 +105,23 @@ for method in "${quant_methods[@]}"; do
         --scen $scenario                        \
         -v $variable                            \
         -m $method                              \
-        -o "${output_dir}/${variable}_${method}_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"         \
-        -q $n_quantiles
+        -k $kind                                \
+        -q $n_quantiles                         \
+        -o "${output_dir}/${variable}_${method}_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"
 done
 
+
+# ? Adjustment of a data set with only one dimension (time)
+$exec_file                                \
+    --ref input_data/1d_observations.nc   \
+    --contr input_data/1d_control.nc      \
+    --scen input_data/1d_scenario.nc      \
+    -m "quantile_mapping"                 \
+    -v $variable                          \
+    -q $n_quantiles                       \
+    -k $kind                              \
+    --1dim                                \
+    -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"         \
 
 # * -------------------------------------------------------------------
 # *                         Clean-Up
