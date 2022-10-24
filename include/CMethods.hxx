@@ -13,7 +13,8 @@
 #define __CMETHODS__
 
 #include <iostream>
-
+#include <stdexcept>
+#include <vector>
 typedef void (*CM_Func_ptr_scaling)(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
 typedef void (*CM_Func_ptr_quantile)(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);
 

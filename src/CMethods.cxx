@@ -17,11 +17,13 @@
 
 #include "CMethods.hxx"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
 #include "MathUtils.hxx"
 #include "math.h"
+
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  * *              Definitions

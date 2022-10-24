@@ -11,10 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_COMPILER g++)
 
 # add_compile_options(-Wall -v)
-
 # find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
-include(FindnetCDFCxx)
+include(FindNetCDFCxx)
 
 if(netCDFCxx_FOUND)
     message (STATUS "netCDFCxx found!")

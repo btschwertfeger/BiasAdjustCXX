@@ -16,6 +16,7 @@
 
 #include "Utils.hxx"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 

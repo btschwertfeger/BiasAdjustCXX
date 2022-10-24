@@ -12,17 +12,27 @@
 #   netCDFCxx_LIBRARIES - netCDFCxx libraries
 
 message (STATUS "searching netCDFCxx...")
-find_package(netCDF REQUIRED)
+# find_package(netCDF REQUIRED) # this causes errors on CXX compiler with identification GNU 4.8.5
 find_program(NCXX4_CONFIG "ncxx4-config")
 
 get_filename_component(NCXX4_CONFIG_TMP "${NCXX4_CONFIG}" DIRECTORY)
 get_filename_component(NCXX4_CONFIG_LOCATION "${NCXX4_CONFIG_TMP}" DIRECTORY)
 
-find_path(netCDF_CXX_INCLUDE_DIR NAMES netcdf)
-find_library(netCDF_CXX_LIBRARY NAMES netcdf_c++4 netcdf-cxx4)
+find_path(netCDF_CXX_INCLUDE_DIR NAMES netcdf
+    HINTS
+     "${NCXX4_CONFIG_LOCATION}"
+    PATH_SUFFIXES
+     "include"
+)
+find_library(netCDF_CXX_LIBRARY NAMES netcdf_c++4 netcdf-cxx4
+    HINTS 
+     "${NCXX4_CONFIG_LOCATION}"
+    PATH_SUFFIXES
+     "lib" "lib64"
+)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(netCDFCxx
+    find_package_handle_standard_args(netCDFCxx
     REQUIRED_VARS netCDF_CXX_LIBRARY netCDF_CXX_INCLUDE_DIR
     VERSION_VAR netCDFCxx_VERSION
 )
