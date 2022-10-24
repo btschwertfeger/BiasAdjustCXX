@@ -10,7 +10,7 @@ g++ -std=c++11 -Wall -v\
     src/main.cxx \
     -o Main.app \
     src/Utils.cxx \
-    src/MyMath.cxx \
+    src/MathUtils.cxx \
     src/CMethods.cxx \
     src/NcFileHandler.cxx \
     -I include \

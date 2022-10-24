@@ -17,6 +17,7 @@
 #include "Utils.hxx"
 
 #include <iostream>
+#include <vector>
 
 #include "colors.h"
 
@@ -45,6 +46,12 @@ namespace utils {
  * @param all total number of processes
  */
 
+bool isInStrV(std::vector<std::string> v, std::string string) {
+    if (std::find(v.begin(), v.end(), string) != v.end())
+        return true;
+    else
+        return false;
+}
 void progress_bar(float part, float all) {
     const float progress = part / all;
     const unsigned barWidth = 70;

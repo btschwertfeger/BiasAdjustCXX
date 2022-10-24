@@ -1,8 +1,8 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file MyMath.cxx
- * @brief Implementation of the MyMath class
+ * @file MathUtils.cxx
+ * @brief Implementation of the MathUtils class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
@@ -15,7 +15,7 @@
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-#include "MyMath.hxx"
+#include "MathUtils.hxx"
 
 #include <cmath>
 #include <iostream>
@@ -26,9 +26,9 @@
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-std::vector<std::string> MyMath::available_methods = {"rmse", "mbe", "ioa", "corr", "sd"};
-std::vector<std::string> MyMath::requires_1_ds = {"sd"};
-std::vector<std::string> MyMath::requires_2_ds = {"rmse", "mbe", "ioa", "corr"};
+std::vector<std::string> MathUtils::available_methods = {"rmse", "mbe", "ioa", "corr", "sd"};
+std::vector<std::string> MathUtils::requires_1_ds = {"sd"};
+std::vector<std::string> MathUtils::requires_2_ds = {"rmse", "mbe", "ioa", "corr"};
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -36,8 +36,8 @@ std::vector<std::string> MyMath::requires_2_ds = {"rmse", "mbe", "ioa", "corr"};
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-MyMath::MyMath() {}
-MyMath::~MyMath() {}
+MathUtils::MathUtils() {}
+MathUtils::~MathUtils() {}
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -45,14 +45,14 @@ MyMath::~MyMath() {}
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-Func_one MyMath::get_method_for_1_ds(std::string name) {
+Func_one MathUtils::get_method_for_1_ds(std::string name) {
     if (name == "sd")
         return sd;
     else
         return NULL;
 }
 
-Func_two MyMath::get_method_for_2_ds(std::string name) {
+Func_two MathUtils::get_method_for_2_ds(std::string name) {
     if (name == "rmse")
         return rmse;
     else if (name == "mbe")
@@ -80,7 +80,7 @@ Func_two MyMath::get_method_for_2_ds(std::string name) {
  * @param x reference
  * @param y prediction
  */
-float MyMath::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
+float MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
     float
         sum_X = 0,
         sum_Y = 0,
@@ -106,7 +106,7 @@ float MyMath::correlation_coefficient(std::vector<float>& x, std::vector<float>&
  * @param y prediction
  * @param n length
  */
-float MyMath::rmse(std::vector<float>& x, std::vector<float>& y) {
+float MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
     float result = 0;
     for (unsigned ts = 0; ts < x.size(); ts++) result += pow(y[ts] - x[ts], 2) / (float)x.size();
     return sqrt(result);
@@ -118,7 +118,7 @@ float MyMath::rmse(std::vector<float>& x, std::vector<float>& y) {
  * @param x reference
  * @param y prediction
  */
-float MyMath::mbe(std::vector<float>& x, std::vector<float>& y) {
+float MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
     float result = 0;
     for (unsigned ts = 0; ts < x.size(); ts++) result += y[ts] - x[ts];
     return result * (float(1.0) / x.size());
@@ -134,7 +134,7 @@ float MyMath::mbe(std::vector<float>& x, std::vector<float>& y) {
  * @param x reference
  * @param y prediction
  */
-float MyMath::ioa(std::vector<float>& x, std::vector<float>& y) {
+float MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
     float upper = 0, lower = 0;
     const double m = mean(x);
     for (unsigned i = 0; i < x.size(); i++) {
@@ -149,7 +149,7 @@ float MyMath::ioa(std::vector<float>& x, std::vector<float>& y) {
  *
  * @param x reference
  */
-float MyMath::variance(std::vector<float>& x) {
+float MathUtils::variance(std::vector<float>& x) {
     std::vector<float> v(x.size());
     const float m = mean(x);
     for (unsigned i = 0; i < x.size(); i++) v[i] = pow(x[i] - m, 2);
@@ -160,7 +160,7 @@ float MyMath::variance(std::vector<float>& x) {
  *
  * @param x reference
  */
-float MyMath::sd(std::vector<float>& x) {
+float MathUtils::sd(std::vector<float>& x) {
     return sqrt(variance(x));
 }
 
@@ -169,7 +169,7 @@ float MyMath::sd(std::vector<float>& x) {
  * @param a 1D array of floats to get the mean from
  */
 
-float MyMath::mean(std::vector<float>& a) {
+float MathUtils::mean(std::vector<float>& a) {
     float sum = 0;
     for (unsigned i = 0; i < a.size(); i++) sum += a[i];
     return sum / a.size();
@@ -179,7 +179,7 @@ float MyMath::mean(std::vector<float>& a) {
  * Probabillity density function
  *
  */
-std::vector<int> MyMath::get_pdf(std::vector<float>& arr, std::vector<double>& bins) {
+std::vector<int> MathUtils::get_pdf(std::vector<float>& arr, std::vector<double>& bins) {
     std::vector<int> v_pdf(bins.size() - 1);
     for (unsigned ts = 0; ts < arr.size(); ts++) {
         for (unsigned i = 0; i < v_pdf.size() - 1; i++) {
@@ -201,9 +201,9 @@ std::vector<int> MyMath::get_pdf(std::vector<float>& arr, std::vector<double>& b
 /**
  * Cumulative distribution function
  */
-std::vector<int> MyMath::get_cdf(std::vector<float>& arr, std::vector<double>& bins) {
+std::vector<int> MathUtils::get_cdf(std::vector<float>& arr, std::vector<double>& bins) {
     std::vector<int>
-        v_pdf = MyMath::get_pdf(arr, bins);
+        v_pdf = MathUtils::get_pdf(arr, bins);
     std::vector<int>
         v_cdf(v_pdf.size() + 1);
     v_cdf[0] = 0;
@@ -212,7 +212,7 @@ std::vector<int> MyMath::get_cdf(std::vector<float>& arr, std::vector<double>& b
     return v_cdf;
 }
 
-double MyMath::lerp(double a, double b, double x) {
+double MathUtils::lerp(double a, double b, double x) {
     return a + x * (b - a);
 }
 
@@ -227,7 +227,7 @@ double MyMath::lerp(double a, double b, double x) {
  * @param x value to interpolate
  * @param extrapolate behaviour outside xData range
  */
-double MyMath::interpolate(std::vector<double>& xData, std::vector<double>& yData, double x, bool extrapolate) {
+double MathUtils::interpolate(std::vector<double>& xData, std::vector<double>& yData, double x, bool extrapolate) {
     int size = xData.size();
 
     int i = 0;  // find left end of interval for interpolation

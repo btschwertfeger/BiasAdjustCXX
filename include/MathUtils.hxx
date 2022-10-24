@@ -1,16 +1,16 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file MyMath.hxx
- * @brief declaration of the MyMath class
+ * @file MathUtils.hxx
+ * @brief declaration of the MathUtils class
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  */
 
-#ifndef __MYMATH__
-#define __MYMATH__
+#ifndef __MathUtils__
+#define __MathUtils__
 
 #include <iostream>
 #include <vector>
@@ -18,10 +18,10 @@
 typedef float (*Func_one)(std::vector<float>& x);
 typedef float (*Func_two)(std::vector<float>& x, std::vector<float>& y);
 
-class MyMath {
+class MathUtils {
    public:
-    MyMath();
-    ~MyMath();
+    MathUtils();
+    ~MathUtils();
 
     static std::vector<std::string> available_methods;
     static std::vector<std::string> requires_1_ds;

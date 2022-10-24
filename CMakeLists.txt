@@ -29,7 +29,7 @@ set(SOURCES
     src/CMethods.cxx
     src/Utils.cxx
     src/NcFileHandler.cxx
-    src/MyMath.cxx
+    src/MathUtils.cxx
 )
 
 # add executable

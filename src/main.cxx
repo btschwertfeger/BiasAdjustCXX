@@ -10,10 +10,10 @@
  *
  * * Description
  *      Main program to bias adjust climate data;
- *      - Loading datasets
- *      - Iteration over all cells
- *      - Application of the selected adjustment
- *      - Save to file after adjustment
+ *      - loading datasets
+ *      - iteration over all cells if 3-dimensional data set
+ *      - application of the selected adjustment
+ *      - save to file after adjustment
  * * Compilaition
  *      g++ -std=c++11 -Wall -v\
  *          src/main.cxx \
@@ -64,13 +64,6 @@ static utils::Log Log = utils::Log();
 
 /*
  * ----- ----- ----- P R O G R A M - M A N A G E M E N T ----- ----- ----- ----- ----- ----- ----- ----- ----- */
-
-static bool isInStrV(std::vector<std::string> v, std::string string) {
-    if (std::find(v.begin(), v.end(), string) != v.end())
-        return true;
-    else
-        return false;
-}
 
 static void show_usage(std::string name) {
     std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\t\\\n"
