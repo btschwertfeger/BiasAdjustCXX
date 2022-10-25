@@ -33,13 +33,13 @@
 
 #include <math.h>
 
+#include <chrono>
 #include <vector>
 
 #include "CMethods.hxx"
 #include "NcFileHandler.hxx"
 #include "Utils.hxx"
 #include "colors.h"
-
 /*
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -119,6 +119,12 @@ static void show_usage(std::string name) {
     std::cout.flush();
 }
 
+void stdcout_runtime(std::chrono::steady_clock::time_point start_time) {
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> ms_double = end_time - start_time;
+    std::cout << ms_double.count() << "ms\n";
+}
+
 static int parse_args(int argc, char** argv) {
     if (argc == 1) {
         show_usage(argv[0]);
@@ -193,7 +199,6 @@ static int parse_args(int argc, char** argv) {
         } else
             Log.warning("Unknown argument " + arg + "!");
     }
-
     if (variable_name.empty())
         throw std::runtime_error("No variable name defined!");
     else if (reference_fpath.empty())
@@ -217,15 +222,19 @@ static int parse_args(int argc, char** argv) {
             ds_reference = NcFileHandler(reference_fpath, variable_name, 3),
             ds_control = NcFileHandler(control_fpath, variable_name, 3),
             ds_scenario = NcFileHandler(scenario_fpath, variable_name, 3);
+
+            if (ds_reference.n_lat != ds_control.n_lat || ds_reference.n_lat != ds_scenario.n_lat)
+                throw std::runtime_error("Latitude dimension of input files does not have the same length!");
+            else if (ds_reference.n_lon != ds_control.n_lon || ds_reference.n_lon != ds_scenario.n_lon)
+                throw std::runtime_error("Longitude dimension of input files does not have the same length!");
         }
     }
 
-    if (ds_reference.n_lat != ds_control.n_lat || ds_reference.n_lat != ds_scenario.n_lat)
-        std::runtime_error("Latitude dimension of input files does not have the same length!");
-    else if (ds_reference.n_lon != ds_control.n_lon || ds_reference.n_lon != ds_scenario.n_lon)
-        std::runtime_error("Longitude dimension of input files does not have the same length!");
-    else if (ds_reference.n_time != ds_control.n_time || ds_reference.n_time != ds_scenario.n_time)
-        std::runtime_error("Time dimension input files does not have the same length!");
+    if (ds_reference.n_time != ds_control.n_time || ds_reference.n_time != ds_scenario.n_time) {
+        if (adjustment_method_name == std::string("delta_method"))
+            throw std::runtime_error("Time dimension input files does not have the same length! This is required for the delta method.");
+    }
+
     return 0;
 }
 
@@ -290,58 +299,66 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
  */
 
 int main(int argc, char** argv) {
-    // ? parse args and open datasets
-    int args_result = parse_args(argc, argv);
-    if (args_result != 0) return args_result;
+    auto start_time = std::chrono::high_resolution_clock::now();
+    try {
+        // ? parse args and open datasets
+        int args_result = parse_args(argc, argv);
+        if (args_result != 0) return args_result;
 
-    if (one_dim) {  // adjustment of data set containing only one grid cell
-        std::vector<float>
-            v_data_out((int)ds_reference.n_time),
-            v_reference((int)ds_reference.n_time),
-            v_control((int)ds_control.n_time),
-            v_scenario((int)ds_scenario.n_time);
+        if (one_dim) {  // adjustment of data set containing only one grid cell
+            std::vector<float>
+                v_data_out((int)ds_reference.n_time),
+                v_reference((int)ds_reference.n_time),
+                v_control((int)ds_control.n_time),
+                v_scenario((int)ds_scenario.n_time);
 
-        ds_reference.get_timeseries(v_reference);
-        ds_control.get_timeseries(v_control);
-        ds_scenario.get_timeseries(v_scenario);
+            ds_reference.get_timeseries(v_reference);
+            ds_control.get_timeseries(v_control);
+            ds_scenario.get_timeseries(v_scenario);
 
-        adjust_1d(v_data_out, v_reference, v_control, v_scenario);
-        Log.info("Saving " + output_filepath);
-        ds_scenario.to_netcdf(output_filepath, variable_name, v_data_out);
+            adjust_1d(v_data_out, v_reference, v_control, v_scenario);
+            Log.info("Saving " + output_filepath);
+            ds_scenario.to_netcdf(output_filepath, variable_name, v_data_out);
 
-    } else {  // adjustment of 3-dimensional data set
-        // ? prepare lat x lon x time
-        std::vector<std::vector<std::vector<float>>> v_data_out(
-            (int)ds_reference.n_lat,
-            std::vector<std::vector<float>>(
-                (int)ds_reference.n_lon,
-                std::vector<float>(
-                    (int)ds_reference.n_time)));
-
-        // ? apply adjustment
-        adjust_3d(v_data_out);
-
-        std::vector<std::vector<std::vector<float>>> v_data_to_save(
-            (int)ds_reference.n_time,
-            std::vector<std::vector<float>>(
+        } else {  // adjustment of 3-dimensional data set
+            // ? prepare lat x lon x time
+            std::vector<std::vector<std::vector<float>>> v_data_out(
                 (int)ds_reference.n_lat,
-                std::vector<float>(
-                    (int)ds_reference.n_lon)));
+                std::vector<std::vector<float>>(
+                    (int)ds_reference.n_lon,
+                    std::vector<float>(
+                        (int)ds_reference.n_time)));
 
-        // ? reshape to lat x lon x time
-        for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
-            for (unsigned lon = 0; lon < v_data_out.at(lat).size(); lon++) {
-                for (unsigned time = 0; time < v_data_out.at(lat).at(lon).size(); time++) {
-                    v_data_to_save.at(time).at(lat).at(lon) = v_data_out.at(lat).at(lon).at(time);
+            // ? apply adjustment
+            adjust_3d(v_data_out);
+
+            std::vector<std::vector<std::vector<float>>> v_data_to_save(
+                (int)ds_reference.n_time,
+                std::vector<std::vector<float>>(
+                    (int)ds_reference.n_lat,
+                    std::vector<float>(
+                        (int)ds_reference.n_lon)));
+
+            // ? reshape to lat x lon x time
+            for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
+                for (unsigned lon = 0; lon < v_data_out.at(lat).size(); lon++) {
+                    for (unsigned time = 0; time < v_data_out.at(lat).at(lon).size(); time++) {
+                        v_data_to_save.at(time).at(lat).at(lon) = v_data_out.at(lat).at(lon).at(time);
+                    }
                 }
             }
+
+            Log.info("Saving " + output_filepath);
+            ds_scenario.to_netcdf(output_filepath, variable_name, v_data_to_save);
         }
+        Log.info("SUCCESS!");
+        stdcout_runtime(start_time);
 
-        Log.info("Saving " + output_filepath);
-        ds_scenario.to_netcdf(output_filepath, variable_name, v_data_to_save);
+    } catch (const std::runtime_error& error) {
+        std::cout << error.what() << '\n';
+        stdcout_runtime(start_time);
+        exit(1);
     }
-    Log.info("SUCCESS!");
-
     return 0;
 }
 

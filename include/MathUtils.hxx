@@ -41,7 +41,6 @@ class MathUtils {
 
     static std::vector<int> get_pdf(std::vector<float>& arr, std::vector<double>& bins);
     static std::vector<int> get_cdf(std::vector<float>& arr, std::vector<double>& bins);
-    // static double interp(std::vector<double>& xData, std::vector<double>& yData, double x);
     static double interpolate(std::vector<double>& xData, std::vector<double>& yData, double x, bool extrapolate);
 };
 

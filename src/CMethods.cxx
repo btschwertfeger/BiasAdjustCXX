@@ -77,10 +77,10 @@ CM_Func_ptr_quantile CMethods::get_cmethod_quantile(std::string method_name) {
  * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
  * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
  *
- * @param output output array where to save the adjusted data
- * @param reference observation data (control period)
- * @param control modeled data of the control period
- * @param scenario data to adjust
+ * @param v_output output vector where to save the adjusted data
+ * @param v_reference observation data (control period)
+ * @param v_control modeled data of the control period
+ * @param v_scenario data to adjust
  * @param kind type of adjustment; additive or multiplicative
  *
  * Add ('+'):
@@ -97,13 +97,13 @@ void CMethods::Linear_Scaling(std::vector<float> &v_output, std::vector<float> &
         contr_mean = MathUtils::mean(v_control);
 
     if (kind == "add" || kind == "+") {
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_scenario[ts] + (ref_mean - contr_mean);  // Eq. 1f.
     } else if (kind == "mult" || kind == "*") {
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_scenario[ts] * (ref_mean / contr_mean);  // Eq. 3f.
     } else
-        std::runtime_error("Invalid adjustment kind " + kind + "!");
+        throw std::runtime_error("Invalid adjustment kind <" + kind + "> for linear scaling!");
 }
 
 /**
@@ -112,10 +112,10 @@ void CMethods::Linear_Scaling(std::vector<float> &v_output, std::vector<float> &
  * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
  * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
  *
- * @param output output array where to save the adjusted data
- * @param reference observation data (control period)
- * @param control modeled data of the control period
- * @param scenario data to adjust
+ * @param v_output output vector where to save the adjusted data
+ * @param v_reference observation data (control period)
+ * @param v_control modeled data of the control period
+ * @param v_scenario data to adjust
  * @param kind type of adjustment; additive or multiplicative
  *
  * (1.) $T^{*1}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
@@ -142,38 +142,40 @@ void CMethods::Variance_Scaling(std::vector<float> &v_output, std::vector<float>
             LS_contr_mean = MathUtils::mean(LS_contr),
             LS_scen_mean = MathUtils::mean(LS_scen);
 
-        std::vector<float> VS1_contr(v_reference.size());
-        std::vector<float> VS1_scen(v_reference.size());
+        std::vector<float> VS1_contr(v_control.size());
+        std::vector<float> VS1_scen(v_scenario.size());
 
-        for (unsigned ts = 0; ts < v_reference.size(); ts++) {
+        for (unsigned ts = 0; ts < v_control.size(); ts++)
             VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
-            VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;     // Eq. 4
-        }
+
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
 
         float
             ref_sd = MathUtils::sd(v_reference),
             VS1_contr_sd = MathUtils::sd(VS1_contr);
 
-        std::vector<float> VS2_scen(v_reference.size());
-        for (unsigned ts = 0; ts < v_reference.size(); ts++) {
+        std::vector<float> VS2_scen(v_scenario.size());
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
             VS2_scen[ts] = VS1_scen[ts] * (ref_sd / VS1_contr_sd);  // Eq. 6
             v_output[ts] = VS2_scen[ts] + LS_scen_mean;             // Eq. 7
         }
 
     } else if (kind == "mult" || kind == "*")
-        std::runtime_error("Multiplicative Variance Scaling Method not implemented!");
+        throw std::runtime_error("Multiplicative Variance Scaling Method not implemented!");
     else
-        std::runtime_error("Invalid adjustment kind " + kind + "!");
+        throw std::runtime_error("Invalid adjustment kind <" + kind + "> for variance scaling!");
 }
 
 /**
  * Method to adjust 1 dimensional climate data by delta method.
  * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
  *
- * @param output output array where to save the adjusted data
- * @param reference observation data (control period)
- * @param control modeled data of the control period
- * @param scenario data to adjust
+ * NOTE: v_reference.size() must be equal to v_scenario.size()
+ * @param v_output output vector where to save the adjusted data
+ * @param v_reference observation data (control period)
+ * @param v_control modeled data of the control period
+ * @param v_scenario data to adjust
  * @param kind type of adjustment; additive or multiplicative
  *
  * Add (+):
@@ -188,13 +190,13 @@ void CMethods::Delta_Method(std::vector<float> &v_output, std::vector<float> &v_
         scen_mean = MathUtils::mean(v_scenario);
 
     if (kind == "add" || kind == "+") {
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_reference[ts] + (scen_mean - contr_mean);  // Eq. 1
     } else if (kind == "mult" || kind == "*") {
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_reference[ts] * (scen_mean / contr_mean);  // Eq. 2
     } else
-        std::runtime_error("Invalid adjustment kind " + kind + "!");
+        throw std::runtime_error("Invalid adjustment kind <" + kind + "> for the delta method!");
 }
 
 /**
@@ -235,19 +237,20 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
             v_xbins.push_back(v_xbins[v_xbins.size() - 1] + wide);
         return v_xbins;
     } else {
-        std::runtime_error("Unknown kind for get_xbins-function.");
+        throw std::runtime_error("Unknown kind <" + kind + "> for get_xbins-function.");
         return std::vector<double>(0);  // just to avoid warnings ...
     }
 }
+
 /**
  * Quantile Mapping bias correction based on
  * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM
  * simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
- * @param output output array where to save the adjusted data
- * @param reference observation data (control period)
- * @param control modeled data of the control period
- * @param scenario data to adjust
+ * @param v_output output array where to save the adjusted data
+ * @param v_reference observation data (control period)
+ * @param v_control modeled data of the control period
+ * @param v_scenario data to adjust
  * @param kind type of adjustment; additive or multiplicative
  * @param n_quantiles number of quantiles to use
  *
@@ -261,22 +264,21 @@ void CMethods::Quantile_Mapping(std::vector<float> &v_output, std::vector<float>
         std::vector<double>
             v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
 
-        std::vector<int>  // ? create CDF
+        std::vector<int>  // ? create CDFs
             vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
             vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins);
 
-        std::vector<double>  // ? change to double
+        std::vector<double>  // ? change CDF values to type double
             ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
             contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end());
 
         // ? Interpolate
-        std::vector<double>
-            cdf_values;
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        std::vector<double> cdf_values;
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             cdf_values.push_back(MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], false));
 
         // ? Invert in inversed CDF and return
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], false);
 
     } else if (kind == "mult" || kind == "*") {
@@ -292,18 +294,18 @@ void CMethods::Quantile_Mapping(std::vector<float> &v_output, std::vector<float>
 
         // ? Interpolate
         std::vector<double> cdf_values;
-        for (unsigned ts = 0; ts < v_reference.size(); ts++) {
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
             double y = MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], true);
             cdf_values.push_back((y >= 0) ? y : 0);
         }
 
         // ? Invert in inversed CDF and return
-        for (unsigned ts = 0; ts < v_reference.size(); ts++) {
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
             float y = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], true);
             v_output[ts] = (y >= 0) ? y : 0;
         }
     } else
-        std::runtime_error("Adjustment kind " + kind + " unknown for Quantile Mapping!");
+        throw std::runtime_error("Adjustment kind <" + kind + "> unknown for quantile mapping!");
 }
 
 /**
@@ -311,10 +313,10 @@ void CMethods::Quantile_Mapping(std::vector<float> &v_output, std::vector<float>
  * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM
  * simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
- * @param output output array where to save the adjusted data
- * @param reference observation data (control period)
- * @param control modeled data of the control period
- * @param scenario data to adjust
+ * @param v_output output vector where to save the adjusted data
+ * @param v_reference observation data (control period)
+ * @param v_control modeled data of the control period
+ * @param v_scenario data to adjust
  * @param kind type of adjustment; additive or multiplicative (absolute or relative change)
  * @param n_quantiles number of quantiles to use
  *
@@ -346,14 +348,15 @@ void CMethods::Quantile_Delta_Mapping(std::vector<float> &v_output, std::vector<
             scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());
 
         std::vector<double> epsilon;
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             epsilon.push_back(MathUtils::interpolate(v_xbins, scen_cdf, v_scenario[ts], false));
 
         std::vector<double> QDM1;  // insert simulated values into inverse cdf of observed
-        for (unsigned ts = 0; ts < v_reference.size(); ts++) QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
 
         // ? Invert, insert in inversed CDF and return
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] + v_scenario[ts] - MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false));  // Eq. 2f.
 
     } else if (kind == "mult" || kind == "*") {
@@ -371,17 +374,17 @@ void CMethods::Quantile_Delta_Mapping(std::vector<float> &v_output, std::vector<
             scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());
 
         std::vector<double> epsilon;
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             epsilon.push_back(MathUtils::interpolate(v_xbins, scen_cdf, v_scenario[ts], false));
 
         std::vector<double> QDM1;  // insert simulated values into inverse cdf of observed
-        for (unsigned ts = 0; ts < v_reference.size(); ts++) QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++) QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
 
         // ? Invert, insert in inversed CDF and return
-        for (unsigned ts = 0; ts < v_reference.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] * (v_scenario[ts] / MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false)));  // Eq. 2.3f.
     } else
-        std::runtime_error("Adjustment kind " + kind + " unknown for Quantile Delta Mapping!");
+        throw std::runtime_error("Adjustment kind <" + kind + "> unknown for quantile delta mapping!");
 }
 
 /**

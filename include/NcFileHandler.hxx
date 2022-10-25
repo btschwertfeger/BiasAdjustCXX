@@ -25,7 +25,6 @@ class NcFileHandler {
     void get_timeseries(std::vector<float>& v_out_arr);
 
     void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data);
-    // void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data, unsigned n_time);
     void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, double** out_data);

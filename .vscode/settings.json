@@ -1,5 +1,4 @@
 {
-  
   "files.associations": {
     "*.ejs": "ejs",
     ".md": "md",
@@ -93,6 +92,7 @@
     "future": "cpp",
     "forward_list": "cpp",
     "list": "cpp",
-    "typeindex": "cpp"
+    "typeindex": "cpp",
+    "expected": "cpp"
   }
 }
