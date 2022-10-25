@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(BiasAdjustmentCpp
     VERSION 1.0
-    DESCRIPTION "Bias Adjustment"
+    DESCRIPTION "Bias adjustment/correction command line tool for NetCDF-based climate data"
     LANGUAGES CXX
 )
 

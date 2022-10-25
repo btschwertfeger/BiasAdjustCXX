@@ -63,6 +63,7 @@ class NcFileHandler {
 
     bool handles_file;
     unsigned n_dimensions;  // file contains only one dimension -> data is one vector
+   private:
 };
 
 #endif

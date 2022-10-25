@@ -7,11 +7,6 @@
  * @copyright Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
- * * Description:
- *
- * * Notes:
- *      - Needs to be included in the main program by including "NcFileHandler.h"
- *      - Must be compiled with the main program
  */
 
 /*
@@ -82,6 +77,7 @@ NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name, un
 
     } catch (netCDF::exceptions::NcException& err) {
         std::cout << err.what() << std::endl;
+        exit(1);
     }
 }
 NcFileHandler::~NcFileHandler() {
@@ -99,7 +95,7 @@ NcFileHandler::~NcFileHandler() {
 /** Fills out_arr with timeseries of all location for given latitude (lat).
  * Reading data costs a lot of time so it's better to load multiple locations in one step.
  *
- * @param out_arr output array
+ * @param v_out_arr output array
  * @param lat latitude of desired locations
  */
 void NcFileHandler::get_lon_timeseries_for_lat(std::vector<std::vector<float>>& v_out_arr, unsigned lat) {
@@ -121,7 +117,7 @@ void NcFileHandler::get_lon_timeseries_for_lat(std::vector<std::vector<float>>& 
 
 /** Fills out_arr with all timesteps of one location of 3-dimensional data set
  *
- * @param out_arr output array
+ * @param v_out_arr output array
  * @param lat latitude of desired location
  * @param lon longitude of desired location
  */
@@ -147,7 +143,7 @@ void NcFileHandler::get_timeseries_for_location(std::vector<float>& v_out_arr, u
 
 /** Fills out_arr with all timesteps of one location of 1-dimensional data set
  *
- * @param out_arr output array
+ * @param v_out_arr output array
  */
 void NcFileHandler::get_timeseries(std::vector<float>& v_out_arr) {
     std::vector<size_t>
@@ -212,7 +208,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param out_data 1d array of data
+ * @param v_out_data 1d array of data
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -366,8 +362,6 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
     countp.push_back(n_lat);
     countp.push_back(n_lon);
 
-    // ? workaround, because putVar does not work with pointer
-    // ? -> it works but creates random incostances and destroys the result
     for (size_t time = 0; time < n_time; time++) {
         startp[0] = time;
         float tmp[n_lat][n_lon];
@@ -383,7 +377,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param out_data 3d vector of data
+ * @param v_out_data 3d vector of data
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<std::vector<float>>>& v_out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -446,8 +440,6 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
     countp.push_back(n_lat);
     countp.push_back(n_lon);
 
-    // ? workaround, because putVar does not work with pointer
-    // ? -> it works but creates random incostances and destroys the result
     for (size_t time = 0; time < n_time; time++) {
         startp[0] = time;
         float tmp[n_lat][n_lon];

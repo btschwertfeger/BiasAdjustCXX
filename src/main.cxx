@@ -1,30 +1,31 @@
 // -*- lsst-c++ -*-
 
 /**
- * @file main
- * @brief Main program to bias adjust climate data
+ * @file main.cxx
+ * @brief Main program to bias adjust NetCDF-based climate data
  * @author Benjamin Thomas Schwertfeger
- * @copyright Benjamin Thomas Schwertfeger
+ * @email: development@b-schwertfeger.de
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
  * * Description
  *      Main program to bias adjust climate data;
- *      - loading datasets
- *      - iteration over all cells if 3-dimensional data set
- *      - application of the selected adjustment
- *      - save to file after adjustment
- * * Compilaition
- *      g++ -std=c++11 -Wall -v\
- *          src/main.cxx \
- *          -o Main.app \
- *          src/Utils.cxx \
- *          src/MyMath.cxx \
- *          src/CMethods.cxx \
- *          src/NcFileHandler.cxx \
- *          -I include \
- *          -lnetcdf-cxx4
+ *      - loads data sets
+ *      - iteration over all grid cells (if 3-dimensional data set)
+ *      - application/execution of the selected adjustment
+ *      - save results to .nc file
  *
+ * * Compilaition on macOS 12.4:
+ *      g++ -std=c++11 -Wall -v     \
+ *          src/main.cxx            \
+ *          -o Main.app             \
+ *          src/Utils.cxx           \
+ *          src/MyMath.cxx          \
+ *          src/CMethods.cxx        \
+ *          src/NcFileHandler.cxx   \
+ *          -I include              \
+ *          -lnetcdf-cxx4
+ * * ... or use the CMakeLists.txt file.
  */
 
 /*
@@ -40,6 +41,7 @@
 #include "NcFileHandler.hxx"
 #include "Utils.hxx"
 #include "colors.h"
+
 /*
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -63,7 +65,8 @@ static bool one_dim = false;
 static utils::Log Log = utils::Log();
 
 /*
- * ----- ----- ----- P R O G R A M - M A N A G E M E N T ----- ----- ----- ----- ----- ----- ----- ----- ----- */
+ * ----- ----- ----- P R O G R A M - M A N A G E M E N T ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
 
 static void show_usage(std::string name) {
     std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\t\\\n"
@@ -91,7 +94,7 @@ static void show_usage(std::string name) {
               << RESET
               << "-> data sets must be filetype NetCDF\n"
               << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values type float\n"
-              << "-> latitudes and longitudes must be named 'lat' and 'lon', Time = 'time'\n"
+              << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
               << RESET << std::endl;
 
     std::cerr << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
@@ -103,9 +106,10 @@ static void show_usage(std::string name) {
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
     std::cout << std::endl;
     std::cerr << YELLOW << "\nNotes: " << RESET
-              << "\n- Linear Scaling, Variance Scaling and Delta Method need a wrapper script to apply this program on monthly separated files i.e. "
+              << "\n- Linear Scaling, Variance Scaling and Delta Method need a wrapper script to apply this program on monthly separated files i. e. "
               << "if you want to adjust 30 years of data, you have to separate all input files in 12 groups, one group for each month and then you apply this "
-              << "program on every individual monthly separated data set.";
+              << "program on every individual monthly separated data set."
+              << "\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
 
     std::cerr << YELLOW << "\n\n====== References ======" << RESET
               << "\n- Creator: Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
@@ -119,7 +123,8 @@ static void show_usage(std::string name) {
     std::cout.flush();
 }
 
-void stdcout_runtime(std::chrono::steady_clock::time_point start_time) {
+template <typename T>
+void stdcout_runtime(T start_time) {
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> ms_double = end_time - start_time;
     std::cout << ms_double.count() << "ms\n";
@@ -197,7 +202,7 @@ static int parse_args(int argc, char** argv) {
             show_usage(argv[0]);
             return 1;
         } else
-            Log.warning("Unknown argument " + arg + "!");
+            Log.warning("Unknown argument: " + arg + "!");
     }
     if (variable_name.empty())
         throw std::runtime_error("No variable name defined!");
@@ -263,7 +268,7 @@ static void adjust_1d(
             adjustment_kind,
             n_quantiles);
     } else
-        std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
+        throw std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
 }
 
 static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) {
@@ -301,7 +306,6 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
 int main(int argc, char** argv) {
     auto start_time = std::chrono::high_resolution_clock::now();
     try {
-        // ? parse args and open datasets
         int args_result = parse_args(argc, argv);
         if (args_result != 0) return args_result;
 
@@ -329,7 +333,6 @@ int main(int argc, char** argv) {
                     std::vector<float>(
                         (int)ds_reference.n_time)));
 
-            // ? apply adjustment
             adjust_3d(v_data_out);
 
             std::vector<std::vector<std::vector<float>>> v_data_to_save(
@@ -340,13 +343,10 @@ int main(int argc, char** argv) {
                         (int)ds_reference.n_lon)));
 
             // ? reshape to lat x lon x time
-            for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
-                for (unsigned lon = 0; lon < v_data_out.at(lat).size(); lon++) {
-                    for (unsigned time = 0; time < v_data_out.at(lat).at(lon).size(); time++) {
-                        v_data_to_save.at(time).at(lat).at(lon) = v_data_out.at(lat).at(lon).at(time);
-                    }
-                }
-            }
+            for (unsigned lat = 0; lat < v_data_out.size(); lat++)
+                for (unsigned lon = 0; lon < v_data_out[lat].size(); lon++)
+                    for (unsigned time = 0; time < v_data_out[lat][lon].size(); time++)
+                        v_data_to_save[time][lat][lon] = v_data_out[lat][lon][time];
 
             Log.info("Saving " + output_filepath);
             ds_scenario.to_netcdf(output_filepath, variable_name, v_data_to_save);

@@ -36,6 +36,8 @@ class CMethods {
     static std::vector<double> get_xbins(std::vector<float>& a, std::vector<float>& b, unsigned n_quantiles, std::string kind);
     static void Quantile_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);
     static void Quantile_Delta_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);
+
+   private:
 };
 
 #endif

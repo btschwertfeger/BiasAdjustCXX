@@ -1,21 +1,20 @@
 #!/bin/zsh
 
-# @brief Implementation of Bias Adjustment methods
+# @brief Controled execution of the Main.app program to bias adjust example data sets
 # @author Benjamin Thomas Schwertfeger
-# @copyright Benjamin Thomas Schwertfeger
+# @email development@b-schwertfeger.de
 # @link https://b-schwertfeger.de
 # @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
 
 # ? ------- ------- ------- ------- ------- ------- ------- ------- -------
 # * -------------------------------------------------------------------
-# *                           Description
+# *                  ===== Description =====
 # * -------------------------------------------------------------------
 # ? USAGE: ./example.run.adjust.sh
-# ? - This script separates datasets by month and then
-# ?   applies all bias adjustment methods.
-# ? - interim results are saved in some tmp folder
-# ? - clean up after computation will be done
-# ? - no commands except for help can be passed
+# ? - This script separates data sets by month and then
+# ?    applies all bias adjustment methods.
+# ? > interim results are saved in some temporary folder
+# ? > clean up after computation
 # * -------------------------------------------------------------------
 
 work_dir=$(pwd)
@@ -38,7 +37,7 @@ declare -a month_methods=("delta_method" "linear_scaling" "variance_scaling")
 declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")
 
 # * -------------------------------------------------------------------
-# *                      Setup
+# *                   ===== Setup =====
 # * -------------------------------------------------------------------
 
 # enable array index at 0 for zsh
@@ -59,7 +58,7 @@ declare -a datasets=("${observations}" "${control}" "${scenario}")
 declare -a ds_paths=("${tmp_ref}" "${tmp_contr}" "${tmp_scen}")
 
 # * -------------------------------------------------------------------
-# *                         Computation
+# *                    ===== Computation =====
 # * -------------------------------------------------------------------
 
 echo "Separating months ..."
@@ -110,7 +109,6 @@ for method in "${quant_methods[@]}"; do
         -o "${output_dir}/${variable}_${method}_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"
 done
 
-
 # ? Adjustment of a data set with only one dimension (time)
 $exec_file                                \
     --ref input_data/1d_observations.nc   \
@@ -121,17 +119,17 @@ $exec_file                                \
     -q $n_quantiles                       \
     -k $kind                              \
     --1dim                                \
-    -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"         \
+    -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc" 
 
 # * -------------------------------------------------------------------
-# *                         Clean-Up
+# *                    ===== clean-up =====
 # * -------------------------------------------------------------------
 
 rm -rf tmp/
-echo "Finished adjusting datasets!"
+echo "Finished adjusting data sets!"
 exit 0
 
 # * -------------------------------------------------------------------
-# *                         E O F
+# *                     ===== EOF =====
 # * -------------------------------------------------------------------
 # * ------- ------- ------- ------- ------- ------- ------- ------- -------

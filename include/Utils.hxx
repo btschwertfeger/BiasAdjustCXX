@@ -25,6 +25,8 @@ class Log {
     static void info(std::string message);
     static void warning(std::string message);
     static void error(std::string message);
+
+   private:
 };
 
 void progress_bar(float part, float all);
