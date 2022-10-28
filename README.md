@@ -3,9 +3,11 @@
 <div style="text-align: center">
 
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
-[![Generic badge](https://img.shields.io/badge/license-MIT-green.svg)](https://shields.io/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
 
 </div>
+
 Command line tool/program to apply different scale- and distribution-based bias adjustment techniques for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
 
 ---

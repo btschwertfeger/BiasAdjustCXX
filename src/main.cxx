@@ -8,6 +8,21 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
+ * * Copyright (C) 2022  Benjamin Thomas Schwertfeger
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
  * * Description
  *      Main program to bias adjust climate data;
  *      - loads data sets
@@ -41,7 +56,6 @@
 #include "NcFileHandler.hxx"
 #include "Utils.hxx"
 #include "colors.h"
-
 /*
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
@@ -68,72 +82,10 @@ static utils::Log Log = utils::Log();
  * ----- ----- ----- P R O G R A M - M A N A G E M E N T ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-static void show_usage(std::string name) {
-    std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\t\\\n"
-              << GREEN << "\t --ref " << RESET << "observation_data.nc\t\\\n"
-              << GREEN << "\t --contr " << RESET << "control_data.nc\t\\\n"
-              << GREEN << "\t --scen " << RESET << "data_to_adjust.nc\t\\\n"
-              << GREEN << "\t -v " << RESET << "tas\t\t\t\t\\\n"
-              << GREEN << "\t -m " << RESET << "linear_scaling\t\t\\\n"
-              << GREEN << "\t -o " << RESET << "result_linear_scaling.nc\n\n"
-              << BOLDBLUE << "Parameters:\n"
-              << RESET
-              << "    required:\n"
-              << GREEN << "\t--ref, --reference\t" << RESET << "observation/reanalysis data => input file/file path\n"
-              << GREEN << "\t--contr, --control\t" << RESET << "modeled control period data => input file/file path\n"
-              << GREEN << "\t--scen, --scenario\t" << RESET << "modeled scenario period data to adjust => input file/file path\n"
-              << GREEN << "\t-o, --output\t\t" << RESET << "output file/file path\n"
-              << GREEN << "\t-v, --variable\t\t" << RESET << "variable name (e. g.: tas, tsurf, pr) \n"
-              << "    optional:\n"
-              << GREEN << "\t-h, --help\t\t" << RESET << "show this help message\n"
-              << GREEN << "\t-q, --quantiles\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
-              << GREEN << "\t-k, --kind\t\t" << RESET << "kind of adjustment (e. g. '+' or '*' for additive or multiplicative method (default: '+'))\n"
-              << GREEN << "\t    --1dim\t\t" << RESET << "select this, when all input data sets only contain the <time> dimension (i. e. no spatial dimensions)"
-              << "\n\n"
-              << BOLDBLUE << "Requirements: \n"
-              << RESET
-              << "-> data sets must be filetype NetCDF\n"
-              << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values type float\n"
-              << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
-              << RESET << std::endl;
-
-    std::cerr << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
-    std::vector<std::string> all_methods;
-    all_methods.reserve(CMethods::scaling_method_names.size() + CMethods::quantile_method_names.size());  // preallocate memory
-    all_methods.insert(all_methods.end(), CMethods::scaling_method_names.begin(), CMethods::scaling_method_names.end());
-    all_methods.insert(all_methods.end(), CMethods::quantile_method_names.begin(), CMethods::quantile_method_names.end());
-
-    for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
-    std::cout << std::endl;
-    std::cerr << YELLOW << "\nNotes: " << RESET
-              << "\n- Linear Scaling, Variance Scaling and Delta Method need a wrapper script to apply this program on monthly separated files i. e. "
-              << "if you want to adjust 30 years of data, you have to separate all input files in 12 groups, one group for each month and then you apply this "
-              << "program on every individual monthly separated data set."
-              << "\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
-
-    std::cerr << YELLOW << "\n\n====== References ======" << RESET
-              << "\n- Creator: Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
-              << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
-              << "\n- Mathematical foundations:"
-              << "\n\t (1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
-              << "\n\t (2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?, Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
-              << "\n\t (3) Maraun, D.: Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums, Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
-              << "\n\t (4) Teutschbein, C. and Seibert, J.: Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods, Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
-              << "\n\t (5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021.";
-    std::cout.flush();
-}
-
-template <typename T>
-void stdcout_runtime(T start_time) {
-    auto end_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> ms_double = end_time - start_time;
-    std::cout << ms_double.count() << "ms\n";
-}
-
-static int parse_args(int argc, char** argv) {
+static void parse_args(int argc, char** argv) {
     if (argc == 1) {
-        show_usage(argv[0]);
-        return 1;
+        utils::show_usage(argv[0]);
+        exit(0);
     }
     std::string
         reference_fpath = "",
@@ -145,31 +97,25 @@ static int parse_args(int argc, char** argv) {
         if (arg == "--ref" || arg == "--reference") {
             if (i + 1 < argc)
                 reference_fpath = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
+
         } else if (arg == "--contr" || arg == "--control") {
             if (i + 1 < argc)
                 control_fpath = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
+
         } else if (arg == "--scen" || arg == "--scenario") {
             if (i + 1 < argc)
                 scenario_fpath = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-v" || arg == "--variable") {
             if (i + 1 < argc)
                 variable_name = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-q" || arg == "--quantiles") {
             if (i + 1 < argc)
                 n_quantiles = (unsigned)std::stoi(argv[++i]);
@@ -178,29 +124,32 @@ static int parse_args(int argc, char** argv) {
                 adjustment_method_name = argv[++i];
                 scaling_func = CMethods::get_cmethod_scaling(adjustment_method_name);
                 quantile_func = CMethods::get_cmethod_quantile(adjustment_method_name);
-            } else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            } else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-k" || arg == "--kind") {
             if (i + 1 < argc)
                 adjustment_kind = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
                 output_filepath = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--1dim")
             one_dim = true;
         else if (arg == "-h" || arg == "--help") {
-            show_usage(argv[0]);
-            return 1;
+            utils::show_usage(argv[0]);
+            exit(0);
+        } else if (arg == "show") {
+            if (i + 1 < argc) {
+                if (std::string(argv[++i]).compare(std::string("-c")) == 0) {
+                    utils::show_license();
+                    exit(1);
+                } else
+                    throw std::runtime_error("Unknown flag " + std::string(argv[i]));
+            } else
+                throw std::runtime_error(arg + " requires one argument.");
         } else
             Log.warning("Unknown argument: " + arg + "!");
     }
@@ -239,8 +188,13 @@ static int parse_args(int argc, char** argv) {
         if (adjustment_method_name == std::string("delta_method"))
             throw std::runtime_error("Time dimension input files does not have the same length! This is required for the delta method.");
     }
+}
 
-    return 0;
+template <typename T>
+static void stdcout_runtime(T start_time) {
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> ms_double = end_time - start_time;
+    std::cout << ms_double.count() << "ms\n";
 }
 
 /*
@@ -305,9 +259,14 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
 
 int main(int argc, char** argv) {
     auto start_time = std::chrono::high_resolution_clock::now();
+    std::cerr << "BiasAdjustmentCpp  Copyright (C) 2022 Benjamin Thomas Schwertfeger"
+              << "\nThis program comes with ABSOLUTELY NO WARRANTY."
+              << "\nThis is free software, and you are welcome to redistribute it"
+              << "\nunder certain conditions; type `show -c' for details."
+              << "\n"
+              << std::endl;
     try {
-        int args_result = parse_args(argc, argv);
-        if (args_result != 0) return args_result;
+        parse_args(argc, argv);
 
         if (one_dim) {  // adjustment of data set containing only one grid cell
             std::vector<float>
@@ -355,7 +314,8 @@ int main(int argc, char** argv) {
         stdcout_runtime(start_time);
 
     } catch (const std::runtime_error& error) {
-        std::cout << error.what() << '\n';
+        // std::cout << error.what() << '\n';
+        Log.error(error.what());
         stdcout_runtime(start_time);
         exit(1);
     }

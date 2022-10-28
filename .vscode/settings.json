@@ -93,6 +93,14 @@
     "forward_list": "cpp",
     "list": "cpp",
     "typeindex": "cpp",
-    "expected": "cpp"
+    "expected": "cpp",
+    "cfenv": "cpp",
+    "csetjmp": "cpp",
+    "csignal": "cpp",
+    "regex": "cpp",
+    "scoped_allocator": "cpp",
+    "shared_mutex": "cpp",
+    "valarray": "cpp",
+    "cuchar": "cpp"
   }
 }
