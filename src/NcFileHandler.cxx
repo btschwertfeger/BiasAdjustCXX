@@ -229,32 +229,46 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
-    netCDF::NcDim out_time_dim = output_file.addDim(time_name, n_time);
-    netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
-
-    // Set attributes
-    for (std::pair<std::string, netCDF::NcVarAtt> att : time_var.getAtts()) {
-        if (att.second.getType().getName() == "char") {
-            char value[att.second.getAttLength()];
-            att.second.getValues(value);
-            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
-        } else if (att.second.getType().getName() == "double") {
-            double value[att.second.getAttLength()];
-            att.second.getValues(value);
-            out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+    if (this->handles_file) {
+        netCDF::NcDim out_time_dim = output_file.addDim(time_name, n_time);
+        netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
+        // Set attributes
+        for (std::pair<std::string, netCDF::NcVarAtt> att : time_var.getAtts()) {
+            if (att.second.getType().getName() == "char") {
+                char value[att.second.getAttLength()];
+                att.second.getValues(value);
+                out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+            } else if (att.second.getType().getName() == "double") {
+                double value[att.second.getAttLength()];
+                att.second.getValues(value);
+                out_time_var.putAtt(att.first, att.second.getType(), att.second.getAttLength(), value);
+            }
         }
+
+        std::vector<netCDF::NcDim> dim_vector;
+        dim_vector.push_back(out_time_dim);
+
+        netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
+        out_time_var.putVar(time_values);
+
+        std::vector<size_t> startp, countp;
+        startp.push_back(0);
+        countp.push_back(n_time);
+        output_var.putVar(startp, countp, &v_out_data[0]);
+
+    } else {
+        netCDF::NcDim out_time_dim = output_file.addDim("time", v_out_data.size());
+        netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
+
+        std::vector<netCDF::NcDim> dimensions;
+        dimensions.push_back(out_time_dim);
+
+        netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dimensions);
+        std::vector<size_t> startp, countp;
+        startp.push_back(0);
+        countp.push_back(v_out_data.size());
+        output_var.putVar(startp, countp, &v_out_data[0]);
     }
-
-    std::vector<netCDF::NcDim> dim_vector;
-    dim_vector.push_back(out_time_dim);
-
-    netCDF::NcVar output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
-    out_time_var.putVar(time_values);
-
-    std::vector<size_t> startp, countp;
-    startp.push_back(0);
-    countp.push_back(n_time);
-    output_var.putVar(startp, countp, &v_out_data[0]);
 }
 
 /** Saves a 2-dimensional data set with one variable for one timestep to file
