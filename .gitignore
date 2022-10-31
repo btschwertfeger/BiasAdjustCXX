@@ -39,3 +39,4 @@ test/
 output/
 *tmp*
 qdm_result.nc
+del/

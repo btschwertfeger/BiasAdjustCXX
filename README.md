@@ -8,13 +8,13 @@
 
 </div>
 
-Command line tool/program to apply different scale- and distribution-based bias adjustment techniques for climatic research. Many of these methods have also been implemented in Python. This can be found here: https://github.com/btschwertfeger/Bias-Adjustment-Python.
+Command line tool/program to apply different scale- and distribution-based bias adjustment techniques for climatic research. Many of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
 
 ---
 
 ## About
 
-This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://b-schwertfeger.de/downloads/thesis.pdf)
+This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://epic.awi.de/id/eprint/56689/). A technical publication is currently being prepared to provide a detailed description of the application.
 
 These programs and data structures are designed to help minimize discrepancies between modeled and observed climate data. Data from past periods are used to adjust variables from current and future time series so that their distributional properties approximate possible actual values.
 

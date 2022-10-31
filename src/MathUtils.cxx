@@ -218,10 +218,8 @@ std::vector<int> MathUtils::get_pdf(std::vector<float>& arr, std::vector<double>
  * Cumulative distribution function
  */
 std::vector<int> MathUtils::get_cdf(std::vector<float>& arr, std::vector<double>& bins) {
-    std::vector<int>
-        v_pdf = MathUtils::get_pdf(arr, bins);
-    std::vector<int>
-        v_cdf(v_pdf.size() + 1);
+    std::vector<int> v_pdf = MathUtils::get_pdf(arr, bins);
+    std::vector<int> v_cdf(v_pdf.size() + 1);
     v_cdf[0] = 0;
     for (unsigned i = 0; i < v_pdf.size(); i++)
         v_cdf[i + 1] = v_cdf[i] + v_pdf[i];

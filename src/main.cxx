@@ -72,7 +72,7 @@ static std::string
     adjustment_kind = "add";
 
 static CM_Func_ptr_scaling scaling_func = NULL;
-static CM_Func_ptr_quantile quantile_func = NULL;
+static CM_Func_ptr_distribution distribution_func = NULL;
 
 static unsigned n_quantiles = 100;
 static bool one_dim = false;
@@ -123,7 +123,7 @@ static void parse_args(int argc, char** argv) {
             if (i + 1 < argc) {
                 adjustment_method_name = argv[++i];
                 scaling_func = CMethods::get_cmethod_scaling(adjustment_method_name);
-                quantile_func = CMethods::get_cmethod_quantile(adjustment_method_name);
+                distribution_func = CMethods::get_cmethod_distribution(adjustment_method_name);
             } else
                 std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-k" || arg == "--kind") {
@@ -213,8 +213,8 @@ static void adjust_1d(
             v_control,
             v_scenario,
             adjustment_kind);
-    } else if (quantile_func != NULL) {
-        quantile_func(
+    } else if (distribution_func != NULL) {
+        distribution_func(
             v_data_out,
             v_reference,
             v_control,
@@ -226,31 +226,34 @@ static void adjust_1d(
 }
 
 static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) {
-    for (unsigned lat = 0; lat < v_data_out.size(); lat++) {
-        std::vector<std::vector<float>> v_reference_lon_data(
-            v_data_out.at(lat).size(),
-            std::vector<float>(v_data_out.at(0).at(0).size()));
-        std::vector<std::vector<float>> v_control_lon_data(
-            v_data_out.at(lat).size(),
-            std::vector<float>(v_data_out.at(0).at(0).size()));
-        std::vector<std::vector<float>> v_scenario_lon_data(
-            v_data_out.at(lat).size(),
-            std::vector<float>(v_data_out.at(0).at(0).size()));
+    for (unsigned lon = 0; lon < ds_scenario.n_lon; lon++) {
+        utils::progress_bar((float)lon, (float)(v_data_out[0].size()));
 
-        ds_reference.get_lon_timeseries_for_lat(v_reference_lon_data, lat);
-        ds_control.get_lon_timeseries_for_lat(v_control_lon_data, lat);
-        ds_scenario.get_lon_timeseries_for_lat(v_scenario_lon_data, lat);
+        std::vector<std::vector<float>> v_reference_lat_data(
+            (int)ds_reference.n_lat,
+            std::vector<float>((int)ds_reference.n_time));
 
-        for (unsigned lon = 0; lon < v_data_out.at(0).size(); lon++)
+        std::vector<std::vector<float>> v_control_lat_data(
+            (int)ds_control.n_lat,
+            std::vector<float>((int)ds_control.n_time));
+
+        std::vector<std::vector<float>> v_scenario_lat_data(
+            (int)ds_scenario.n_lat,
+            std::vector<float>((int)ds_scenario.n_time));
+
+        ds_reference.get_lat_timeseries_for_lon(v_reference_lat_data, lon);
+        ds_control.get_lat_timeseries_for_lon(v_control_lat_data, lon);
+        ds_scenario.get_lat_timeseries_for_lon(v_scenario_lat_data, lon);
+
+        for (unsigned lat = 0; lat < ds_scenario.n_lat; lat++)
             adjust_1d(
                 v_data_out[lat][lon],
-                v_reference_lon_data[lon],
-                v_control_lon_data[lon],
-                v_scenario_lon_data[lon]);
-
-        utils::progress_bar((float)lat, (float)(v_data_out.size()));
+                v_reference_lat_data[lat],
+                v_control_lat_data[lat],
+                v_scenario_lat_data[lat]);
     }
-    utils::progress_bar((float)(v_data_out.size()), (float)(v_data_out.size()));
+    utils::progress_bar((float)(v_data_out[0].size()), (float)(v_data_out[0].size()));
+    std::cout << std::endl;
 }
 
 /*
@@ -270,7 +273,7 @@ int main(int argc, char** argv) {
 
         if (one_dim) {  // adjustment of data set containing only one grid cell
             std::vector<float>
-                v_data_out((int)ds_reference.n_time),
+                v_data_out((int)ds_scenario.n_time),
                 v_reference((int)ds_reference.n_time),
                 v_control((int)ds_control.n_time),
                 v_scenario((int)ds_scenario.n_time);
@@ -280,26 +283,27 @@ int main(int argc, char** argv) {
             ds_scenario.get_timeseries(v_scenario);
 
             adjust_1d(v_data_out, v_reference, v_control, v_scenario);
+            std::cout << std::endl;
             Log.info("Saving " + output_filepath);
             ds_scenario.to_netcdf(output_filepath, variable_name, v_data_out);
 
         } else {  // adjustment of 3-dimensional data set
             // ? prepare lat x lon x time
             std::vector<std::vector<std::vector<float>>> v_data_out(
-                (int)ds_reference.n_lat,
+                (int)ds_scenario.n_lat,
                 std::vector<std::vector<float>>(
-                    (int)ds_reference.n_lon,
+                    (int)ds_scenario.n_lon,
                     std::vector<float>(
-                        (int)ds_reference.n_time)));
+                        (int)ds_scenario.n_time)));
 
             adjust_3d(v_data_out);
 
             std::vector<std::vector<std::vector<float>>> v_data_to_save(
-                (int)ds_reference.n_time,
+                (int)ds_scenario.n_time,
                 std::vector<std::vector<float>>(
-                    (int)ds_reference.n_lat,
+                    (int)ds_scenario.n_lat,
                     std::vector<float>(
-                        (int)ds_reference.n_lon)));
+                        (int)ds_scenario.n_lon)));
 
             // ? reshape to lat x lon x time
             for (unsigned lat = 0; lat < v_data_out.size(); lat++)
@@ -314,7 +318,6 @@ int main(int argc, char** argv) {
         stdcout_runtime(start_time);
 
     } catch (const std::runtime_error& error) {
-        // std::cout << error.what() << '\n';
         Log.error(error.what());
         stdcout_runtime(start_time);
         exit(1);

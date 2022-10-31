@@ -112,23 +112,23 @@ NcFileHandler::~NcFileHandler() {
  * Reading data costs a lot of time so it's better to load multiple locations in one step.
  *
  * @param v_out_arr output array
- * @param lat latitude of desired locations
+ * @param lon longitude of desired locations
  */
-void NcFileHandler::get_lon_timeseries_for_lat(std::vector<std::vector<float>>& v_out_arr, unsigned lat) {
+void NcFileHandler::get_lat_timeseries_for_lon(std::vector<std::vector<float>>& v_out_arr, unsigned lon) {
     std::vector<size_t> startp, countp;
     startp.push_back(0);
-    startp.push_back(lat);
     startp.push_back(0);
+    startp.push_back(lon);
 
     countp.push_back(n_time);
+    countp.push_back(n_lat);
     countp.push_back(1);
-    countp.push_back(n_lon);
 
-    float tmp[n_time][n_lon];
-    data.getVar(startp, countp, *tmp);
+    float tmp[n_time][n_lat];
+    this->data.getVar(startp, countp, *tmp);
     for (unsigned ts = 0; ts < n_time; ts++)
-        for (unsigned lon = 0; lon < n_lon; lon++)
-            v_out_arr[lon][ts] = tmp[ts][lon];
+        for (unsigned lat = 0; lat < n_lat; lat++)
+            v_out_arr[lat][ts] = tmp[ts][lat];
 }
 
 /** Fills out_arr with all timesteps of one location of 3-dimensional data set
@@ -137,7 +137,7 @@ void NcFileHandler::get_lon_timeseries_for_lat(std::vector<std::vector<float>>& 
  * @param lat latitude of desired location
  * @param lon longitude of desired location
  */
-void NcFileHandler::get_timeseries_for_location(std::vector<float>& v_out_arr, unsigned lat, unsigned lon) {
+void NcFileHandler::get_timeseries(std::vector<float>& v_out_arr, unsigned lat, unsigned lon) {
     std::vector<size_t>
         startp,  // start point
         countp;  // end point

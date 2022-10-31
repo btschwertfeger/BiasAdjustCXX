@@ -5,7 +5,7 @@
  * @brief
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
- * 
+ *
  * * Copyright (C) 2022  Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,7 @@
  */
 
 std::vector<std::string> CMethods::scaling_method_names = {"linear_scaling", "variance_scaling", "delta_method"};
-std::vector<std::string> CMethods::quantile_method_names = {"quantile_mapping", "quantile_delta_mapping"};
+std::vector<std::string> CMethods::distribution_method_names = {"quantile_mapping", "quantile_delta_mapping"};
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -72,7 +72,7 @@ CM_Func_ptr_scaling CMethods::get_cmethod_scaling(std::string method_name) {
         return Delta_Method;
     return NULL;
 }
-CM_Func_ptr_quantile CMethods::get_cmethod_quantile(std::string method_name) {
+CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_name) {
     if (method_name == "quantile_mapping")
         return Quantile_Mapping;
     else if (method_name == "quantile_delta_mapping")
@@ -274,7 +274,13 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
  * (mult):
  *      same but experimental ...
  */
-void CMethods::Quantile_Mapping(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind, unsigned n_quantiles) {
+void CMethods::Quantile_Mapping(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario,
+    std::string kind,
+    unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
         std::vector<double>
             v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");

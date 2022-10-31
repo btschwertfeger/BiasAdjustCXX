@@ -36,8 +36,8 @@ class NcFileHandler {
     NcFileHandler(std::string filepath, std::string variable_name, unsigned n_dimensions);
     ~NcFileHandler();
 
-    void get_lon_timeseries_for_lat(std::vector<std::vector<float>>& v_out_arr, unsigned lat);
-    void get_timeseries_for_location(std::vector<float>& v_out_arr, unsigned lat, unsigned lon);
+    void get_lat_timeseries_for_lon(std::vector<std::vector<float>>& v_out_arr, unsigned lon);
+    void get_timeseries(std::vector<float>& v_out_arr, unsigned lat, unsigned lon);
     void get_timeseries(std::vector<float>& v_out_arr);
 
     void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data);

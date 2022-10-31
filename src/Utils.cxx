@@ -126,9 +126,9 @@ void show_usage(std::string name) {
 
     std::cerr << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
     std::vector<std::string> all_methods;
-    all_methods.reserve(CMethods::scaling_method_names.size() + CMethods::quantile_method_names.size());  // preallocate memory
+    all_methods.reserve(CMethods::scaling_method_names.size() + CMethods::distribution_method_names.size());  // preallocate memory
     all_methods.insert(all_methods.end(), CMethods::scaling_method_names.begin(), CMethods::scaling_method_names.end());
-    all_methods.insert(all_methods.end(), CMethods::quantile_method_names.begin(), CMethods::quantile_method_names.end());
+    all_methods.insert(all_methods.end(), CMethods::distribution_method_names.begin(), CMethods::distribution_method_names.end());
 
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
     std::cout << std::endl;
