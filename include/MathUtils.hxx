@@ -52,7 +52,7 @@ class MathUtils {
     static float ioa(std::vector<float>& x, std::vector<float>& y);
     static float sd(std::vector<float>& x);
     static float variance(std::vector<float>& x);
-    static float mean(std::vector<float>& a);
+    static double mean(std::vector<float>& a);
     static double lerp(double a, double b, double x);
 
     static std::vector<int> get_pdf(std::vector<float>& arr, std::vector<double>& bins);

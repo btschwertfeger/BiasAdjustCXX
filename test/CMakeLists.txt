@@ -16,9 +16,9 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(BiasAdjustmentCXX
+project(BiasAdjustmentCXX_Validation
     VERSION 1.0
-    DESCRIPTION "Bias adjustment/correction command line tool for NetCDF-based climate data"
+    DESCRIPTION "Validation Program for BiasAdjustmentCXX"
     LANGUAGES CXX
 )
 
@@ -28,7 +28,7 @@ set(CMAKE_CXX_COMPILER g++)
 
 # add_compile_options(-Wall -v)
 # find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/modules/")
 include(FindNetCDFCxx)
 
 if(netCDFCxx_FOUND)
@@ -40,23 +40,22 @@ endif()
 
 # set sources
 set(SOURCES
-    src/main.cxx
-    src/CMethods.cxx
-    src/Utils.cxx
-    src/NcFileHandler.cxx
-    src/MathUtils.cxx
+    src/ComputeIndicator.cxx
+    ../src/Utils.cxx
+    ../src/NcFileHandler.cxx
+    ../src/MathUtils.cxx
 )
 
 # add executable
-add_executable( Main.app ${SOURCES})
+add_executable( ComputeIndicator.app ${SOURCES})
 
 # Include the netcdf headers
-target_include_directories( Main.app
+target_include_directories( ComputeIndicator.app
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
-    PRIVATE include
+    PRIVATE ../include
 )
 
-target_link_libraries( Main.app
+target_link_libraries( ComputeIndicator.app
     PUBLIC
         ${netCDFCxx_LIBRARIES}
 )

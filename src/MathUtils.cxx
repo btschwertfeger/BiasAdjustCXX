@@ -97,6 +97,7 @@ Func_two MathUtils::get_method_for_2_ds(std::string name) {
  * @param y prediction
  */
 float MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate correlation coefficient of vectors with different size.");
     float
         sum_X = 0,
         sum_Y = 0,
@@ -123,6 +124,8 @@ float MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<floa
  * @param n length
  */
 float MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate rmse of vectors with different size.");
+
     float result = 0;
     for (unsigned ts = 0; ts < x.size(); ts++) result += pow(y[ts] - x[ts], 2) / (float)x.size();
     return sqrt(result);
@@ -135,6 +138,8 @@ float MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
  * @param y prediction
  */
 float MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate mbe of vectors with different size.");
+
     float result = 0;
     for (unsigned ts = 0; ts < x.size(); ts++) result += y[ts] - x[ts];
     return result * (float(1.0) / x.size());
@@ -151,6 +156,8 @@ float MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
  * @param y prediction
  */
 float MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate ioa of vectors with different size.");
+
     float upper = 0, lower = 0;
     const double m = mean(x);
     for (unsigned i = 0; i < x.size(); i++) {
@@ -185,8 +192,8 @@ float MathUtils::sd(std::vector<float>& x) {
  * @param a 1D array of floats to get the mean from
  */
 
-float MathUtils::mean(std::vector<float>& a) {
-    float sum = 0;
+double MathUtils::mean(std::vector<float>& a) {
+    double sum = 0;
     for (unsigned i = 0; i < a.size(); i++) sum += a[i];
     return sum / a.size();
 }

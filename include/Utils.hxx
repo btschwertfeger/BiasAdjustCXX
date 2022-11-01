@@ -51,7 +51,7 @@ class Log {
 bool isInStrV(std::vector<std::string> v, std::string string);
 void progress_bar(float part, float all);
 void show_license();
-void show_usage(std::string name);
+void show_copyright_notice();
 
 }  // namespace utils
 
