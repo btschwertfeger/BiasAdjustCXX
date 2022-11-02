@@ -107,7 +107,7 @@ CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_n
  *
  */
 void CMethods::Linear_Scaling(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind) {
-    const float
+    const double
         ref_mean = MathUtils::mean(v_reference),
         contr_mean = MathUtils::mean(v_control);
 
@@ -115,8 +115,15 @@ void CMethods::Linear_Scaling(std::vector<float> &v_output, std::vector<float> &
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_scenario[ts] + (ref_mean - contr_mean);  // Eq. 1f.
     } else if (kind == "mult" || kind == "*") {
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
+            // float result = v_scenario[ts] * (ref_mean / contr_mean);
+            // if (result > 0.3) {
+            //     const double scen_mean = MathUtils::mean(v_scenario);
+            //     std::cout << ts << ": " << v_scenario[ts] << " * " << ref_mean << " / " << contr_mean << " (" << scen_mean << ")" << std::endl;
+            //     throw std::runtime_error("'end'");
+            // }
             v_output[ts] = v_scenario[ts] * (ref_mean / contr_mean);  // Eq. 3f.
+        }
     } else
         throw std::runtime_error("Invalid adjustment kind <" + kind + "> for linear scaling!");
 }
@@ -153,7 +160,7 @@ void CMethods::Variance_Scaling(std::vector<float> &v_output, std::vector<float>
         Linear_Scaling(LS_contr, v_reference, v_control, v_control, "+");  // Eq. 1
         Linear_Scaling(LS_scen, v_reference, v_control, v_scenario, "+");  // Eq. 2
 
-        float
+        double
             LS_contr_mean = MathUtils::mean(LS_contr),
             LS_scen_mean = MathUtils::mean(LS_scen);
 
@@ -200,7 +207,7 @@ void CMethods::Variance_Scaling(std::vector<float> &v_output, std::vector<float>
  *
  */
 void CMethods::Delta_Method(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind) {
-    const float
+    const double
         contr_mean = MathUtils::mean(v_control),
         scen_mean = MathUtils::mean(v_scenario);
 

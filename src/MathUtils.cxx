@@ -42,8 +42,8 @@
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-std::vector<std::string> MathUtils::available_methods = {"rmse", "mbe", "ioa", "corr", "sd"};
-std::vector<std::string> MathUtils::requires_1_ds = {"sd"};
+std::vector<std::string> MathUtils::available_methods = {"rmse", "mbe", "ioa", "corr", "sd", "var", "mean"};
+std::vector<std::string> MathUtils::requires_1_ds = {"sd", "var", "mean"};
 std::vector<std::string> MathUtils::requires_2_ds = {"rmse", "mbe", "ioa", "corr"};
 
 /**
@@ -64,6 +64,10 @@ MathUtils::~MathUtils() {}
 Func_one MathUtils::get_method_for_1_ds(std::string name) {
     if (name == "sd")
         return sd;
+    else if (name == "var")
+        return variance;
+    if (name == "mean")
+        return mean;
     else
         return NULL;
 }
@@ -96,8 +100,9 @@ Func_two MathUtils::get_method_for_2_ds(std::string name) {
  * @param x reference
  * @param y prediction
  */
-float MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
-    float
+double MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate correlation coefficient of vectors with different size.");
+    double
         sum_X = 0,
         sum_Y = 0,
         sum_XY = 0,
@@ -122,9 +127,11 @@ float MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<floa
  * @param y prediction
  * @param n length
  */
-float MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
-    float result = 0;
-    for (unsigned ts = 0; ts < x.size(); ts++) result += pow(y[ts] - x[ts], 2) / (float)x.size();
+double MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate rmse of vectors with different size.");
+
+    double result = 0;
+    for (unsigned ts = 0; ts < x.size(); ts++) result += pow(y[ts] - x[ts], 2) / (int)x.size();
     return sqrt(result);
 }
 
@@ -134,10 +141,12 @@ float MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
  * @param x reference
  * @param y prediction
  */
-float MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
-    float result = 0;
+double MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate mbe of vectors with different size.");
+
+    double result = 0;
     for (unsigned ts = 0; ts < x.size(); ts++) result += y[ts] - x[ts];
-    return result * (float(1.0) / x.size());
+    return result * (double(1.0) / (int)x.size());
 }
 /** Returns the index of agreement
  *  $d = 1 - \frac{
@@ -150,8 +159,10 @@ float MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
  * @param x reference
  * @param y prediction
  */
-float MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
-    float upper = 0, lower = 0;
+double MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
+    if (x.size() != y.size()) throw std::runtime_error("Cannot calculate ioa of vectors with different size.");
+
+    double upper = 0, lower = 0;
     const double m = mean(x);
     for (unsigned i = 0; i < x.size(); i++) {
         upper += pow(x[i] - y[i], 2);
@@ -165,9 +176,9 @@ float MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
  *
  * @param x reference
  */
-float MathUtils::variance(std::vector<float>& x) {
-    std::vector<float> v(x.size());
-    const float m = mean(x);
+double MathUtils::variance(std::vector<float>& x) {
+    std::vector<double> v(x.size());
+    const double m = mean(x);
     for (unsigned i = 0; i < x.size(); i++) v[i] = pow(x[i] - m, 2);
     return mean(v);
 }
@@ -176,7 +187,7 @@ float MathUtils::variance(std::vector<float>& x) {
  *
  * @param x reference
  */
-float MathUtils::sd(std::vector<float>& x) {
+double MathUtils::sd(std::vector<float>& x) {
     return sqrt(variance(x));
 }
 
@@ -185,8 +196,14 @@ float MathUtils::sd(std::vector<float>& x) {
  * @param a 1D array of floats to get the mean from
  */
 
-float MathUtils::mean(std::vector<float>& a) {
-    float sum = 0;
+double MathUtils::mean(std::vector<float>& a) {
+    double sum = 0;
+    for (unsigned i = 0; i < a.size(); i++) sum += a[i];
+    return sum / a.size();
+}
+
+double MathUtils::mean(std::vector<double>& a) {
+    double sum = 0;
     for (unsigned i = 0; i < a.size(); i++) sum += a[i];
     return sum / a.size();
 }

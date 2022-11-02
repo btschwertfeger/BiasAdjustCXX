@@ -66,7 +66,7 @@ cmake .. && cmake --build .
 ## Usage example
 
 ```bash
-./Main.app                           \
+BiasAdjustCXX                        \
     --ref input_data/observations.nc \ # observations/reference time series of the control period
     --contr input_data/control.nc    \ # simulated time series of the control period
     --scen input_data/scenario.nc    \ # time series to adjust
@@ -85,7 +85,7 @@ All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. The
 ## Help
 
 ```bash
-./Main.app -h
+BiasAdjustCXX -h
 ```
 
 ---

@@ -16,9 +16,9 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(BiasAdjustCXX
+project(ComputeIndicatorCXX
     VERSION 1.0
-    DESCRIPTION "Bias adjustment/correction command line tool for NetCDF-based climate data"
+    DESCRIPTION "Command line tool to compute a 2-dimensional matrice based on inputfile(s)"
     LANGUAGES CXX
 )
 
@@ -28,7 +28,7 @@ set(CMAKE_CXX_COMPILER g++)
 
 # add_compile_options(-Wall -v)
 # find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/modules/")
 include(FindNetCDFCxx)
 
 if(netCDFCxx_FOUND)
@@ -40,23 +40,22 @@ endif()
 
 # set sources
 set(SOURCES
-    src/main.cxx
-    src/CMethods.cxx
-    src/Utils.cxx
-    src/NcFileHandler.cxx
-    src/MathUtils.cxx
+    src/ComputeIndicator.cxx
+    ../src/Utils.cxx
+    ../src/NcFileHandler.cxx
+    ../src/MathUtils.cxx
 )
 
 # add executable
-add_executable( BiasAdjustCXX ${SOURCES})
+add_executable( ComputeIndicatorCXX ${SOURCES})
 
 # Include the netcdf headers
-target_include_directories( BiasAdjustCXX
+target_include_directories( ComputeIndicatorCXX
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
-    PRIVATE include
+    PRIVATE ../include
 )
 
-target_link_libraries( BiasAdjustCXX
+target_link_libraries( ComputeIndicatorCXX
     PUBLIC
         ${netCDFCxx_LIBRARIES}
 )

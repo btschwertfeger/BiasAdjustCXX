@@ -31,7 +31,7 @@ variable="tas"
 kind="+"
 n_quantiles=100
 
-exec_file="${work_dir}/build/Main.app"
+exec_file="${work_dir}/build/BiasAdjustCXX"
 
 declare -a month_methods=("delta_method" "linear_scaling" "variance_scaling")
 declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")

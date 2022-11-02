@@ -8,7 +8,7 @@
 
 g++ -std=c++11 -Wall -v\
     src/main.cxx \
-    -o Main.app \
+    -o BiasAdjustCXX \
     src/Utils.cxx \
     src/MathUtils.cxx \
     src/CMethods.cxx \

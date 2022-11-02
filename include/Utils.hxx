@@ -30,10 +30,6 @@
 #include <CMethods.hxx>
 #include <iostream>
 
-/*
- * ----- ----- ----- C O N T E N T ----- ----- -----
- */
-
 namespace utils {
 /** Class to create log files */
 class Log {
@@ -51,8 +47,7 @@ class Log {
 bool isInStrV(std::vector<std::string> v, std::string string);
 void progress_bar(float part, float all);
 void show_license();
-void show_usage(std::string name);
-
+void show_copyright_notice(std::string program_name);
 }  // namespace utils
 
 #endif

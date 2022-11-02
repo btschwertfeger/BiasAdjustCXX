@@ -43,6 +43,8 @@ class NcFileHandler {
     void to_netcdf(std::string out_fpath, std::string variable_name, float* out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
+    void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<float>>& v_data_out);
+
     void to_netcdf(std::string out_fpath, std::string variable_name, double** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<std::vector<float>>>& v_out_data);
