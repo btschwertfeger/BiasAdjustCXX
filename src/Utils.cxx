@@ -34,7 +34,6 @@
 
 #include <CMethods.hxx>
 #include <algorithm>
-#include <chrono>
 #include <iostream>
 #include <vector>
 
@@ -95,8 +94,8 @@ void progress_bar(float part, float all) {
 
 namespace utils {
 
-void show_copyright_notice() {
-    std::cerr << "BiasAdjustmentCXX Copyright (C) 2022 Benjamin Thomas Schwertfeger"
+void show_copyright_notice(std::string program_name) {
+    std::cerr << program_name << " Copyright (C) 2022 Benjamin Thomas Schwertfeger"
               << "\nThis program comes with ABSOLUTELY NO WARRANTY."
               << "\nThis is free software, and you are welcome to redistribute it"
               << "\nunder certain conditions; type 'show -c' for details."
@@ -104,7 +103,7 @@ void show_copyright_notice() {
               << std::endl;
 }
 void show_license() {
-    const char *license =
+    const char* license =
         "GNU GENERAL PUBLIC LICENSE\n"
         "Version 3, 29 June 2007\n"
         "\n"

@@ -200,7 +200,7 @@ static void parse_args(int argc, char** argv) {
             if (i + 1 < argc) {
                 if (std::string(argv[++i]).compare(std::string("-c")) == 0) {
                     utils::show_license();
-                    exit(1);
+                    exit(0);
                 } else
                     throw std::runtime_error("Unknown flag " + std::string(argv[i]));
             } else
@@ -319,7 +319,7 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
 
 int main(int argc, char** argv) {
     auto start_time = std::chrono::high_resolution_clock::now();
-    utils::show_copyright_notice();
+    utils::show_copyright_notice("BiasAdjustCXX");
 
     try {
         parse_args(argc, argv);

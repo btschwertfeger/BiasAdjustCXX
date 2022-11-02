@@ -16,7 +16,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(BiasAdjustmentCXX
+project(BiasAdjustCXX
     VERSION 1.0
     DESCRIPTION "Bias adjustment/correction command line tool for NetCDF-based climate data"
     LANGUAGES CXX
@@ -48,15 +48,15 @@ set(SOURCES
 )
 
 # add executable
-add_executable( Main.app ${SOURCES})
+add_executable( BiasAdjustCXX ${SOURCES})
 
 # Include the netcdf headers
-target_include_directories( Main.app
+target_include_directories( BiasAdjustCXX
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
     PRIVATE include
 )
 
-target_link_libraries( Main.app
+target_link_libraries( BiasAdjustCXX
     PUBLIC
         ${netCDFCxx_LIBRARIES}
 )
