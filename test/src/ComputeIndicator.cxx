@@ -42,11 +42,10 @@
  * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-static std::string method_name = "";
-
 static std::vector<NcFileHandler*> v_NcFileHandlers;
 static std::vector<std::string> v_input_filepaths;
 static std::string
+    method_name = "",
     variable_name = "",
     output_filepath = "";
 
@@ -101,40 +100,47 @@ static void show_usage(std::string name) {
     std::cout << std::endl;
 }
 
-static int parse_args(int argc, char** argv) {
+static void parse_args(int argc, char** argv) {
+    if (argc == 1) {
+        show_usage(argv[0]);
+        exit(0);
+    }
+
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-i" || arg == "--input") {
             if (i + 1 < argc)
                 v_input_filepaths.push_back(argv[++i]);
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-v" || arg == "--variable") {
             if (i + 1 < argc)
                 variable_name = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-m" || arg == "--method") {
             if (i + 1 < argc)
                 method_name = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
                 output_filepath = argv[++i];
-            else {
-                Log.error(arg + " requires one argument!");
-                return 1;
-            }
+            else
+                std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-h" || arg == "--help") {
             show_usage(argv[0]);
-            return 1;
+            exit(0);
+        } else if (arg == "show") {
+            if (i + 1 < argc) {
+                if (std::string(argv[++i]).compare(std::string("-c")) == 0) {
+                    utils::show_license();
+                    exit(0);
+                } else
+                    throw std::runtime_error("Unknown flag " + std::string(argv[i]));
+            } else
+                throw std::runtime_error(arg + " requires one argument.");
+
         } else
             Log.warning("Unknown argument " + arg + "!");
     }
@@ -147,18 +153,24 @@ static int parse_args(int argc, char** argv) {
         throw std::runtime_error("No outputfile defined!");
     else if (method_name.empty())
         throw std::runtime_error("No method specified!");
+    else {
+        // ? check if inputfiles match method requirements
+        if (isInStrV(MathUtils::requires_1_ds, method_name) && v_input_filepaths.size() != 1)
+            throw std::runtime_error("Method " + method_name + " requires 1 inputfile!");
+        else if (isInStrV(MathUtils::requires_2_ds, method_name) && v_input_filepaths.size() != 2)
+            throw std::runtime_error("Method " + method_name + " requires 2 inputfiles!");
 
-    // ? check if inputfiles match method requirements
-    if (isInStrV(MathUtils::requires_1_ds, method_name) && v_input_filepaths.size() != 1)
-        throw std::runtime_error("Method " + method_name + " requires 1 inputfile!");
-    else if (isInStrV(MathUtils::requires_2_ds, method_name) && v_input_filepaths.size() != 2)
-        throw std::runtime_error("Method " + method_name + " requires 2 inputfiles!");
+        // ? initialize the data manager
+        for (auto const& e : v_input_filepaths)
+            v_NcFileHandlers.push_back(new NcFileHandler(e, variable_name, 3));
+    }
+}
 
-    // ? initialize the data manager
-    for (auto const& e : v_input_filepaths)
-        v_NcFileHandlers.push_back(new NcFileHandler(e, variable_name, 3));
-
-    return 0;
+template <typename T>
+static void stdcout_runtime(T start_time) {
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> ms_double = end_time - start_time;
+    std::cout << ms_double.count() << "ms\n";
 }
 
 /*
@@ -180,7 +192,7 @@ void compute_col_for_one_file(std::vector<std::vector<float>>& data_out, unsigne
     Func_one method = MathUtils::get_method_for_1_ds(method_name);
 
     for (unsigned lat = 0; lat < v_NcFileHandlers[0]->n_lat; lat++)
-        data_out[lat][lon] = method(dataset_lats[lat]);
+        data_out[lat][lon] = (float)method(dataset_lats[lat]);
 }
 
 /**
@@ -202,7 +214,7 @@ void compute_col_for_two_files(std::vector<std::vector<float>>& v_data_out, unsi
 
     Func_two method = MathUtils::get_method_for_2_ds(method_name);
     for (unsigned lat = 0; lat < v_NcFileHandlers[0]->n_lat; lat++)
-        v_data_out[lat][lon] = method(dataset_1_lats[lat], dataset_2_lats[lat]);
+        v_data_out[lat][lon] = (float)method(dataset_1_lats[lat], dataset_2_lats[lat]);
 }
 
 /**
@@ -233,27 +245,26 @@ void compute_indicator(std::vector<std::vector<float>>& v_data_out) {
  */
 
 int main(int argc, char** argv) {
-    utils::show_copyright_notice();
+    auto start_time = std::chrono::high_resolution_clock::now();
+    utils::show_copyright_notice("ComputeIndicatorCXX");
 
     try {
-        int args_result = parse_args(argc, argv);
-        if (args_result != 0) return args_result;
-
+        parse_args(argc, argv);
+        Log.info("Method: " + method_name);
         std::vector<std::vector<float>> v_data_out(
             (int)v_NcFileHandlers[0]->n_lat,
             std::vector<float>((int)v_NcFileHandlers[0]->n_lon));
 
-        // ? computation
         Log.info("Starting computation!");
         compute_indicator(v_data_out);
 
-        // ? write to file
-        Log.info("Saving " + output_filepath);
+        Log.info("Saving: " + output_filepath);
         v_NcFileHandlers[0]->to_netcdf(output_filepath, method_name, v_data_out);
 
         Log.info("SUCCESS!");
     } catch (const std::runtime_error& error) {
         Log.error(error.what());
+        stdcout_runtime(start_time);
         exit(1);
     }
     return 0;

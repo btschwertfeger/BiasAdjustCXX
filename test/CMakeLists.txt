@@ -16,9 +16,9 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(BiasAdjustmentCXX_Validation
+project(ComputeIndicatorCXX
     VERSION 1.0
-    DESCRIPTION "Validation Program for BiasAdjustmentCXX"
+    DESCRIPTION "Command line tool to compute a 2-dimensional matrice based on inputfile(s)"
     LANGUAGES CXX
 )
 
@@ -47,15 +47,15 @@ set(SOURCES
 )
 
 # add executable
-add_executable( ComputeIndicator.app ${SOURCES})
+add_executable( ComputeIndicatorCXX ${SOURCES})
 
 # Include the netcdf headers
-target_include_directories( ComputeIndicator.app
+target_include_directories( ComputeIndicatorCXX
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
     PRIVATE ../include
 )
 
-target_link_libraries( ComputeIndicator.app
+target_link_libraries( ComputeIndicatorCXX
     PUBLIC
         ${netCDFCxx_LIBRARIES}
 )
