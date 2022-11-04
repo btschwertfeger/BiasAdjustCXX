@@ -63,13 +63,20 @@ CMethods::~CMethods() {}
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-CM_Func_ptr_scaling CMethods::get_cmethod_scaling(std::string method_name) {
+CM_Func_ptr_scaling_add CMethods::get_cmethod_scaling_add(std::string method_name) {
     if (method_name == "linear_scaling")
-        return Linear_Scaling;
+        return Linear_Scaling_add;
     else if (method_name == "variance_scaling")
         return Variance_Scaling;
     else if (method_name == "delta_method")
-        return Delta_Method;
+        return Delta_Method_add;
+    return NULL;
+}
+CM_Func_ptr_scaling_mult CMethods::get_cmethod_scaling_mult(std::string method_name) {
+    if (method_name == "linear_scaling")
+        return Linear_Scaling_mult;
+    else if (method_name == "delta_method")
+        return Delta_Method_mult;
     return NULL;
 }
 CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_name) {
@@ -106,26 +113,43 @@ CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_n
  *  (4.)    $ T_{scen}^{*}(d) = \mu_{m}(T_{obs}(d))\cdot\left[\frac{T_{contr}(d)}{\mu_{m}(T_{scen}(d))}\right]$
  *
  */
-void CMethods::Linear_Scaling(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind) {
+void CMethods::Linear_Scaling_add(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario) {
     const double
         ref_mean = MathUtils::mean(v_reference),
         contr_mean = MathUtils::mean(v_control);
 
-    if (kind == "add" || kind == "+") {
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_scenario[ts] + (ref_mean - contr_mean);  // Eq. 1f.
-    } else if (kind == "mult" || kind == "*") {
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            // float result = v_scenario[ts] * (ref_mean / contr_mean);
-            // if (result > 0.3) {
-            //     const double scen_mean = MathUtils::mean(v_scenario);
-            //     std::cout << ts << ": " << v_scenario[ts] << " * " << ref_mean << " / " << contr_mean << " (" << scen_mean << ")" << std::endl;
-            //     throw std::runtime_error("'end'");
-            // }
-            v_output[ts] = v_scenario[ts] * (ref_mean / contr_mean);  // Eq. 3f.
-        }
-    } else
-        throw std::runtime_error("Invalid adjustment kind <" + kind + "> for linear scaling!");
+    const double scaling_factor = ref_mean - contr_mean;
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        v_output[ts] = v_scenario[ts] + scaling_factor;  // Eq. 1f.
+}
+void CMethods::Linear_Scaling_mult(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference, std::vector<float> &v_control,
+    std::vector<float> &v_scenario,
+    double max_scaling_factor) {
+    const double
+        ref_mean = MathUtils::mean(v_reference),
+        contr_mean = MathUtils::mean(v_control);
+    const double scaling_factor = (ref_mean / contr_mean);
+    const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
+                                               ? max_scaling_factor
+                                           : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
+                                               ? -max_scaling_factor
+                                               : scaling_factor;
+
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
+        // float result = v_scenario[ts] * (ref_mean / contr_mean);
+        // if (result > 0.3) {
+        //     const double scen_mean = MathUtils::mean(v_scenario);
+        //     std::cout << ts << ": " << v_scenario[ts] << " * " << ref_mean << " / " << contr_mean << " (" << scen_mean << ")" << std::endl;
+        //     throw std::runtime_error("'end'");
+        // }
+        v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;  // Eq. 3f.
+    }
 }
 
 /**
@@ -152,41 +176,39 @@ void CMethods::Linear_Scaling(std::vector<float> &v_output, std::vector<float> &
  * (7.) $T^{*}_{contr}(d)=T^{*3}_{contr}(d)+\mu_{m}(T^{*1}_{contr}(d))$
  * (8.) $T^{*}_{scen}(d)=T^{*3}_{scen}(d)+\mu_{m}(T^{*1}_{scen}(d))$
  */
-void CMethods::Variance_Scaling(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind) {
-    if (kind == "add" || kind == "+") {
-        std::vector<float> LS_contr(v_reference.size());
-        std::vector<float> LS_scen(v_reference.size());
+void CMethods::Variance_Scaling(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario) {
+    std::vector<float> LS_contr(v_reference.size());
+    std::vector<float> LS_scen(v_reference.size());
 
-        Linear_Scaling(LS_contr, v_reference, v_control, v_control, "+");  // Eq. 1
-        Linear_Scaling(LS_scen, v_reference, v_control, v_scenario, "+");  // Eq. 2
+    Linear_Scaling_add(LS_contr, v_reference, v_control, v_control);  // Eq. 1
+    Linear_Scaling_add(LS_scen, v_reference, v_control, v_scenario);  // Eq. 2
 
-        double
-            LS_contr_mean = MathUtils::mean(LS_contr),
-            LS_scen_mean = MathUtils::mean(LS_scen);
+    double
+        LS_contr_mean = MathUtils::mean(LS_contr),
+        LS_scen_mean = MathUtils::mean(LS_scen);
 
-        std::vector<float> VS1_contr(v_control.size());
-        std::vector<float> VS1_scen(v_scenario.size());
+    std::vector<float> VS1_contr(v_control.size());
+    std::vector<float> VS1_scen(v_scenario.size());
 
-        for (unsigned ts = 0; ts < v_control.size(); ts++)
-            VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
+    for (unsigned ts = 0; ts < v_control.size(); ts++)
+        VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
 
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
 
-        float
-            ref_sd = MathUtils::sd(v_reference),
-            VS1_contr_sd = MathUtils::sd(VS1_contr);
+    float
+        ref_sd = MathUtils::sd(v_reference),
+        VS1_contr_sd = MathUtils::sd(VS1_contr);
 
-        std::vector<float> VS2_scen(v_scenario.size());
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            VS2_scen[ts] = VS1_scen[ts] * (ref_sd / VS1_contr_sd);  // Eq. 6
-            v_output[ts] = VS2_scen[ts] + LS_scen_mean;             // Eq. 7
-        }
-
-    } else if (kind == "mult" || kind == "*")
-        throw std::runtime_error("Multiplicative Variance Scaling Method not implemented!");
-    else
-        throw std::runtime_error("Invalid adjustment kind <" + kind + "> for variance scaling!");
+    std::vector<float> VS2_scen(v_scenario.size());
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
+        VS2_scen[ts] = VS1_scen[ts] * (ref_sd / VS1_contr_sd);  // Eq. 6
+        v_output[ts] = VS2_scen[ts] + LS_scen_mean;             // Eq. 7
+    }
 }
 
 /**
@@ -198,7 +220,7 @@ void CMethods::Variance_Scaling(std::vector<float> &v_output, std::vector<float>
  * @param v_reference observation data (control period)
  * @param v_control modeled data of the control period
  * @param v_scenario data to adjust
- * @param kind type of adjustment; additive or multiplicative
+ * @param max_scaling_factor maximum scaling for *
  *
  * Add (+):
  *   (1.) $T^{*}_{contr}(d) = T_{contr}(d) + (\mu_{m}(T_{scen}(d)) - \mu_{m}(T_{obs}(d)))$
@@ -206,19 +228,36 @@ void CMethods::Variance_Scaling(std::vector<float> &v_output, std::vector<float>
  *   (2.) $T^{*}_{contr}(d) = T_{contr}(d) \cdot \left[\frac{\mu_{m}(T_{scen}(d))}{\mu_{m}(T_{obs}(d))}\right]$
  *
  */
-void CMethods::Delta_Method(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind) {
+void CMethods::Delta_Method_add(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario) {
     const double
         contr_mean = MathUtils::mean(v_control),
         scen_mean = MathUtils::mean(v_scenario);
+    const double scaling_factor = (scen_mean - contr_mean);
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        v_output[ts] = v_reference[ts] + scaling_factor;  // Eq. 1
+}
+void CMethods::Delta_Method_mult(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario,
+    double max_scaling_factor) {
+    const double
+        contr_mean = MathUtils::mean(v_control),
+        scen_mean = MathUtils::mean(v_scenario);
+    const double scaling_factor = (scen_mean / contr_mean);
+    const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
+                                               ? (double)max_scaling_factor
+                                           : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
+                                               ? -(double)max_scaling_factor
+                                               : scaling_factor;
 
-    if (kind == "add" || kind == "+") {
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_reference[ts] + (scen_mean - contr_mean);  // Eq. 1
-    } else if (kind == "mult" || kind == "*") {
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_reference[ts] * (scen_mean / contr_mean);  // Eq. 2
-    } else
-        throw std::runtime_error("Invalid adjustment kind <" + kind + "> for the delta method!");
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        v_output[ts] = v_reference[ts] * adjusted_scaling_factor;  // Eq. 2
 }
 
 /**

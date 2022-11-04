@@ -47,13 +47,21 @@ class MathUtils {
     static Func_two get_method_for_2_ds(std::string name);
 
     static double correlation_coefficient(std::vector<float>& x, std::vector<float>& y);
+
     static double rmse(std::vector<float>& x, std::vector<float>& y);
     static double mbe(std::vector<float>& x, std::vector<float>& y);
+
     static double ioa(std::vector<float>& x, std::vector<float>& y);
+
     static double sd(std::vector<float>& x);
     static double variance(std::vector<float>& x);
+
     static double mean(std::vector<float>& a);
     static double mean(std::vector<double>& a);
+
+    static float median(std::vector<float>& a);
+    static double median(std::vector<double>& a);
+
     static double lerp(double a, double b, double x);
 
     static std::vector<int> get_pdf(std::vector<float>& arr, std::vector<double>& bins);
