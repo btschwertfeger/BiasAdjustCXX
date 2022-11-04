@@ -31,7 +31,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-typedef void (*CM_Func_ptr_scaling)(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
+typedef void (*CM_Func_ptr_scaling_add)(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario);
+typedef void (*CM_Func_ptr_scaling_mult)(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor);
 typedef void (*CM_Func_ptr_distribution)(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);
 
 class CMethods {
@@ -39,15 +40,18 @@ class CMethods {
     CMethods();
     ~CMethods();
 
-    static CM_Func_ptr_scaling get_cmethod_scaling(std::string method_name);
+    static CM_Func_ptr_scaling_add get_cmethod_scaling_add(std::string method_name);
+    static CM_Func_ptr_scaling_mult get_cmethod_scaling_mult(std::string method_name);
     static CM_Func_ptr_distribution get_cmethod_distribution(std::string method_name);
 
     static std::vector<std::string> scaling_method_names;
     static std::vector<std::string> distribution_method_names;
 
-    static void Linear_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
-    static void Variance_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
-    static void Delta_Method(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind);
+    static void Linear_Scaling_add(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario);
+    static void Linear_Scaling_mult(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor);
+    static void Variance_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario);
+    static void Delta_Method_add(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario);
+    static void Delta_Method_mult(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor);
 
     static std::vector<double> get_xbins(std::vector<float>& a, std::vector<float>& b, unsigned n_quantiles, std::string kind);
     static void Quantile_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);

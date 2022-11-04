@@ -43,10 +43,6 @@
  * * ... or use the CMakeLists.txt file.
  */
 
-/*
- * ----- ----- ----- I N C L U D E ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- */
-
 #include <math.h>
 
 #include <chrono>
@@ -56,8 +52,14 @@
 #include "NcFileHandler.hxx"
 #include "Utils.hxx"
 #include "colors.h"
-/*
- * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
+/**
+ * ------------------------------------------------------------
+ *  ____        __ _       _ _   _
+ * |  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___
+ * | | | |/ _ \ |_| | '_ \| | __| |/ _ \| '_ \/ __|
+ * | |_| |  __/  _| | | | | | |_| | (_) | | | \__ \
+ * |____/ \___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
  */
 
 static NcFileHandler
@@ -71,17 +73,19 @@ static std::string
     adjustment_method_name = "",
     adjustment_kind = "add";
 
-static CM_Func_ptr_scaling scaling_func = NULL;
+static CM_Func_ptr_scaling_add scaling_func_add = NULL;
+static CM_Func_ptr_scaling_mult scaling_func_mult = NULL;
 static CM_Func_ptr_distribution distribution_func = NULL;
 
-static unsigned n_quantiles = 100;
+static unsigned n_quantiles = 250;
+static double max_scaling_factor = 10.0;
 static bool one_dim = false;
 static utils::Log Log = utils::Log();
 
-/*
- * ----- ----- ----- P R O G R A M - M A N A G E M E N T ----- ----- ----- ----- ----- ----- ----- ----- -----
+/**
+ * ------------------------------------------------------------------
+ * ==== Program Management ======
  */
-
 void show_usage(std::string name) {
     std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\t\\\n"
               << GREEN << "\t --ref " << RESET << "observation_data.nc\t\\\n"
@@ -103,11 +107,12 @@ void show_usage(std::string name) {
               << GREEN << "\t-q, --quantiles\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
               << GREEN << "\t-k, --kind\t\t" << RESET << "kind of adjustment (e. g. '+' or '*' for additive or multiplicative method (default: '+'))\n"
               << GREEN << "\t    --1dim\t\t" << RESET << "select this, when all input data sets only contain the <time> dimension (i. e. no spatial dimensions)"
+              << GREEN << "\t    --max-scaling-factor\t\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables (default: 10)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
               << "-> data sets must be filetype NetCDF\n"
-              << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values type float\n"
+              << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
               << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
               << RESET << std::endl;
 
@@ -137,6 +142,14 @@ void show_usage(std::string name) {
     std::cout.flush();
 }
 
+static std::string get_adjustment_kind() {
+    return (adjustment_kind == "add" || adjustment_kind == "+")
+               ? "add"
+           : (adjustment_kind == "mult" || adjustment_kind == "*")
+               ? "mult"
+               : "";
+}
+
 static void parse_args(int argc, char** argv) {
     if (argc == 1) {
         show_usage(argv[0]);
@@ -153,44 +166,45 @@ static void parse_args(int argc, char** argv) {
             if (i + 1 < argc)
                 reference_fpath = argv[++i];
             else
-                std::runtime_error(arg + " requires one argument!");
-
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--contr" || arg == "--control") {
             if (i + 1 < argc)
                 control_fpath = argv[++i];
             else
-                std::runtime_error(arg + " requires one argument!");
-
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--scen" || arg == "--scenario") {
             if (i + 1 < argc)
                 scenario_fpath = argv[++i];
             else
-                std::runtime_error(arg + " requires one argument!");
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-v" || arg == "--variable") {
             if (i + 1 < argc)
                 variable_name = argv[++i];
             else
-                std::runtime_error(arg + " requires one argument!");
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-q" || arg == "--quantiles") {
             if (i + 1 < argc)
                 n_quantiles = (unsigned)std::stoi(argv[++i]);
         } else if (arg == "-m" || arg == "--method") {
-            if (i + 1 < argc) {
+            if (i + 1 < argc)
                 adjustment_method_name = argv[++i];
-                scaling_func = CMethods::get_cmethod_scaling(adjustment_method_name);
-                distribution_func = CMethods::get_cmethod_distribution(adjustment_method_name);
-            } else
-                std::runtime_error(arg + " requires one argument!");
+            else
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-k" || arg == "--kind") {
             if (i + 1 < argc)
                 adjustment_kind = argv[++i];
             else
-                std::runtime_error(arg + " requires one argument!");
+                throw std::runtime_error(arg + " requires one argument!");
+        } else if (arg == "--max-scaling-factor") {
+            if (i + 1 < argc)
+                max_scaling_factor = std::stoi(argv[++i]);
+            else
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
                 output_filepath = argv[++i];
             else
-                std::runtime_error(arg + " requires one argument!");
+                throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--1dim")
             one_dim = true;
         else if (arg == "-h" || arg == "--help") {
@@ -243,6 +257,15 @@ static void parse_args(int argc, char** argv) {
         if (adjustment_method_name == std::string("delta_method"))
             throw std::runtime_error("Time dimension input files does not have the same length! This is required for the delta method.");
     }
+    if (get_adjustment_kind() == "add") {
+        scaling_func_add = CMethods::get_cmethod_scaling_add(adjustment_method_name);
+        distribution_func = CMethods::get_cmethod_distribution(adjustment_method_name);
+
+    } else if (get_adjustment_kind() == "mult") {
+        scaling_func_mult = CMethods::get_cmethod_scaling_mult(adjustment_method_name);
+        distribution_func = CMethods::get_cmethod_distribution(adjustment_method_name);
+    } else
+        throw std::runtime_error("Unkonwn adjustment kind " + adjustment_kind + "!");
 }
 
 template <typename T>
@@ -252,31 +275,27 @@ static void stdcout_runtime(T start_time) {
     std::cout << ms_double.count() << "ms\n";
 }
 
-/*
- * ----- ----- ----- C O M P U T A T I O N ----- ----- ----- ----- ----- ----- ----- ----- -----
+/**
+ * ------------------------------------------------------------
+ *   ____                            _        _   _
+ *  / ___|___  _ __ ___  _ __  _   _| |_ __ _| |_(_) ___  _ __
+ * | |   / _ \| '_ ` _ \| '_ \| | | | __/ _` | __| |/ _ \| '_ \
+ * | |__| (_) | | | | | | |_) | |_| | || (_| | |_| | (_) | | | |
+ *  \____\___/|_| |_| |_| .__/ \__,_|\__\__,_|\__|_|\___/|_| |_|
+ *                      |_|
  */
-
 static void adjust_1d(
     std::vector<float>& v_data_out,
     std::vector<float>& v_reference,
     std::vector<float>& v_control,
     std::vector<float>& v_scenario) {
-    if (scaling_func != NULL) {
-        scaling_func(
-            v_data_out,
-            v_reference,
-            v_control,
-            v_scenario,
-            adjustment_kind);
-    } else if (distribution_func != NULL) {
-        distribution_func(
-            v_data_out,
-            v_reference,
-            v_control,
-            v_scenario,
-            adjustment_kind,
-            n_quantiles);
-    } else
+    if (scaling_func_add != NULL)
+        scaling_func_add(v_data_out, v_reference, v_control, v_scenario);
+    if (scaling_func_mult != NULL)
+        scaling_func_mult(v_data_out, v_reference, v_control, v_scenario, max_scaling_factor);
+    else if (distribution_func != NULL)
+        distribution_func(v_data_out, v_reference, v_control, v_scenario, adjustment_kind, n_quantiles);
+    else
         throw std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
 }
 
@@ -300,21 +319,20 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
         ds_control.get_lat_timeseries_for_lon(v_control_lat_data, lon);
         ds_scenario.get_lat_timeseries_for_lon(v_scenario_lat_data, lon);
 
-        for (unsigned lat = 0; lat < ds_scenario.n_lat; lat++) {
-            std::cout << "lon: " << lon << " lat: " << lat << std::endl;
-            adjust_1d(
-                v_data_out[lat][lon],
-                v_reference_lat_data[lat],
-                v_control_lat_data[lat],
-                v_scenario_lat_data[lat]);
-        }
+        for (unsigned lat = 0; lat < ds_scenario.n_lat; lat++)
+            adjust_1d(v_data_out[lat][lon], v_reference_lat_data[lat], v_control_lat_data[lat], v_scenario_lat_data[lat]);
     }
     utils::progress_bar((float)(v_data_out[0].size()), (float)(v_data_out[0].size()));
     std::cout << std::endl;
 }
 
-/*
- * ----- ----- ----- M A I N ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+/**
+ * ------------------------------------------------------------------------
+ *  __  __       _
+ * |  \/  | __ _(_)_ __
+ * | |\/| |/ _` | | '_ \
+ * | |  | | (_| | | | | |
+ * |_|  |_|\__,_|_|_| |_|
  */
 
 int main(int argc, char** argv) {
@@ -324,7 +342,8 @@ int main(int argc, char** argv) {
     try {
         parse_args(argc, argv);
         Log.info("Data sets loaded");
-        Log.info("Method: " + adjustment_method_name + " (" + adjustment_kind + ")");
+        Log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
+        if (get_adjustment_kind() == "mult") Log.info("Maximum scaling factor: " + std::to_string(max_scaling_factor));
 
         if (one_dim) {  // adjustment of data set containing only one grid cell
             std::vector<float>
@@ -374,7 +393,6 @@ int main(int argc, char** argv) {
         }
         Log.info("Done!");
         stdcout_runtime(start_time);
-
     } catch (const std::runtime_error& error) {
         Log.error(error.what());
         stdcout_runtime(start_time);

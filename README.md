@@ -72,7 +72,7 @@ BiasAdjustCXX                        \
     --scen input_data/scenario.nc    \ # time series to adjust
     -v tas                           \ # variable to adjust
     -m quantile_delta_mapping        \ # adjustment method
-    -k "+"                           \ # kind of qdjustment ("+" == "add" and "*" == "mult")
+    -k "+"                           \ # kind of adjustment ("+" == "add" and "*" == "mult")
     -q 100                             # quantiles to respect
 ```
 
@@ -101,6 +101,7 @@ BiasAdjustCXX -h
 
 - Installed NetCDF4 C++ Library ([How to install NetCDF4 for C++](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
 - Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
+- CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 
 ### Optional for working examples in notebook (`examples.ipynb`)
 

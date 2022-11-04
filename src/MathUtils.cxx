@@ -201,11 +201,24 @@ double MathUtils::mean(std::vector<float>& a) {
     for (unsigned i = 0; i < a.size(); i++) sum += a[i];
     return sum / a.size();
 }
-
 double MathUtils::mean(std::vector<double>& a) {
     double sum = 0;
     for (unsigned i = 0; i < a.size(); i++) sum += a[i];
     return sum / a.size();
+}
+
+/** Median
+ *
+ * @param a 1D vector of floats/doubles to get the median from
+ */
+
+float MathUtils::median(std::vector<float>& a) {
+    std::sort(a.begin(), a.end());
+    return a[(int)(a.size() / 2)];
+}
+double MathUtils::median(std::vector<double>& a) {
+    std::sort(a.begin(), a.end());
+    return a[(int)(a.size() / 2)];
 }
 
 /**
