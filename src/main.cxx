@@ -79,7 +79,9 @@ static CM_Func_ptr_distribution distribution_func = NULL;
 
 static unsigned n_quantiles = 250;
 static double max_scaling_factor = 10.0;
-static bool one_dim = false;
+static bool
+    one_dim = false,
+    interval_scaling365 = false;
 static utils::Log Log = utils::Log();
 
 /**
@@ -107,6 +109,7 @@ void show_usage(std::string name) {
               << GREEN << "\t-q, --quantiles\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
               << GREEN << "\t-k, --kind\t\t" << RESET << "kind of adjustment (e. g. '+' or '*' for additive or multiplicative method (default: '+'))\n"
               << GREEN << "\t    --1dim\t\t" << RESET << "select this, when all input data sets only contain the <time> dimension (i. e. no spatial dimensions)"
+              << GREEN << "\t    --interval365\t\t" << RESET << "enables the adjustment based on 30 day moving windows for the sclaing-based methods; requires that all input files have 365 days per year (no January 29th.!)"
               << GREEN << "\t    --max-scaling-factor\t\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables (default: 10)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
@@ -131,7 +134,7 @@ void show_usage(std::string name) {
               << "\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
 
     std::cerr << YELLOW << "\n\n====== References ======" << RESET
-              << "\n- Creator: Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
+              << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
               << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
               << "\n- Mathematical foundations:"
               << "\n\t (1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
@@ -200,7 +203,9 @@ static void parse_args(int argc, char** argv) {
                 max_scaling_factor = std::stoi(argv[++i]);
             else
                 throw std::runtime_error(arg + " requires one argument!");
-        } else if (arg == "-o" || arg == "--output") {
+        } else if (arg == "--interval365")
+            interval_scaling365 = true;
+        else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
                 output_filepath = argv[++i];
             else
@@ -253,17 +258,28 @@ static void parse_args(int argc, char** argv) {
         }
     }
 
-    if (ds_reference.n_time != ds_control.n_time || ds_reference.n_time != ds_scenario.n_time) {
-        if (adjustment_method_name == std::string("delta_method"))
-            throw std::runtime_error("Time dimension input files does not have the same length! This is required for the delta method.");
-    }
+    if (ds_reference.n_time != ds_control.n_time || ds_reference.n_time != ds_scenario.n_time)
+        Log.warning("The length of the time dimensions of the input files are not equal.");
+
+    // Delta Method needs equally
+    if (ds_reference.n_time != ds_scenario.n_time && adjustment_method_name == std::string("delta_method"))
+        throw std::runtime_error("Time dimension of reference and scenario input files does not have the same length! This is required for the delta method.");
+
+    // when using -15 + 15 days long term interval scaling, leap years should not be included and every year must be full.
+    if (interval_scaling365 && !(ds_reference.n_time % 365 == 0 && ds_control.n_time % 365 == 0 && ds_scenario.n_time % 365 == 0))
+        throw std::runtime_error("Data sets should not contain the 29. February and every year must have 365 entries for interval scaling (\"--interval365\").");
+
     if (get_adjustment_kind() == "add") {
         scaling_func_add = CMethods::get_cmethod_scaling_add(adjustment_method_name);
         distribution_func = CMethods::get_cmethod_distribution(adjustment_method_name);
 
+        if (adjustment_method_name == "variance_scaling" && interval_scaling365)
+            throw std::runtime_error("Variance Scaling only supports the regular monthly based adjustment method (without \"--interval365\")");
+
     } else if (get_adjustment_kind() == "mult") {
         scaling_func_mult = CMethods::get_cmethod_scaling_mult(adjustment_method_name);
         distribution_func = CMethods::get_cmethod_distribution(adjustment_method_name);
+
     } else
         throw std::runtime_error("Unkonwn adjustment kind " + adjustment_kind + "!");
 }
@@ -290,9 +306,9 @@ static void adjust_1d(
     std::vector<float>& v_control,
     std::vector<float>& v_scenario) {
     if (scaling_func_add != NULL)
-        scaling_func_add(v_data_out, v_reference, v_control, v_scenario);
-    if (scaling_func_mult != NULL)
-        scaling_func_mult(v_data_out, v_reference, v_control, v_scenario, max_scaling_factor);
+        scaling_func_add(v_data_out, v_reference, v_control, v_scenario, interval_scaling365);
+    else if (scaling_func_mult != NULL)
+        scaling_func_mult(v_data_out, v_reference, v_control, v_scenario, max_scaling_factor, interval_scaling365);
     else if (distribution_func != NULL)
         distribution_func(v_data_out, v_reference, v_control, v_scenario, adjustment_kind, n_quantiles);
     else
@@ -344,8 +360,10 @@ int main(int argc, char** argv) {
         Log.info("Data sets loaded");
         Log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
         if (get_adjustment_kind() == "mult") Log.info("Maximum scaling factor: " + std::to_string(max_scaling_factor));
+        if (interval_scaling365) Log.info("Scaling will be performed per long-term 30day interval, not per long term month.");
 
         if (one_dim) {  // adjustment of data set containing only one grid cell
+            std::cout << "ONEDIM" << std::endl;
             std::vector<float>
                 v_data_out((int)ds_scenario.n_time),
                 v_reference((int)ds_reference.n_time),

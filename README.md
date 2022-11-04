@@ -40,21 +40,17 @@ In this way, for example, modeled data, which on average represent values that a
 
 ## Available methods:
 
-- Linear Scaling (additive and multiplicative)
+- `*` Linear Scaling (additive and multiplicative)
 - Variance Scaling (additive)
-- Delta (Change) Method (additive and multiplicative)
+- `*` Delta (Change) Method (additive and multiplicative)
 - Quantile Mapping
 - Quantile Delta Mapping (additive and multuplicative)
 
+`*` Here it is also possible to adjust the data based on 30 day long-term means (-15< x < +15 days over all years) instead of the long-term monthly mean using the `--interval365` flag. This prevents disproportionately high differences in the mean values at the monthly transitions.
+
 ---
 
-## Compilation:
-
-```bash
-./build.sh
-```
-
-or build form source:
+## Compilation/build from source:
 
 ```bash
 mkdir build && cd build
@@ -63,7 +59,15 @@ cmake .. && cmake --build .
 
 ---
 
-## Usage example
+## Usage examples
+
+The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
+
+All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with c++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
+
+Examples:
+
+a.) Additive Linear Scaling based on long-term 30d interval-means instead of monthly means:
 
 ```bash
 BiasAdjustCXX                        \
@@ -71,14 +75,41 @@ BiasAdjustCXX                        \
     --contr input_data/control.nc    \ # simulated time series of the control period
     --scen input_data/scenario.nc    \ # time series to adjust
     -v tas                           \ # variable to adjust
-    -m quantile_delta_mapping        \ # adjustment method
+    -m linear_scaling                \ # adjustment method
     -k "+"                           \ # kind of adjustment ("+" == "add" and "*" == "mult")
-    -q 100                             # quantiles to respect
+    --interval365                      # use interval based means instead of monthly means
 ```
 
-The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
+Note: The regular linear scaling procedure as described by Teutschbein, Claudia and Seibert, Jan ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--interval365` flag is not beeing used then.
 
-All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with c++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
+b.) Multiplicative Linear Scaling based on long-term 30d interval-means instead of monthly means:
+
+```bash
+BiasAdjustCXX                        \
+    --ref input_data/observations.nc \
+    --contr input_data/control.nc    \
+    --scen input_data/scenario.nc    \
+    -v tas                           \
+    -m linear_scaling                \
+    -k "*"                           \
+    --interval365                    \ # use interval based means instead of monthly means
+    --max-scaling-factor 3             # set max scaling factor to avoid unrealistic results (default: 10)
+```
+
+Note: The multiplicative variant is only prefered when adjusting ratio based variables like precipitaiton.
+
+c.) Additive Quantile Delta Mapping:
+
+```bash
+BiasAdjustCXX                        \
+    --ref input_data/observations.nc \
+    --contr input_data/control.nc    \
+    --scen input_data/scenario.nc    \
+    -v tas                           \
+    -m quantile_delta_mapping        \
+    -k "+"                           \
+    -q 250                             # quantiles to respect
+```
 
 ---
 
@@ -92,7 +123,10 @@ BiasAdjustCXX -h
 
 ## Notes
 
-- For adjusting data using the linear scaling, variance scaling or delta method, you have to separate the files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to create a data set that contains all data for all januarys and then apply the adjustment for this data set. After that you have to do the same for the rest of the months.
+- For adjusting data using the linear scaling, variance scaling or delta method without the `--interval365` flag:
+  - You have to separate the files by month and then apply the correction for each month individually.
+    e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januarys and then apply the
+    adjustment for this data set. After that you have to do the same for the rest of the months.
 - Formulas and references can be found in the implementations of the corresponding functions.
 
 ---
@@ -103,7 +137,7 @@ BiasAdjustCXX -h
 - Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 
-### Optional for working examples in notebook (`examples.ipynb`)
+### Optional for working examples in notebook (`examples.ipynb`):
 
 ```bash
 conda create --name clingenv
