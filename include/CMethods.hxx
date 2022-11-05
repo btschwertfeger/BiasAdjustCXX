@@ -47,6 +47,7 @@ class CMethods {
     static std::vector<std::string> scaling_method_names;
     static std::vector<std::string> distribution_method_names;
 
+    static double get_adjusted_scaling_factor(double factor, double max_factor);
     static void Linear_Scaling_add(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, bool interval_scaling365 = false);
     static void Linear_Scaling_mult(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor, bool interval_scaling365 = false);
     static void Variance_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, bool interval_scaling365 = false);

@@ -2,7 +2,7 @@
 
 /**
  * @file CMethods.cxx
- * @brief
+ * @brief class/collection of procedures to bias adjust time series climate data
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
  *
@@ -21,12 +21,16 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * * Description: class/collection of procedures to bias adjust time series climate data
+ *
+ * * Notes:
+ *  - Methods does not have to match the description of the mentioned papers
+ *      - some of them are derived and improved
+ *      - the references are just the base of the methods
  */
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *                        Includes and Namespaces
+ * *                        Includes
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
@@ -59,7 +63,7 @@ CMethods::~CMethods() {}
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *              method access
+ * *              Method Access
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
@@ -88,11 +92,16 @@ CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_n
 }
 
 /**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *              Helper Functions
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
+
+/**
  * returns the 30-day mean over all years per day of year.
  * > e.g. the mean for January 1st is based on the values of December 18th until January 16th over all years
  */
-std::vector<float> CMethods::get_365_means_based_on_30d_interval(
-    std::vector<float> &v_in) {
+std::vector<float> CMethods::get_365_means_based_on_30d_interval(std::vector<float> &v_in) {
     std::vector<float> v_out(365);
     const unsigned n_years = (unsigned)(v_in.size() / 365);
     for (unsigned day = 0; day < 365; day++) {
@@ -118,9 +127,16 @@ std::vector<float> CMethods::get_365_means_based_on_30d_interval(
     return v_out;
 }
 
+double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
+    return (factor > 0 && factor > max_factor)
+               ? max_factor
+           : (factor < 0 && factor < -max_factor)
+               ? -max_factor
+               : factor;
+}
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *              Adjustment methods
+ * *              Adjustment Methods
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
@@ -163,11 +179,7 @@ void CMethods::Linear_Scaling_add(
                 v_output[ts] = v_scenario[ts] + (ref_365_means[ts % 365] - contr_365_means[ts % 365]);
         }
     } else {
-        const double
-            ref_mean = MathUtils::mean(v_reference),
-            contr_mean = MathUtils::mean(v_control);
-
-        const double scaling_factor = ref_mean - contr_mean;
+        const double scaling_factor = MathUtils::mean(v_reference) - MathUtils::mean(v_control);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_scenario[ts] + scaling_factor;  // Eq. 1f.
     }
@@ -187,26 +199,12 @@ void CMethods::Linear_Scaling_mult(
                 contr_365_means = get_365_means_based_on_30d_interval(v_control);
 
             for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-                const double scaling_factor = (ref_365_means[ts % 365] / contr_365_means[ts % 365]);
-                const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
-                                                           ? max_scaling_factor
-                                                       : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
-                                                           ? -max_scaling_factor
-                                                           : scaling_factor;
+                const double adjusted_scaling_factor = get_adjusted_scaling_factor((ref_365_means[ts % 365] / contr_365_means[ts % 365]), max_scaling_factor);
                 v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;
             }
         }
     } else {
-        const double
-            ref_mean = MathUtils::mean(v_reference),
-            contr_mean = MathUtils::mean(v_control);
-        const double scaling_factor = (ref_mean / contr_mean);
-        const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
-                                                   ? max_scaling_factor
-                                               : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
-                                                   ? -max_scaling_factor
-                                                   : scaling_factor;
-
+        const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_reference) / MathUtils::mean(v_control), max_scaling_factor);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;  // Eq. 3f.
     }
@@ -308,11 +306,9 @@ void CMethods::Delta_Method_add(
                 v_output[ts] = v_reference[ts] + (scen_365_means[ts % 365] - contr_365_means[ts % 365]);
         }
     } else {
-        const double
-            contr_mean = MathUtils::mean(v_control),
-            scen_mean = MathUtils::mean(v_scenario);
+        const double scaling_factor = MathUtils::mean(v_scenario) - MathUtils::mean(v_control);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_reference[ts] + (scen_mean - contr_mean);  // Eq. 1
+            v_output[ts] = v_reference[ts] + scaling_factor;  // Eq. 1
     }
 }
 void CMethods::Delta_Method_mult(
@@ -331,26 +327,12 @@ void CMethods::Delta_Method_mult(
                 scen_365_means = get_365_means_based_on_30d_interval(v_scenario);
 
             for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-                const double scaling_factor = (scen_365_means[ts % 365] / contr_365_means[ts % 365]);
-                const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
-                                                           ? (double)max_scaling_factor
-                                                       : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
-                                                           ? -(double)max_scaling_factor
-                                                           : scaling_factor;
+                const double adjusted_scaling_factor = get_adjusted_scaling_factor(scen_365_means[ts % 365] / contr_365_means[ts % 365], max_scaling_factor);
                 v_output[ts] = v_reference[ts] * adjusted_scaling_factor;
             }
         }
     } else {
-        const double
-            contr_mean = MathUtils::mean(v_control),
-            scen_mean = MathUtils::mean(v_scenario);
-        const double scaling_factor = (scen_mean / contr_mean);
-        const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
-                                                   ? (double)max_scaling_factor
-                                               : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
-                                                   ? -(double)max_scaling_factor
-                                                   : scaling_factor;
-
+        const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_scenario) / MathUtils::mean(v_control), max_scaling_factor);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_reference[ts] * adjusted_scaling_factor;  // Eq. 2
     }
@@ -394,7 +376,7 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
             v_xbins.push_back(v_xbins[v_xbins.size() - 1] + wide);
         return v_xbins;
     } else {
-        throw std::runtime_error("Unknown kind <" + kind + "> for get_xbins-function.");
+        throw std::runtime_error("Unknown kind " + kind + " for get_xbins-function.");
         return std::vector<double>(0);  // just to avoid warnings ...
     }
 }
@@ -414,7 +396,7 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
  * (add):
  *      (1.) $T^{*QM}_{sim,p}(d)=F^{-1}_{obs,h} \left\{F_{sim,h}\left[T_{sim,p}(d)\right]\right\}$
  * (mult):
- *      same but experimental ...
+ *      same but experimental
  */
 void CMethods::Quantile_Mapping(
     std::vector<float> &v_output,
@@ -424,8 +406,7 @@ void CMethods::Quantile_Mapping(
     std::string kind,
     unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
-        std::vector<double>
-            v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
+        std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
 
         std::vector<int>  // ? create CDFs
             vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
@@ -468,7 +449,7 @@ void CMethods::Quantile_Mapping(
             v_output[ts] = (y >= 0) ? y : 0;
         }
     } else
-        throw std::runtime_error("Adjustment kind <" + kind + "> unknown for quantile mapping!");
+        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile mapping!");
 }
 
 /**
@@ -496,7 +477,13 @@ void CMethods::Quantile_Mapping(
  *                   & = \frac{ X_{sim,p}(i) }{ F^{-1}_{sim,h}\left\{F^{}_{sim,p}\left[X_{sim,p}(i)\right]\right\} }
  *   (2.4) X^{*QDM}_{sim,p}(i) = X^{QDM(1)}_{sim,p}(i) \cdot \Delta(i)
  */
-void CMethods::Quantile_Delta_Mapping(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind, unsigned n_quantiles) {
+void CMethods::Quantile_Delta_Mapping(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario,
+    std::string kind,
+    unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
         std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
 
@@ -547,7 +534,7 @@ void CMethods::Quantile_Delta_Mapping(std::vector<float> &v_output, std::vector<
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] * (v_scenario[ts] / MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false)));  // Eq. 2.3f.
     } else
-        throw std::runtime_error("Adjustment kind <" + kind + "> unknown for quantile delta mapping!");
+        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile delta mapping!");
 }
 
 /**
