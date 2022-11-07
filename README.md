@@ -41,12 +41,12 @@ In this way, for example, modeled data, which on average represent values that a
 ## Available methods:
 
 - `*` Linear Scaling (additive and multiplicative)
-- Variance Scaling (additive)
+- `*` Variance Scaling (additive)
 - `*` Delta (Change) Method (additive and multiplicative)
-- Quantile Mapping
+- Quantile Mapping (additive and multuplicative)
 - Quantile Delta Mapping (additive and multuplicative)
 
-`*` Here it is also possible to adjust the data based on 30 day long-term means (-15< x < +15 days over all years) instead of the long-term monthly mean using the `--interval365` flag. This prevents disproportionately high differences in the mean values at the monthly transitions.
+`*` Here it is also possible to adjust the data based on 30 day long-term means (-15< x < +15 days over all years) instead of the long-term monthly mean using the `--interval365` flag. This prevents disproportionately high differences in the long-term mean values at the monthly transitions.
 
 ---
 
@@ -63,7 +63,7 @@ cmake .. && cmake --build .
 
 The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
 
-All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with c++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
+All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with C++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
 
 Examples:
 
@@ -134,8 +134,8 @@ BiasAdjustCXX -h
 ## Requirements:
 
 - Installed NetCDF4 C++ Library ([How to install NetCDF4 for C++](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
-- Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
+- [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 
 ### Optional for working examples in notebook (`examples.ipynb`):
 
