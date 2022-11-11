@@ -77,7 +77,7 @@ static unsigned n_quantiles = 250;
 static double max_scaling_factor = 10.0;
 static bool
     one_dim = false,
-    interval_scaling365 = false;
+    interval31_scaling = false;
 static utils::Log Log = utils::Log();
 
 typedef void (*CM_Func_ptr_scaling_A)(
@@ -85,7 +85,7 @@ typedef void (*CM_Func_ptr_scaling_A)(
     std::vector<float>& v_reference,
     std::vector<float>& v_control,
     std::vector<float>& v_scenario,
-    bool interval_scaling365);
+    bool interval31_scaling);
 
 typedef void (*CM_Func_ptr_scaling_B)(
     std::vector<float>& v_output,
@@ -93,7 +93,7 @@ typedef void (*CM_Func_ptr_scaling_B)(
     std::vector<float>& v_control,
     std::vector<float>& v_scenario,
     double max_scaling_factor,
-    bool interval_scaling365);
+    bool interval31_scaling);
 
 typedef void (*CM_Func_ptr_distribution)(
     std::vector<float>& v_output,
@@ -122,22 +122,23 @@ void show_usage(std::string name) {
               << BOLDBLUE << "Parameters:\n"
               << RESET
               << "    required:\n"
-              << GREEN << "\t--ref, --reference\t" << RESET << "observation/reanalysis data => input file/file path\n"
-              << GREEN << "\t--contr, --control\t" << RESET << "modeled control period data => input file/file path\n"
-              << GREEN << "\t--scen, --scenario\t" << RESET << "modeled scenario period data to adjust => input file/file path\n"
-              << GREEN << "\t-o, --output\t\t" << RESET << "output file/file path\n"
-              << GREEN << "\t-v, --variable\t\t" << RESET << "variable name (e. g.: tas, tsurf, pr) \n"
+              << GREEN << "\t--ref, --reference\t\t" << RESET << "observation/reanalysis data => input file/file path\n"
+              << GREEN << "\t--contr, --control\t\t" << RESET << "modeled control period data => input file/file path\n"
+              << GREEN << "\t--scen, --scenario\t\t" << RESET << "modeled scenario period data to adjust => input file/file path\n"
+              << GREEN << "\t-o, --output\t\t\t" << RESET << "output file/file path\n"
+              << GREEN << "\t-v, --variable\t\t\t" << RESET << "variable name (e. g.: tas, tsurf, pr) \n"
               << "    optional:\n"
-              << GREEN << "\t-h, --help\t\t" << RESET << "show this help message\n"
-              << GREEN << "\t-q, --quantiles\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
-              << GREEN << "\t-k, --kind\t\t" << RESET << "kind of adjustment (e. g. '+' or '*' for additive or multiplicative method (default: '+'))\n"
-              << GREEN << "\t    --1dim\t\t" << RESET << "select this, when all input data sets only contain the <time> dimension (i. e. no spatial dimensions)"
-              << GREEN << "\t    --interval365\t\t" << RESET << "enables the adjustment based on 30 day moving windows for the sclaing-based methods; requires that all input files have 365 days per year (no February 29th.!)"
-              << GREEN << "\t    --max-scaling-factor\t\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables (only for scaling methods; default: 10)"
+              << GREEN << "\t-h, --help\t\t\t" << RESET << "show this help message\n"
+              << GREEN << "\t-q, --quantiles\t\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
+              << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e. g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
+              << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i. e. no spatial dimensions)\n"
+              << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day windows for the sclaing-based methods; mean calculation will be performed on the whole data set\n"
+              << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables (only for scaling methods; default: 10)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
               << "-> data sets must be filetype NetCDF\n"
+              << "-> for scaling-based adjustments: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--monthly" << RESET << " flag is needed (see notes section below)\n"
               << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
               << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
               << RESET << std::endl;
@@ -151,20 +152,20 @@ void show_usage(std::string name) {
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
     std::cout << std::endl;
     std::cerr << YELLOW << "\nNotes: " << RESET
-              << "\n- Linear Scaling, Variance Scaling and Delta Method need a wrapper script to apply this program on monthly separated files i. e. "
-              << "if you want to adjust 30 years of data, you have to separate all input files in 12 groups, one group for each month and then you apply this "
-              << "program on every individual monthly separated data set."
-              << "\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
+              << "\n- When not using the " << GREEN << "--monthly" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.)"
+              << "Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--monthly" << RESET << " flag is used to apply this program on monthly separated files i. e. "
+              << "to adjust 30 years of data, all input files need to be separated into 12 groups, one group for each month, than this program can be applied to every long-term month."
+              << "\n\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
 
     std::cerr << YELLOW << "\n\n====== References ======" << RESET
               << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
               << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
               << "\n- Mathematical foundations:"
-              << "\n\t (1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
-              << "\n\t (2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?, Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
-              << "\n\t (3) Maraun, D.: Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums, Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
-              << "\n\t (4) Teutschbein, C. and Seibert, J.: Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods, Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
-              << "\n\t (5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021.";
+              << "\n(1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
+              << "\n\n(2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?, Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
+              << "\n\n(3) Maraun, D.: Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums, Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
+              << "\n\n(4) Teutschbein, C. and Seibert, J.: Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods, Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
+              << "\n\n(5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021.";
     std::cout.flush();
 }
 
@@ -226,8 +227,8 @@ static void parse_args(int argc, char** argv) {
                 max_scaling_factor = std::stoi(argv[++i]);
             else
                 throw std::runtime_error(arg + " requires one argument!");
-        } else if (arg == "--interval365")
-            interval_scaling365 = true;
+        } else if (arg == "--monthly")
+            interval31_scaling = false;
         else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
                 output_filepath = argv[++i];
@@ -289,8 +290,8 @@ static void parse_args(int argc, char** argv) {
         throw std::runtime_error("Time dimension of reference and scenario input files does not have the same length! This is required for the delta method.");
 
     // when using -15 to +15 days long-term interval scaling, leap years should not be included and every year must be full.
-    if (interval_scaling365 && !(ds_reference.n_time % 365 == 0 && ds_control.n_time % 365 == 0 && ds_scenario.n_time % 365 == 0))
-        throw std::runtime_error("Data sets should not contain the 29. February and every year must have 365 entries for interval scaling (\"--interval365\").");
+    if (interval31_scaling && !(ds_reference.n_time % 365 == 0 && ds_control.n_time % 365 == 0 && ds_scenario.n_time % 365 == 0))
+        throw std::runtime_error("Data sets should not contain the 29. February and every year must have 365 entries for 31-day interval scaling. Use the \"--monhtly\" flag instead and apply the program on monthly separated data sets.");
 
     if (get_adjustment_kind() == "add") {
         if (adjustment_method_name == "linear_scaling")
@@ -342,9 +343,9 @@ static void adjust_1d(
     std::vector<float>& v_control,
     std::vector<float>& v_scenario) {
     if (scaling_func_A != NULL)
-        scaling_func_A(v_data_out, v_reference, v_control, v_scenario, interval_scaling365);
+        scaling_func_A(v_data_out, v_reference, v_control, v_scenario, interval31_scaling);
     else if (scaling_func_B != NULL)
-        scaling_func_B(v_data_out, v_reference, v_control, v_scenario, max_scaling_factor, interval_scaling365);
+        scaling_func_B(v_data_out, v_reference, v_control, v_scenario, max_scaling_factor, interval31_scaling);
     else if (distribution_func != NULL)
         distribution_func(v_data_out, v_reference, v_control, v_scenario, adjustment_kind, n_quantiles);
     else
@@ -396,7 +397,16 @@ int main(int argc, char** argv) {
         Log.info("Data sets loaded");
         Log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
         if (get_adjustment_kind() == "mult") Log.info("Maximum scaling factor: " + std::to_string(max_scaling_factor));
-        if (interval_scaling365) Log.info("Scaling will be performed per long-term 31day interval, not per long term month.");
+        for (unsigned i = 0; i < CMethods::scaling_method_names.size(); i++) {
+            if (CMethods::scaling_method_names[i] == adjustment_method_name) {
+                if (interval31_scaling)
+                    Log.info("Scaling will be performed based on long-term 31day intervals.");
+                else
+                    Log.info("Scaling will be performed based on the whole data set. The input files should only contain the data for a specific month over the entire period. (i.e. this program must be applied to 12 data sets, that contain values only for a specific month over all years.)");
+
+                break;
+            }
+        }
 
         if (one_dim) {  // adjustment of data set containing only one grid cell
             std::vector<float>

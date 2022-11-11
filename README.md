@@ -40,13 +40,13 @@ In this way, for example, modeled data, which on average represent values that a
 
 ## Available methods:
 
-- `*` Linear Scaling (additive and multiplicative)
-- `*` Variance Scaling (additive)
-- `*` Delta (Change) Method (additive and multiplicative)
+- Linear Scaling\* (additive and multiplicative)
+- Variance Scaling\* (additive)
+- Delta (Change) Method\* (additive and multiplicative)
 - Quantile Mapping (additive and multuplicative)
 - Quantile Delta Mapping (additive and multuplicative)
 
-`*` Here it is also possible to adjust the data based on 31 day long-term means (-15 < i < +15 days over all years) instead of the long-term monthly mean using the `--interval365` flag. This prevents disproportionately high differences in the long-term mean values at the monthly transitions.
+\* The data sets must exclude the 29th February. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required to match the techniques described in the referenced papers. The 31-day interval procedures are customized variations and work only on data sets with 365 days per year and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the 31-day interval variant is the prefered method and is enabled by default.
 
 ---
 
@@ -76,8 +76,7 @@ BiasAdjustCXX                        \
     --scen input_data/scenario.nc    \ # time series to adjust
     -v tas                           \ # variable to adjust
     -m linear_scaling                \ # adjustment method
-    -k "+"                           \ # kind of adjustment ("+" == "add" and "*" == "mult")
-    --interval365                      # use interval based means instead of monthly means
+    -k "+"                            # kind of adjustment ("+" == "add" and "*" == "mult")
 ```
 
 Note: The regular linear scaling procedure as described by Teutschbein, Claudia and Seibert, Jan ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--interval365` flag is not beeing used then.
@@ -92,7 +91,6 @@ BiasAdjustCXX                        \
     -v tas                           \
     -m linear_scaling                \
     -k "*"                           \
-    --interval365                    \ # use interval based means instead of monthly means
     --max-scaling-factor 3             # set max scaling factor to avoid unrealistic results (default: 10)
 ```
 
@@ -123,11 +121,13 @@ BiasAdjustCXX -h
 
 ## Notes
 
-- For adjusting data using the linear scaling, variance scaling or delta method without the `--interval365` flag:
-  - You have to separate the files by month and then apply the correction for each month individually.
-    e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januarys and then apply the
-    adjustment for this data set. After that you have to do the same for the rest of the months.
-- Formulas and references can be found in the implementations of the corresponding functions.
+1.) For adjusting data using the linear scaling, variance scaling or delta method and the `--monthly` flag:
+
+You have to separate the files by month and then apply the correction for each month individually.
+e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januarys and then apply the
+adjustment for this data set. After that you have to do the same for the rest of the months (see `example_adjust.run.sh`).
+
+2.) Formulas and references can be found below and at the implementation of the corresponding functions.
 
 ---
 

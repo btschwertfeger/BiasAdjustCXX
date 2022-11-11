@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-# @brief Controled execution of the Main.app program to bias adjust example data sets
+# @brief Controled execution of the BiasAdjustCXX program to bias adjust example data sets
 # @author Benjamin Thomas Schwertfeger
 # @email development@b-schwertfeger.de
 # @link https://b-schwertfeger.de
@@ -10,11 +10,7 @@
 # * -------------------------------------------------------------------
 # *                  ===== Description =====
 # * -------------------------------------------------------------------
-# ? USAGE: ./example.run.adjust.sh
-# ? - This script separates data sets by month and then
-# ?    applies all bias adjustment methods.
-# ? > interim results are saved in some temporary folder
-# ? > clean up after computation
+# ? USAGE: sh example.run.adjust.sh
 # * -------------------------------------------------------------------
 
 work_dir=$(pwd)
@@ -58,10 +54,9 @@ declare -a datasets=("${observations}" "${control}" "${scenario}")
 declare -a ds_paths=("${tmp_ref}" "${tmp_contr}" "${tmp_scen}")
 
 # * -------------------------------------------------------------------
-# *                    ===== Computation =====
+# *            ===== Distribution-based Adjustent =====
 # * -------------------------------------------------------------------
 
-# ? distribution-based adjustments
 for method in "${quant_methods[@]}"; do
     $exec_file                                  \
         --ref $observations                     \
@@ -74,70 +69,82 @@ for method in "${quant_methods[@]}"; do
         -o "${output_dir}/${variable}_${method}_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"
 done
 
-# ? Additive linear scaling based on 30 day long-term mean interval instead of 
+
+# * -------------------------------------------------------------------
+# *            ===== Default Scaling Adjustent =====
+# * -------------------------------------------------------------------
+
+# ? Additive linear scaling based on 31 day long-term mean interval instead of 
 # long-term monthly means to avoid high deviations between month transitions
 # this only works if every dataset has 365 days per year (no January 29th)
 # this is available for all scaling methods
 
 $exec_file                                \
+    --ref input_data/observations.nc   \
+    --contr input_data/control.nc      \
+    --scen input_data/scenario.nc      \
+    -m "linear_scaling"                   \
+    -v $variable                          \
+    -k "add"                              \
+    -o "${output_dir}/${variable}_linear_scaling_kind-add_30dIntervals_result_${timespan}.nc" 
+
+
+# * -------------------------------------------------------------------
+# *      ===== Scaling Adjustment based on monthly means =====
+# * -------------------------------------------------------------------
+
+# ? OR: Adjust using the regular formulas using long-term monthly means by using the --monthly flag
+echo "Separating months ..."
+# ? Separate months
+for (( month=1; month<13; month++ ));do
+    declare -i index=0
+    for dataset in "${datasets[@]}"; do
+        cdo -f nc -s \
+            -selvar,$variable \
+            -selmon,$month $dataset \
+            "${ds_paths[index]}/${month}.nc" &
+        ((++index))
+    done
+    wait
+done
+
+echo "Staring adjusting data ..."
+# ? this should not be done in parallel because this could lead to excessive memory usage
+for method in "${month_methods[@]}"; do
+    # ? Apply scaling-based bias adjustment per month
+    for (( month=1; month<13; month++ )); do
+        $exec_file                                          \
+            --ref "${tmp_ref}/${month}.nc"                  \
+            --contr "${tmp_contr}/${month}.nc"              \
+            --scen "${tmp_scen}/${month}.nc"                \
+            -v $variable                                    \
+            -m $method                                      \
+            -o "${tmp_results}/${month}_${method}.nc"       \
+            --monthly                                      
+    done
+
+    # ? Merge corrected datasets
+    cdo -f nc \
+        -mergetime $tmp_path/results/*${method}.nc \
+        "${output_dir}/${variable}_${method}_kind-${kind}_${quant}result_${timespan}.nc"
+done
+
+
+# * -------------------------------------------------------------------
+# *    ===== Adjustment of a 1-dimensional data set =====
+# * -------------------------------------------------------------------
+
+# ? Adjustment of a data set with only one dimension (time)
+$exec_file                                \
     --ref input_data/1d_observations.nc   \
     --contr input_data/1d_control.nc      \
     --scen input_data/1d_scenario.nc      \
-    -m "linear_scaling" .                 \
+    -m "quantile_mapping"                 \
     -v $variable                          \
-    -k "add"                              \
-    --interval365
-    -o "${output_dir}/${variable}_linear_scaling_kind-add_30dIntervals_result_${timespan}.nc" 
-
-# OR: Adjust using the regular formulas using long-term monthly means
-# echo "Separating months ..."
-# # ? Separate months
-# for (( month=1; month<13; month++ ));do
-#     declare -i index=0
-#     for dataset in "${datasets[@]}"; do
-#         cdo -f nc -s \
-#             -selvar,$variable \
-#             -selmon,$month $dataset \
-#             "${ds_paths[index]}/${month}.nc" &
-#         ((++index))
-#     done
-#     wait
-# done
-
-# echo "Staring adjusting data ..."
-# # ? this should not be done in parallel because this could lead to excessive memory usage
-# for method in "${month_methods[@]}"; do
-#     # ? Apply scaling-based bias adjustment per month
-#     for (( month=1; month<13; month++ )); do
-#         $exec_file                                          \
-#             --ref "${tmp_ref}/${month}.nc"                  \
-#             --contr "${tmp_contr}/${month}.nc"              \
-#             --scen "${tmp_scen}/${month}.nc"                \
-#             -v $variable                                    \
-#             -m $method                                      \
-#             -o "${tmp_results}/${month}_${method}.nc"       \
-#             -q $n_quantiles
-#     done
-
-#     # ? Merge corrected datasets
-#     cdo -f nc \
-#         -mergetime $tmp_path/results/*${method}.nc \
-#         "${output_dir}/${variable}_${method}_kind-${kind}_${quant}result_${timespan}.nc"
-# done
-
-
-
-# # ? Adjustment of a data set with only one dimension (time)
-# $exec_file                                \
-#     --ref input_data/1d_observations.nc   \
-#     --contr input_data/1d_control.nc      \
-#     --scen input_data/1d_scenario.nc      \
-#     -m "quantile_mapping"                 \
-#     -v $variable                          \
-#     -q $n_quantiles                       \
-#     -k $kind                              \
-#     --1dim                                \
-#     -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc" 
+    -q $n_quantiles                       \
+    -k $kind                              \
+    --1dim                                \
+    -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc" 
 
 
 
