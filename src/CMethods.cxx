@@ -2,7 +2,7 @@
 
 /**
  * @file CMethods.cxx
- * @brief
+ * @brief class/collection of procedures to bias adjust time series climate data
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
  *
@@ -21,12 +21,16 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * * Description: class/collection of procedures to bias adjust time series climate data
+ *
+ * * Notes:
+ *  - Methods does not have to match the description of the mentioned papers
+ *      - some of them are derived and improved
+ *      - the references are just the base of the methods
  */
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *                        Includes and Namespaces
+ * *                        Includes
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
@@ -59,37 +63,58 @@ CMethods::~CMethods() {}
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *              Functions
+ * *              Helper Functions
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-CM_Func_ptr_scaling_add CMethods::get_cmethod_scaling_add(std::string method_name) {
-    if (method_name == "linear_scaling")
-        return Linear_Scaling_add;
-    else if (method_name == "variance_scaling")
-        return Variance_Scaling;
-    else if (method_name == "delta_method")
-        return Delta_Method_add;
-    return NULL;
+/**
+ * returns 2d vector (dimensionss: [365, 31 * years]) containing the values with index -15...0...+15 around a day over all years
+ * @param v_in input vector containing 365 entries for n years
+ *
+ */
+std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<float> &v_in) {
+    std::vector<std::vector<float>> v_out(365, std::vector<float>());
+    if (v_in.size() % 365 != 0) throw std::runtime_error("The size of the input data does not match size % 365!");
+
+    const unsigned n_years = (unsigned)(v_in.size() / 365);
+    for (unsigned day = 0; day < 365; day++) {
+        for (unsigned year = 0; year < n_years - 0; year++) {
+            if (year == 0 && day < 15) {
+                v_out[day].reserve(day + 15);
+                v_out[day].insert(v_out[day].end(), v_in.begin(), v_in.begin() + day + 15);
+            } else if (year == n_years - 1) {
+                const int x = (year * 365 + day + 15);
+                const int
+                    end = v_in.size() > x ? x : v_in.size(),
+                    start = day + year * 365 - 15;
+                v_out[day].reserve(end - start);
+                v_out[day].insert(v_out[day].end(), v_in.begin() + start, v_in.begin() + end);
+            } else {
+                v_out[day].reserve(30);
+                v_out[day].insert(v_out[day].end(), v_in.begin() + day + year * 365 - 15, v_in.begin() + day + year * 365 + 15);
+            }
+        }
+    }
+    return v_out;
 }
-CM_Func_ptr_scaling_mult CMethods::get_cmethod_scaling_mult(std::string method_name) {
-    if (method_name == "linear_scaling")
-        return Linear_Scaling_mult;
-    else if (method_name == "delta_method")
-        return Delta_Method_mult;
-    return NULL;
-}
-CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_name) {
-    if (method_name == "quantile_mapping")
-        return Quantile_Mapping;
-    else if (method_name == "quantile_delta_mapping")
-        return Quantile_Delta_Mapping;
-    return NULL;
+
+/**
+ * returns either the factor or the maximum factor
+ *
+ * @param factor value to check
+ * @param max_factor max allowed factor
+ */
+double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
+    return (factor > 0 && factor > max_factor)
+               ? max_factor
+           : (factor < 0 && factor < -max_factor)
+               ? -max_factor
+               : factor;
 }
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *              Adjustment methods
+ * *              Adjustment Methods
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
@@ -103,7 +128,8 @@ CM_Func_ptr_distribution CMethods::get_cmethod_distribution(std::string method_n
  * @param v_reference observation data (control period)
  * @param v_control modeled data of the control period
  * @param v_scenario data to adjust
- * @param kind type of adjustment; additive or multiplicative
+ * @param max_scaling_factor maximum scaling for the multiplicative variant
+ * @param interval_scaling365 calculate the means based on 30days around the adjusted time step instead on monthly means
  *
  * Add ('+'):
  *  (1.)    $T^{*}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
@@ -117,38 +143,70 @@ void CMethods::Linear_Scaling_add(
     std::vector<float> &v_output,
     std::vector<float> &v_reference,
     std::vector<float> &v_control,
-    std::vector<float> &v_scenario) {
-    const double
-        ref_mean = MathUtils::mean(v_reference),
-        contr_mean = MathUtils::mean(v_control);
+    std::vector<float> &v_scenario,
+    bool interval_scaling365) {
+    if (interval_scaling365) {
+        if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
+            throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete.");
+        else {
+            std::vector<float>
+                ref_365_means,
+                contr_365_means;
+            std::vector<std::vector<float>>
+                ref_long_term_dayofyear = get_long_term_dayofyear(v_reference),
+                contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
 
-    const double scaling_factor = ref_mean - contr_mean;
-    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-        v_output[ts] = v_scenario[ts] + scaling_factor;  // Eq. 1f.
+            for (unsigned day = 0; day < 365; day++) {
+                ref_365_means.push_back(MathUtils::mean(ref_long_term_dayofyear[day]));
+                contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
+            }
+
+            std::vector<float> scaling_factors;
+            for (unsigned day = 0; day < 365; day++)
+                scaling_factors.push_back(ref_365_means[day] - contr_365_means[day]);
+
+            for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+                v_output[ts] = v_scenario[ts] + scaling_factors[ts % 365];
+        }
+    } else {
+        const double scaling_factor = MathUtils::mean(v_reference) - MathUtils::mean(v_control);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = v_scenario[ts] + scaling_factor;  // Eq. 1f.
+    }
 }
 void CMethods::Linear_Scaling_mult(
     std::vector<float> &v_output,
-    std::vector<float> &v_reference, std::vector<float> &v_control,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
     std::vector<float> &v_scenario,
-    double max_scaling_factor) {
-    const double
-        ref_mean = MathUtils::mean(v_reference),
-        contr_mean = MathUtils::mean(v_control);
-    const double scaling_factor = (ref_mean / contr_mean);
-    const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
-                                               ? max_scaling_factor
-                                           : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
-                                               ? -max_scaling_factor
-                                               : scaling_factor;
+    double max_scaling_factor,
+    bool interval_scaling365) {
+    if (interval_scaling365) {
+        if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
+            throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete.");
+        else {
+            std::vector<float>
+                ref_365_means,
+                contr_365_means;
+            std::vector<std::vector<float>> ref_long_term_dayofyear = get_long_term_dayofyear(v_reference);
+            std::vector<std::vector<float>> contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
 
-    for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-        // float result = v_scenario[ts] * (ref_mean / contr_mean);
-        // if (result > 0.3) {
-        //     const double scen_mean = MathUtils::mean(v_scenario);
-        //     std::cout << ts << ": " << v_scenario[ts] << " * " << ref_mean << " / " << contr_mean << " (" << scen_mean << ")" << std::endl;
-        //     throw std::runtime_error("'end'");
-        // }
-        v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;  // Eq. 3f.
+            for (unsigned day = 0; day < 365; day++) {
+                ref_365_means.push_back(MathUtils::mean(ref_long_term_dayofyear[day]));
+                contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
+            }
+
+            std::vector<float> adj_scaling_factors;
+            for (unsigned day = 0; day < 365; day++)
+                adj_scaling_factors.push_back(get_adjusted_scaling_factor((ref_365_means[day] / contr_365_means[day]), max_scaling_factor));
+
+            for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+                v_output[ts] = v_scenario[ts] * adj_scaling_factors[ts % 365];
+        }
+    } else {
+        const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_reference) / MathUtils::mean(v_control), max_scaling_factor);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;  // Eq. 3f.
     }
 }
 
@@ -162,7 +220,7 @@ void CMethods::Linear_Scaling_mult(
  * @param v_reference observation data (control period)
  * @param v_control modeled data of the control period
  * @param v_scenario data to adjust
- * @param kind type of adjustment; additive or multiplicative
+ * @param interval_scaling365 is not an option here.
  *
  * (1.) $T^{*1}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
  * (2.) $T^{*1}_{scen}(d)=T_{scen}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{scen}(d))$
@@ -176,38 +234,75 @@ void CMethods::Linear_Scaling_mult(
  * (7.) $T^{*}_{contr}(d)=T^{*3}_{contr}(d)+\mu_{m}(T^{*1}_{contr}(d))$
  * (8.) $T^{*}_{scen}(d)=T^{*3}_{scen}(d)+\mu_{m}(T^{*1}_{scen}(d))$
  */
-void CMethods::Variance_Scaling(
+void CMethods::Variance_Scaling_add(
     std::vector<float> &v_output,
     std::vector<float> &v_reference,
     std::vector<float> &v_control,
-    std::vector<float> &v_scenario) {
+    std::vector<float> &v_scenario,
+    double max_scaling_factor,
+    bool interval_scaling365) {
     std::vector<float> LS_contr(v_reference.size());
     std::vector<float> LS_scen(v_reference.size());
 
-    Linear_Scaling_add(LS_contr, v_reference, v_control, v_control);  // Eq. 1
-    Linear_Scaling_add(LS_scen, v_reference, v_control, v_scenario);  // Eq. 2
+    Linear_Scaling_add(LS_contr, v_reference, v_control, v_control, interval_scaling365);  // Eq. 1
+    Linear_Scaling_add(LS_scen, v_reference, v_control, v_scenario, interval_scaling365);  // Eq. 2
 
-    double
-        LS_contr_mean = MathUtils::mean(LS_contr),
-        LS_scen_mean = MathUtils::mean(LS_scen);
+    if (interval_scaling365) {
+        std::vector<std::vector<float>>
+            LS_contr_long_term_dayofyear = get_long_term_dayofyear(LS_contr),
+            LS_scen_long_term_dayofyear = get_long_term_dayofyear(LS_scen);
 
-    std::vector<float> VS1_contr(v_control.size());
-    std::vector<float> VS1_scen(v_scenario.size());
+        std::vector<float> LS_contr_365_means, LS_scen_365_means;
+        for (unsigned day = 0; day < 365; day++) {
+            LS_contr_365_means.push_back(MathUtils::mean(LS_contr_long_term_dayofyear[day]));
+            LS_scen_365_means.push_back(MathUtils::mean(LS_scen_long_term_dayofyear[day]));
+        }
 
-    for (unsigned ts = 0; ts < v_control.size(); ts++)
-        VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
+        std::vector<float>
+            VS1_contr(v_control.size()),
+            VS1_scen(v_scenario.size());
 
-    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-        VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
+        for (unsigned ts = 0; ts < v_control.size(); ts++)
+            VS1_contr[ts] = LS_contr[ts] - LS_contr_365_means[ts % 365];  // Eq. 3
 
-    float
-        ref_sd = MathUtils::sd(v_reference),
-        VS1_contr_sd = MathUtils::sd(VS1_contr);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            VS1_scen[ts] = LS_scen[ts] - LS_scen_365_means[ts % 365];  // Eq. 4
 
-    std::vector<float> VS2_scen(v_scenario.size());
-    for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-        VS2_scen[ts] = VS1_scen[ts] * (ref_sd / VS1_contr_sd);  // Eq. 6
-        v_output[ts] = VS2_scen[ts] + LS_scen_mean;             // Eq. 7
+        std::vector<std::vector<float>>
+            ref_long_term_dayofyear = get_long_term_dayofyear(v_reference),
+            VS1_contr_long_term_dayofyear = get_long_term_dayofyear(VS1_contr);
+
+        std::vector<float> ref_365_standard_deviations, VS1_contr_365_standard_deviations;
+        for (unsigned day = 0; day < 365; day++) {
+            ref_365_standard_deviations.push_back(MathUtils::sd(ref_long_term_dayofyear[day]));
+            VS1_contr_365_standard_deviations.push_back(MathUtils::sd(VS1_contr_long_term_dayofyear[day]));
+        }
+
+        std::vector<double> adj_scaling_factors;
+        for (unsigned day = 0; day < 365; day++)
+            adj_scaling_factors.push_back(get_adjusted_scaling_factor(ref_365_standard_deviations[day] / VS1_contr_365_standard_deviations[day], max_scaling_factor));
+
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = (VS1_scen[ts] * adj_scaling_factors[ts % 365]) + LS_scen_365_means[ts % 365];  // Eq. 6 and 8
+
+    } else {
+        double
+            LS_contr_mean = MathUtils::mean(LS_contr),
+            LS_scen_mean = MathUtils::mean(LS_scen);
+
+        std::vector<float>
+            VS1_contr(v_control.size()),
+            VS1_scen(v_scenario.size());
+
+        for (unsigned ts = 0; ts < v_control.size(); ts++)
+            VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
+
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
+
+        const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::sd(v_reference) / MathUtils::sd(VS1_contr), max_scaling_factor);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = (VS1_scen[ts] * adjusted_scaling_factor) + LS_scen_mean;  // Eq. 6 and 8
     }
 }
 
@@ -220,7 +315,8 @@ void CMethods::Variance_Scaling(
  * @param v_reference observation data (control period)
  * @param v_control modeled data of the control period
  * @param v_scenario data to adjust
- * @param max_scaling_factor maximum scaling for *
+ * @param max_scaling_factor maximum scaling for the multiplicative variant
+ * @param interval_scaling365 calculate the means based on 30days around the adjusted time step instead on monthly means
  *
  * Add (+):
  *   (1.) $T^{*}_{contr}(d) = T_{contr}(d) + (\mu_{m}(T_{scen}(d)) - \mu_{m}(T_{obs}(d)))$
@@ -232,32 +328,68 @@ void CMethods::Delta_Method_add(
     std::vector<float> &v_output,
     std::vector<float> &v_reference,
     std::vector<float> &v_control,
-    std::vector<float> &v_scenario) {
-    const double
-        contr_mean = MathUtils::mean(v_control),
-        scen_mean = MathUtils::mean(v_scenario);
-    const double scaling_factor = (scen_mean - contr_mean);
-    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-        v_output[ts] = v_reference[ts] + scaling_factor;  // Eq. 1
+    std::vector<float> &v_scenario,
+    bool interval_scaling365) {
+    if (interval_scaling365) {
+        if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
+            throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete.");
+        else {
+            std::vector<float>
+                contr_365_means,
+                scen_365_means;
+            std::vector<std::vector<float>>
+                contr_long_term_dayofyear = get_long_term_dayofyear(v_control),
+                scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
+
+            for (unsigned day = 0; day < 365; day++) {
+                contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
+                scen_365_means.push_back(MathUtils::mean(scen_long_term_dayofyear[day]));
+            }
+
+            for (unsigned ts = 0; ts < v_reference.size(); ts++)
+                v_output[ts] = v_reference[ts] + (scen_365_means[ts % 365] - contr_365_means[ts % 365]);
+        }
+    } else {
+        const double scaling_factor = MathUtils::mean(v_scenario) - MathUtils::mean(v_control);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = v_reference[ts] + scaling_factor;  // Eq. 1
+    }
 }
 void CMethods::Delta_Method_mult(
     std::vector<float> &v_output,
     std::vector<float> &v_reference,
     std::vector<float> &v_control,
     std::vector<float> &v_scenario,
-    double max_scaling_factor) {
-    const double
-        contr_mean = MathUtils::mean(v_control),
-        scen_mean = MathUtils::mean(v_scenario);
-    const double scaling_factor = (scen_mean / contr_mean);
-    const double adjusted_scaling_factor = (scaling_factor > 0 && scaling_factor > max_scaling_factor)
-                                               ? (double)max_scaling_factor
-                                           : (scaling_factor < 0 && scaling_factor < -max_scaling_factor)
-                                               ? -(double)max_scaling_factor
-                                               : scaling_factor;
+    double max_scaling_factor,
+    bool interval_scaling365) {
+    if (interval_scaling365) {
+        if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
+            throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete.");
+        else {
+            std::vector<float>
+                contr_365_means,
+                scen_365_means;
+            std::vector<std::vector<float>>
+                contr_long_term_dayofyear = get_long_term_dayofyear(v_control),
+                scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
 
-    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-        v_output[ts] = v_reference[ts] * adjusted_scaling_factor;  // Eq. 2
+            for (unsigned day = 0; day < 365; day++) {
+                contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
+                scen_365_means.push_back(MathUtils::mean(scen_long_term_dayofyear[day]));
+            }
+
+            std::vector<float> adj_scaling_factors;
+            for (unsigned day = 0; day < 365; day++)
+                adj_scaling_factors.push_back(get_adjusted_scaling_factor(scen_365_means[day] / contr_365_means[day], max_scaling_factor));
+
+            for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+                v_output[ts] = v_reference[ts] * adj_scaling_factors[ts % 365];
+        }
+    } else {
+        const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_scenario) / MathUtils::mean(v_control), max_scaling_factor);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = v_reference[ts] * adjusted_scaling_factor;  // Eq. 2
+    }
 }
 
 /**
@@ -298,7 +430,7 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
             v_xbins.push_back(v_xbins[v_xbins.size() - 1] + wide);
         return v_xbins;
     } else {
-        throw std::runtime_error("Unknown kind <" + kind + "> for get_xbins-function.");
+        throw std::runtime_error("Unknown kind " + kind + " for get_xbins-function.");
         return std::vector<double>(0);  // just to avoid warnings ...
     }
 }
@@ -318,7 +450,7 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
  * (add):
  *      (1.) $T^{*QM}_{sim,p}(d)=F^{-1}_{obs,h} \left\{F_{sim,h}\left[T_{sim,p}(d)\right]\right\}$
  * (mult):
- *      same but experimental ...
+ *      same but experimental
  */
 void CMethods::Quantile_Mapping(
     std::vector<float> &v_output,
@@ -328,8 +460,7 @@ void CMethods::Quantile_Mapping(
     std::string kind,
     unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
-        std::vector<double>
-            v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
+        std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
 
         std::vector<int>  // ? create CDFs
             vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
@@ -372,7 +503,7 @@ void CMethods::Quantile_Mapping(
             v_output[ts] = (y >= 0) ? y : 0;
         }
     } else
-        throw std::runtime_error("Adjustment kind <" + kind + "> unknown for quantile mapping!");
+        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile mapping!");
 }
 
 /**
@@ -396,11 +527,17 @@ void CMethods::Quantile_Mapping(
  * Mult (*):
  *   (1.1) --//--
  *   (1.2) --//--
- *   (2.3) \Delta(i) & = \frac{ F^{-1}_{sim,p}\left[\varepsilon(i)\right] }{ F^{-1}_{sim,h}\left[\varepsilon(i)\right] } \\[1pt]
+ *   (2.3) \Delta(i) & = \frac{ F^{-1}_{sim,p}\left[\varepsilon(i)\right] }{ F^{-1}_{sim,h}\left[\varepsilon(i)\right] } \\
  *                   & = \frac{ X_{sim,p}(i) }{ F^{-1}_{sim,h}\left\{F^{}_{sim,p}\left[X_{sim,p}(i)\right]\right\} }
  *   (2.4) X^{*QDM}_{sim,p}(i) = X^{QDM(1)}_{sim,p}(i) \cdot \Delta(i)
  */
-void CMethods::Quantile_Delta_Mapping(std::vector<float> &v_output, std::vector<float> &v_reference, std::vector<float> &v_control, std::vector<float> &v_scenario, std::string kind, unsigned n_quantiles) {
+void CMethods::Quantile_Delta_Mapping(
+    std::vector<float> &v_output,
+    std::vector<float> &v_reference,
+    std::vector<float> &v_control,
+    std::vector<float> &v_scenario,
+    std::string kind,
+    unsigned n_quantiles) {
     if (kind == "add" || kind == "+") {
         std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
 
@@ -451,7 +588,7 @@ void CMethods::Quantile_Delta_Mapping(std::vector<float> &v_output, std::vector<
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] * (v_scenario[ts] / MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false)));  // Eq. 2.3f.
     } else
-        throw std::runtime_error("Adjustment kind <" + kind + "> unknown for quantile delta mapping!");
+        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile delta mapping!");
 }
 
 /**

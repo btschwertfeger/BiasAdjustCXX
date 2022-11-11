@@ -1,9 +1,9 @@
 {
   "files.associations": {
-    "*.ejs": "ejs",
     ".md": "md",
     "*.csv": "csv",
     "*.py": "python",
+    "*.ejs": "ejs",
     "iostream": "cpp",
     "vector": "cpp",
     "chrono": "cpp",
@@ -101,6 +101,10 @@
     "scoped_allocator": "cpp",
     "shared_mutex": "cpp",
     "valarray": "cpp",
-    "cuchar": "cpp"
+    "cuchar": "cpp",
+    "filesystem": "cpp",
+    "span": "cpp",
+    "ranges": "cpp",
+    "stacktrace": "cpp"
   }
 }
