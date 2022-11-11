@@ -46,7 +46,7 @@ In this way, for example, modeled data, which on average represent values that a
 - Quantile Mapping (additive and multuplicative)
 - Quantile Delta Mapping (additive and multuplicative)
 
-`*` Here it is also possible to adjust the data based on 30 day long-term means (-15< x < +15 days over all years) instead of the long-term monthly mean using the `--interval365` flag. This prevents disproportionately high differences in the long-term mean values at the monthly transitions.
+`*` Here it is also possible to adjust the data based on 31 day long-term means (-15 < i < +15 days over all years) instead of the long-term monthly mean using the `--interval365` flag. This prevents disproportionately high differences in the long-term mean values at the monthly transitions.
 
 ---
 

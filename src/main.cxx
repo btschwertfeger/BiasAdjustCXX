@@ -396,10 +396,9 @@ int main(int argc, char** argv) {
         Log.info("Data sets loaded");
         Log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
         if (get_adjustment_kind() == "mult") Log.info("Maximum scaling factor: " + std::to_string(max_scaling_factor));
-        if (interval_scaling365) Log.info("Scaling will be performed per long-term 30day interval, not per long term month.");
+        if (interval_scaling365) Log.info("Scaling will be performed per long-term 31day interval, not per long term month.");
 
         if (one_dim) {  // adjustment of data set containing only one grid cell
-            std::cout << "ONEDIM" << std::endl;
             std::vector<float>
                 v_data_out((int)ds_scenario.n_time),
                 v_reference((int)ds_reference.n_time),

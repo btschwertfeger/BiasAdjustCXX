@@ -68,8 +68,9 @@ CMethods::~CMethods() {}
  */
 
 /**
- * returns the 30-day mean over all years per day of year.
- * > e.g. the mean for January 1st is based on the values of December 18th until January 16th over all years
+ * returns 2d vector (dimensionss: [365, 31 * years]) containing the values with index -15...0...+15 around a day over all years
+ * @param v_in input vector containing 365 entries for n years
+ *
  */
 std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<float> &v_in) {
     std::vector<std::vector<float>> v_out(365, std::vector<float>());
@@ -84,7 +85,7 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
             } else if (year == n_years - 1) {
                 const int x = (year * 365 + day + 15);
                 const int
-                    end = v_in.size() - x > -1 ? x : v_in.size(),
+                    end = v_in.size() > x ? x : v_in.size(),
                     start = day + year * 365 - 15;
                 v_out[day].reserve(end - start);
                 v_out[day].insert(v_out[day].end(), v_in.begin() + start, v_in.begin() + end);
@@ -97,6 +98,12 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
     return v_out;
 }
 
+/**
+ * returns either the factor or the maximum factor
+ *
+ * @param factor value to check
+ * @param max_factor max allowed factor
+ */
 double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
     return (factor > 0 && factor > max_factor)
                ? max_factor
@@ -145,16 +152,21 @@ void CMethods::Linear_Scaling_add(
             std::vector<float>
                 ref_365_means,
                 contr_365_means;
-            std::vector<std::vector<float>> ref_long_term_dayofyear = get_long_term_dayofyear(v_reference);
-            std::vector<std::vector<float>> contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
+            std::vector<std::vector<float>>
+                ref_long_term_dayofyear = get_long_term_dayofyear(v_reference),
+                contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
 
             for (unsigned day = 0; day < 365; day++) {
                 ref_365_means.push_back(MathUtils::mean(ref_long_term_dayofyear[day]));
                 contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
             }
 
+            std::vector<float> scaling_factors;
+            for (unsigned day = 0; day < 365; day++)
+                scaling_factors.push_back(ref_365_means[day] - contr_365_means[day]);
+
             for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-                v_output[ts] = v_scenario[ts] + (ref_365_means[ts % 365] - contr_365_means[ts % 365]);
+                v_output[ts] = v_scenario[ts] + scaling_factors[ts % 365];
         }
     } else {
         const double scaling_factor = MathUtils::mean(v_reference) - MathUtils::mean(v_control);
@@ -184,10 +196,12 @@ void CMethods::Linear_Scaling_mult(
                 contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
             }
 
-            for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-                const double adjusted_scaling_factor = get_adjusted_scaling_factor((ref_365_means[ts % 365] / contr_365_means[ts % 365]), max_scaling_factor);
-                v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;
-            }
+            std::vector<float> adj_scaling_factors;
+            for (unsigned day = 0; day < 365; day++)
+                adj_scaling_factors.push_back(get_adjusted_scaling_factor((ref_365_means[day] / contr_365_means[day]), max_scaling_factor));
+
+            for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+                v_output[ts] = v_scenario[ts] * adj_scaling_factors[ts % 365];
         }
     } else {
         const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_reference) / MathUtils::mean(v_control), max_scaling_factor);
@@ -234,8 +248,9 @@ void CMethods::Variance_Scaling_add(
     Linear_Scaling_add(LS_scen, v_reference, v_control, v_scenario, interval_scaling365);  // Eq. 2
 
     if (interval_scaling365) {
-        std::vector<std::vector<float>> LS_contr_long_term_dayofyear = get_long_term_dayofyear(LS_contr);
-        std::vector<std::vector<float>> LS_scen_long_term_dayofyear = get_long_term_dayofyear(LS_scen);
+        std::vector<std::vector<float>>
+            LS_contr_long_term_dayofyear = get_long_term_dayofyear(LS_contr),
+            LS_scen_long_term_dayofyear = get_long_term_dayofyear(LS_scen);
 
         std::vector<float> LS_contr_365_means, LS_scen_365_means;
         for (unsigned day = 0; day < 365; day++) {
@@ -243,8 +258,9 @@ void CMethods::Variance_Scaling_add(
             LS_scen_365_means.push_back(MathUtils::mean(LS_scen_long_term_dayofyear[day]));
         }
 
-        std::vector<float> VS1_contr(v_control.size());
-        std::vector<float> VS1_scen(v_scenario.size());
+        std::vector<float>
+            VS1_contr(v_control.size()),
+            VS1_scen(v_scenario.size());
 
         for (unsigned ts = 0; ts < v_control.size(); ts++)
             VS1_contr[ts] = LS_contr[ts] - LS_contr_365_means[ts % 365];  // Eq. 3
@@ -252,8 +268,9 @@ void CMethods::Variance_Scaling_add(
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             VS1_scen[ts] = LS_scen[ts] - LS_scen_365_means[ts % 365];  // Eq. 4
 
-        std::vector<std::vector<float>> ref_long_term_dayofyear = get_long_term_dayofyear(v_reference);
-        std::vector<std::vector<float>> VS1_contr_long_term_dayofyear = get_long_term_dayofyear(VS1_contr);
+        std::vector<std::vector<float>>
+            ref_long_term_dayofyear = get_long_term_dayofyear(v_reference),
+            VS1_contr_long_term_dayofyear = get_long_term_dayofyear(VS1_contr);
 
         std::vector<float> ref_365_standard_deviations, VS1_contr_365_standard_deviations;
         for (unsigned day = 0; day < 365; day++) {
@@ -261,19 +278,21 @@ void CMethods::Variance_Scaling_add(
             VS1_contr_365_standard_deviations.push_back(MathUtils::sd(VS1_contr_long_term_dayofyear[day]));
         }
 
-        std::vector<float> VS2_scen(v_scenario.size());
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            const double adjusted_scaling_factor = get_adjusted_scaling_factor(ref_365_standard_deviations[ts % 365] / VS1_contr_365_standard_deviations[ts % 365], max_scaling_factor);
-            VS2_scen[ts] = VS1_scen[ts] * adjusted_scaling_factor;      // Eq. 6
-            v_output[ts] = VS2_scen[ts] + LS_scen_365_means[ts % 365];  // Eq. 7
-        }
+        std::vector<double> adj_scaling_factors;
+        for (unsigned day = 0; day < 365; day++)
+            adj_scaling_factors.push_back(get_adjusted_scaling_factor(ref_365_standard_deviations[day] / VS1_contr_365_standard_deviations[day], max_scaling_factor));
+
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = (VS1_scen[ts] * adj_scaling_factors[ts % 365]) + LS_scen_365_means[ts % 365];  // Eq. 6 and 8
+
     } else {
         double
             LS_contr_mean = MathUtils::mean(LS_contr),
             LS_scen_mean = MathUtils::mean(LS_scen);
 
-        std::vector<float> VS1_contr(v_control.size());
-        std::vector<float> VS1_scen(v_scenario.size());
+        std::vector<float>
+            VS1_contr(v_control.size()),
+            VS1_scen(v_scenario.size());
 
         for (unsigned ts = 0; ts < v_control.size(); ts++)
             VS1_contr[ts] = LS_contr[ts] - LS_contr_mean;  // Eq. 3
@@ -281,16 +300,9 @@ void CMethods::Variance_Scaling_add(
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
 
-        float
-            ref_sd = MathUtils::sd(v_reference),
-            VS1_contr_sd = MathUtils::sd(VS1_contr);
-
-        std::vector<float> VS2_scen(v_scenario.size());
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            const double adjusted_scaling_factor = get_adjusted_scaling_factor(ref_sd / VS1_contr_sd, max_scaling_factor);
-            VS2_scen[ts] = VS1_scen[ts] * adjusted_scaling_factor;  // Eq. 6
-            v_output[ts] = VS2_scen[ts] + LS_scen_mean;             // Eq. 7
-        }
+        const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::sd(v_reference) / MathUtils::sd(VS1_contr), max_scaling_factor);
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = (VS1_scen[ts] * adjusted_scaling_factor) + LS_scen_mean;  // Eq. 6 and 8
     }
 }
 
@@ -325,8 +337,9 @@ void CMethods::Delta_Method_add(
             std::vector<float>
                 contr_365_means,
                 scen_365_means;
-            std::vector<std::vector<float>> contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
-            std::vector<std::vector<float>> scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
+            std::vector<std::vector<float>>
+                contr_long_term_dayofyear = get_long_term_dayofyear(v_control),
+                scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
 
             for (unsigned day = 0; day < 365; day++) {
                 contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
@@ -356,18 +369,21 @@ void CMethods::Delta_Method_mult(
             std::vector<float>
                 contr_365_means,
                 scen_365_means;
-            std::vector<std::vector<float>> contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
-            std::vector<std::vector<float>> scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
+            std::vector<std::vector<float>>
+                contr_long_term_dayofyear = get_long_term_dayofyear(v_control),
+                scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
 
             for (unsigned day = 0; day < 365; day++) {
                 contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
                 scen_365_means.push_back(MathUtils::mean(scen_long_term_dayofyear[day]));
             }
 
-            for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-                const double adjusted_scaling_factor = get_adjusted_scaling_factor(scen_365_means[ts % 365] / contr_365_means[ts % 365], max_scaling_factor);
-                v_output[ts] = v_reference[ts] * adjusted_scaling_factor;
-            }
+            std::vector<float> adj_scaling_factors;
+            for (unsigned day = 0; day < 365; day++)
+                adj_scaling_factors.push_back(get_adjusted_scaling_factor(scen_365_means[day] / contr_365_means[day], max_scaling_factor));
+
+            for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+                v_output[ts] = v_reference[ts] * adj_scaling_factors[ts % 365];
         }
     } else {
         const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_scenario) / MathUtils::mean(v_control), max_scaling_factor);
