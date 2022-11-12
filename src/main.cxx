@@ -126,18 +126,18 @@ void show_usage(std::string name) {
               << GREEN << "\t--contr, --control\t\t" << RESET << "modeled control period data => input file/file path\n"
               << GREEN << "\t--scen, --scenario\t\t" << RESET << "modeled scenario period data to adjust => input file/file path\n"
               << GREEN << "\t-o, --output\t\t\t" << RESET << "output file/file path\n"
-              << GREEN << "\t-v, --variable\t\t\t" << RESET << "variable name (e. g.: tas, tsurf, pr) \n"
+              << GREEN << "\t-v, --variable\t\t\t" << RESET << "variable name (e.g.: tas, tsurf, pr) \n"
               << "    optional:\n"
               << GREEN << "\t-h, --help\t\t\t" << RESET << "show this help message\n"
               << GREEN << "\t-q, --quantiles\t\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
-              << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e. g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
-              << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i. e. no spatial dimensions)\n"
-              << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day windows for the sclaing-based methods; mean calculation will be performed on the whole data set\n"
+              << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e.g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
+              << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i.e. no spatial dimensions)\n"
+              << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; mean calculation will be performed on the whole data set\n"
               << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables (only for scaling methods; default: 10)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
-              << "-> data sets must be filetype NetCDF\n"
+              << "-> data sets must habe the file type NetCDF\n"
               << "-> for scaling-based adjustments: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--monthly" << RESET << " flag is needed (see notes section below)\n"
               << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
               << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
@@ -152,8 +152,8 @@ void show_usage(std::string name) {
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
     std::cout << std::endl;
     std::cerr << YELLOW << "\nNotes: " << RESET
-              << "\n- When not using the " << GREEN << "--monthly" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.)"
-              << "Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--monthly" << RESET << " flag is used to apply this program on monthly separated files i. e. "
+              << "\n- When not using the " << GREEN << "--monthly" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.) "
+              << "The Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--monthly" << RESET << " flag is used to apply this program on monthly separated files i.e. "
               << "to adjust 30 years of data, all input files need to be separated into 12 groups, one group for each month, than this program can be applied to every long-term month."
               << "\n\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
 

@@ -8,11 +8,24 @@
 
 </div>
 
-Command line tool/program to apply different scale- and distribution-based bias adjustment techniques for climatic research. Many of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
+### Command line tool/program to apply different scale- and distribution-based bias adjustment techniques for climatic research. Most of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
 
 ---
 
-## About
+## Table of Contents
+
+1. [ About ](#about)
+2. [ Available Methods ](#methods)
+3. [ Compilation and Requirements ](#compilation)
+4. [ Usage and Examples ](#examples)
+5. [ Notes ](#notes)
+6. [ References ](#references)
+
+---
+
+<a name="about"></a>
+
+## 1. About
 
 This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://epic.awi.de/id/eprint/56689/). A technical publication is currently being prepared to provide a detailed description of the application.
 
@@ -33,12 +46,14 @@ In this way, for example, modeled data, which on average represent values that a
   src="images/dm-doy-plot.png?raw=true"
   alt="Temperature per day of year in modeled, observed and bias-adjusted climate data"
   style="background-color: white; border-radius: 7px">
-  <figcaption>Figure 2: Temperature per day of year in modeled, observed and bias-adjusted climate data</figcaption>
+  <figcaption>Figure 2: Temperature per day of year in observed, modeled and bias-adjusted climate data</figcaption>
 </figure>
 
 ---
 
-## Available methods:
+<a name="methods"></a>
+
+## 2. Available methods:
 
 - Linear Scaling\* (additive and multiplicative)
 - Variance Scaling\* (additive)
@@ -46,28 +61,46 @@ In this way, for example, modeled data, which on average represent values that a
 - Quantile Mapping (additive and multuplicative)
 - Quantile Delta Mapping (additive and multuplicative)
 
-\* The data sets must exclude the 29th February. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required to match the techniques described in the referenced papers. The 31-day interval procedures are customized variations and work only on data sets with 365 days per year and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the 31-day interval variant is the prefered method and is enabled by default.
+\* The data sets must exclude the 29th February and every year must have 365 entries. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required to match the techniques described in the referenced papers but requires that this program is applied on monthly separated data sets. On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the prefered method and is enabled by default for all scaling-based techniques.
 
 ---
 
-## Compilation/build from source:
+<a name="compilation"></a>
+
+## 3. Compilation and Requirements
 
 ```bash
 mkdir build && cd build
 cmake .. && cmake --build .
 ```
 
+### Requirements:
+
+- Installed NetCDF4 C++ Library ([How to install NetCDF4 for C++](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
+- CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
+- [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
+
+### Optional for working examples notebook `examples.ipynb`:
+
+```bash
+conda create --name clingenv
+conda activate clingenv
+conda install xeus-cling notebook -c conda-forge/label/gcc7
+```
+
 ---
 
-## Usage examples
+<a name="examples"></a>
 
-The scipt `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
+## 4. Usage and Examples
 
-All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with C++ kernel) to test scripts and develop custom algorithms (see `/examples.ipynb`).
+The script `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
+
+All methods to bias-adjust climate data can be found in `src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with C++ kernel) to test scripts and develop custom algorithms (see `examples.ipynb`).
 
 Examples:
 
-a.) Additive Linear Scaling based on long-term 30d interval-means instead of monthly means:
+a.) Additive Linear Scaling based on long-term 31-day interval-means:
 
 ```bash
 BiasAdjustCXX                        \
@@ -76,12 +109,13 @@ BiasAdjustCXX                        \
     --scen input_data/scenario.nc    \ # time series to adjust
     -v tas                           \ # variable to adjust
     -m linear_scaling                \ # adjustment method
-    -k "+"                            # kind of adjustment ("+" == "add" and "*" == "mult")
+    -k "+"                           \ # kind of adjustment ("+" == "add" and "*" == "mult")
+    -o linear_scaling_result.nc        # output file
 ```
 
-Note: The regular linear scaling procedure as described by Teutschbein, Claudia and Seibert, Jan ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--interval365` flag is not beeing used then.
+Note/alternative: The regular linear scaling procedure as described by Teutschbein, Claudia and Seibert, Jan ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--monthly` flag needs to be used then.
 
-b.) Multiplicative Linear Scaling based on long-term 30d interval-means instead of monthly means:
+b.) Multiplicative Linear Scaling based on long-term 31-day interval-means:
 
 ```bash
 BiasAdjustCXX                        \
@@ -91,7 +125,8 @@ BiasAdjustCXX                        \
     -v tas                           \
     -m linear_scaling                \
     -k "*"                           \
-    --max-scaling-factor 3             # set max scaling factor to avoid unrealistic results (default: 10)
+    --max-scaling-factor 3           \  # set custom max-scaling factor to avoid unrealistic results (default: 10)
+    -o linear_scaling_result.nc
 ```
 
 Note: The multiplicative variant is only prefered when adjusting ratio based variables like precipitaiton.
@@ -106,12 +141,11 @@ BiasAdjustCXX                        \
     -v tas                           \
     -m quantile_delta_mapping        \
     -k "+"                           \
-    -q 250                             # quantiles to respect
+    -q 250                           \  # quantiles to respectß
+    -0 quantile_delta_mapping_result.nc
 ```
 
----
-
-## Help
+d.) Help
 
 ```bash
 BiasAdjustCXX -h
@@ -119,7 +153,9 @@ BiasAdjustCXX -h
 
 ---
 
-## Notes
+<a name="notes"></a>
+
+## 5. Notes
 
 1.) For adjusting data using the linear scaling, variance scaling or delta method and the `--monthly` flag:
 
@@ -131,23 +167,9 @@ adjustment for this data set. After that you have to do the same for the rest of
 
 ---
 
-## Requirements:
+<a name="references"></a>
 
-- Installed NetCDF4 C++ Library ([How to install NetCDF4 for C++](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
-- CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
-- [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
-
-### Optional for working examples in notebook (`examples.ipynb`):
-
-```bash
-conda create --name clingenv
-conda activate clingenv
-conda install xeus-cling notebook -c conda-forge/label/gcc7
-```
-
----
-
-## References
+## 6. References
 
 - Schwertfeger, Benjamin Thomas (2022) The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe (https://epic.awi.de/id/eprint/56689/)
 - Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
@@ -156,3 +178,5 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 - Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
 - Schulzweida, U.: CDO User Guide, https://doi.org/10.5281/zenodo.7112925, 2022.
 - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
+
+---
