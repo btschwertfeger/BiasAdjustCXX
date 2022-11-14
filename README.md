@@ -1,6 +1,6 @@
 # Command Line Tool for Bias Adjustments using C++
 
-<div style="text-align: center">
+<div align="center">
 
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -141,7 +141,7 @@ BiasAdjustCXX                        \
     -v tas                           \
     -m quantile_delta_mapping        \
     -k "+"                           \
-    -q 250                           \  # quantiles to respectß
+    -q 250                           \  # quantiles to respect
     -0 quantile_delta_mapping_result.nc
 ```
 

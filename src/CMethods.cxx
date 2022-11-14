@@ -79,19 +79,19 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
     const unsigned n_years = (unsigned)(v_in.size() / 365);
     for (unsigned day = 0; day < 365; day++) {
         for (unsigned year = 0; year < n_years - 0; year++) {
-            if (year == 0 && day < 15) {
-                v_out[day].reserve(day + 15);
-                v_out[day].insert(v_out[day].end(), v_in.begin(), v_in.begin() + day + 15);
+            if (year == 0 && day < 16) {
+                v_out[day].reserve(day + 16);
+                v_out[day].insert(v_out[day].end(), v_in.begin(), v_in.begin() + day + 16);
             } else if (year == n_years - 1) {
-                const int x = (year * 365 + day + 15);
+                const int x = (year * 365 + day + 16);
                 const int
                     end = v_in.size() > x ? x : v_in.size(),
                     start = day + year * 365 - 15;
                 v_out[day].reserve(end - start);
                 v_out[day].insert(v_out[day].end(), v_in.begin() + start, v_in.begin() + end);
             } else {
-                v_out[day].reserve(30);
-                v_out[day].insert(v_out[day].end(), v_in.begin() + day + year * 365 - 15, v_in.begin() + day + year * 365 + 15);
+                v_out[day].reserve(31);
+                v_out[day].insert(v_out[day].end(), v_in.begin() + day + year * 365 - 15, v_in.begin() + day + year * 365 + 16);
             }
         }
     }
@@ -451,39 +451,28 @@ void CMethods::Quantile_Mapping(
     std::vector<float> &v_scenario,
     std::string kind,
     unsigned n_quantiles) {
-    if (kind == "add" || kind == "+") {
-        std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
+    const bool isAdd = (kind == "add" || kind == "+") ? true : false;
+    if (!isAdd && !(kind == "mult" || kind == "*"))
+        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile mapping!");
 
-        std::vector<int>  // ? create CDFs
-            vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
-            vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins);
+    std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, (isAdd) ? "regular" : "bounded");
 
-        std::vector<double>  // ? change CDF values to type double
-            ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
-            contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end());
+    std::vector<int>  // ? create CDFs
+        vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
+        vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins);
 
-        // ? Interpolate
-        std::vector<double> cdf_values;
+    std::vector<double>  // ? change CDF values to type double
+        ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
+        contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end());
+
+    std::vector<double> cdf_values;
+    if (isAdd) {
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             cdf_values.push_back(MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], false));
-
         // ? Invert in inversed CDF and return
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], false);
-
-    } else if (kind == "mult" || kind == "*") {
-        std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "bounded");
-
-        std::vector<int>  // ? create CDF
-            vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
-            vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins);
-
-        std::vector<double>  // ? change to double
-            ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
-            contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end());
-
-        // ? Interpolate
-        std::vector<double> cdf_values;
+    } else {
         for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
             double y = MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], true);
             cdf_values.push_back((y >= 0) ? y : 0);
@@ -494,8 +483,7 @@ void CMethods::Quantile_Mapping(
             float y = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], true);
             v_output[ts] = (y >= 0) ? y : 0;
         }
-    } else
-        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile mapping!");
+    }
 }
 
 /**
@@ -530,57 +518,41 @@ void CMethods::Quantile_Delta_Mapping(
     std::vector<float> &v_scenario,
     std::string kind,
     unsigned n_quantiles) {
-    if (kind == "add" || kind == "+") {
-        std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "regular");
+    const bool isAdd = (kind == "add" || kind == "+") ? true : false;
 
-        std::vector<int>  // ? create CDF
-            vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
-            vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins),
-            vi_scen_cdf = MathUtils::get_cdf(v_scenario, v_xbins);
+    if (!isAdd && !(kind == "mult" || kind == "*"))
+        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile delta mapping!");
+    std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, (isAdd) ? "regular" : "bounded");
 
-        std::vector<double>  // ? change to double
-            ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
-            contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end()),
-            scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());
+    // ? create CDF
+    std::vector<int>
+        vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
+        vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins),
+        vi_scen_cdf = MathUtils::get_cdf(v_scenario, v_xbins);
 
-        std::vector<double> epsilon;
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            epsilon.push_back(MathUtils::interpolate(v_xbins, scen_cdf, v_scenario[ts], false));
+    // ? change to double
+    std::vector<double>
+        ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
+        contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end()),
+        scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());
 
-        std::vector<double> QDM1;  // insert simulated values into inverse cdf of observed
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
+    std::vector<double> epsilon;
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        epsilon.push_back(MathUtils::interpolate(v_xbins, scen_cdf, v_scenario[ts], false));
 
-        // ? Invert, insert in inversed CDF and return
+    std::vector<double> QDM1;
+    // insert simulated values into inverse cdf of observed
+    for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+        QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
+
+    // ? Invert, insert in inversed CDF and return
+    if (isAdd) {
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] + v_scenario[ts] - MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false));  // Eq. 2f.
-
-    } else if (kind == "mult" || kind == "*") {
-        std::vector<double> v_xbins = get_xbins(v_reference, v_control, n_quantiles, "bounded");
-
-        // ? create CDF
-        std::vector<int>
-            vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
-            vi_contr_cdf = MathUtils::get_cdf(v_control, v_xbins),
-            vi_scen_cdf = MathUtils::get_cdf(v_scenario, v_xbins);
-
-        std::vector<double>
-            ref_cdf(vi_ref_cdf.begin(), vi_ref_cdf.end()),
-            contr_cdf(vi_contr_cdf.begin(), vi_contr_cdf.end()),
-            scen_cdf(vi_scen_cdf.begin(), vi_scen_cdf.end());
-
-        std::vector<double> epsilon;
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            epsilon.push_back(MathUtils::interpolate(v_xbins, scen_cdf, v_scenario[ts], false));
-
-        std::vector<double> QDM1;  // insert simulated values into inverse cdf of observed
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++) QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));
-
-        // ? Invert, insert in inversed CDF and return
+    } else {
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] * (v_scenario[ts] / MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false)));  // Eq. 2.3f.
-    } else
-        throw std::runtime_error("Adjustment kind " + kind + " unknown for quantile delta mapping!");
+    }
 }
 
 /**

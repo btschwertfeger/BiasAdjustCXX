@@ -39,3 +39,4 @@ output/
 *tmp*
 qdm_result.nc
 del/
+del.cxx
