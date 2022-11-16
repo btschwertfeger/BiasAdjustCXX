@@ -77,7 +77,7 @@ static unsigned n_quantiles = 250;
 static double max_scaling_factor = 10.0;
 static bool
     one_dim = false,
-    interval31_scaling = false;
+    interval31_scaling = true;
 static utils::Log Log = utils::Log();
 
 typedef void (*CM_Func_ptr_scaling_A)(
@@ -132,8 +132,10 @@ void show_usage(std::string name) {
               << GREEN << "\t-q, --quantiles\t\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
               << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e.g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
               << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i.e. no spatial dimensions)\n"
-              << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; mean calculation will be performed on the whole data set\n"
-              << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables (only for scaling methods; default: 10)"
+              << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; "
+                                                              "mean calculation will be performed on the whole data set\n"
+              << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
+                                                                     "(only for scaling methods; default: 10)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
@@ -291,7 +293,9 @@ static void parse_args(int argc, char** argv) {
 
     // when using -15 to +15 days long-term interval scaling, leap years should not be included and every year must be full.
     if (interval31_scaling && !(ds_reference.n_time % 365 == 0 && ds_control.n_time % 365 == 0 && ds_scenario.n_time % 365 == 0))
-        throw std::runtime_error("Data sets should not contain the 29. February and every year must have 365 entries for 31-day interval scaling. Use the \"--monhtly\" flag instead and apply the program on monthly separated data sets.");
+        throw std::runtime_error(
+            "Data sets should not contain the 29. February and every year must have 365 entries for long-term "
+            "31-day interval scaling. Use the \"--monhtly\" flag instead and apply the program on monthly separated data sets.");
 
     if (get_adjustment_kind() == "add") {
         if (adjustment_method_name == "linear_scaling")
@@ -400,9 +404,12 @@ int main(int argc, char** argv) {
         for (unsigned i = 0; i < CMethods::scaling_method_names.size(); i++) {
             if (CMethods::scaling_method_names[i] == adjustment_method_name) {
                 if (interval31_scaling)
-                    Log.info("Scaling will be performed based on long-term 31day intervals.");
+                    Log.info("Scaling will be performed based on long-term 31-day intervals.");
                 else
-                    Log.info("Scaling will be performed based on the whole data set. The input files should only contain the data for a specific month over the entire period. (i.e. this program must be applied to 12 data sets, that contain values only for a specific month over all years.)");
+                    Log.info(
+                        "Scaling will be performed based on the whole data set. "
+                        "The input files should only contain the data for a specific month over the entire period. "
+                        "(i.e. this program must be applied to 12 data sets, that contain values only for a specific month over all years.)");
 
                 break;
             }
