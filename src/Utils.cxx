@@ -9,7 +9,7 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
- *  * Copyright (C) 2022  Benjamin Thomas Schwertfeger
+ *  * Copyright (C) 2022 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

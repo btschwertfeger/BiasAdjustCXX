@@ -8,7 +8,7 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
- *  * Copyright (C) 2022  Benjamin Thomas Schwertfeger
+ *  * Copyright (C) 2022 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,15 +25,21 @@
  *
  */
 
-/*
- * ----- ----- ----- I N C L U D E ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
+/**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *                        Includes and Namespaces
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
 
 #include "NcFileHandler.hxx"
 
 #include <fstream>
 
-/*
- * ----- ----- ----- D E F I N I T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
+/**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *                        Definitions
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
 
 std::string NcFileHandler::time_name = "time";
 std::string NcFileHandler::lat_name = "lat";
@@ -43,10 +49,27 @@ std::string NcFileHandler::units = "units";
 std::string NcFileHandler::lat_unit = "degrees_north";
 std::string NcFileHandler::lon_unit = "degrees_east";
 
-/*
- * ----- ----- ----- C L A S S - I M P L E M E N T A T I O N ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
+/**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *                        Class Implementation
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
 
+/**
+ * Creates empty NcFileHandler class that handles no file
+ *
+ * Can be used to save time series without any attributes
+ */
 NcFileHandler::NcFileHandler() : handles_file(false) {}
+
+/**
+ * Creates the NcFileHandler class
+ * -> Load the NetCDF-based file `filepath` by given `variable_name` and `n_dimensions`
+ *
+ * @param filepath path to file that should be loaded
+ * @param variable_name variable to load into this class (only one variable per NcFileHandler instance)
+ * @param n_dimensions number of dimensions of this variable within the data set. Only 1 or 3 is valid.
+ */
 NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name, unsigned n_dimensions) : in_filename(filepath),
                                                                                                        var_name(variable_name),
                                                                                                        handles_file(true),
@@ -85,7 +108,8 @@ NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name, un
             lon_var = dataFile->getVar(NcFileHandler::lon_name);
             if (lon_var.isNull()) throw std::runtime_error("Longitude dimension <" + lon_name + "> not found!");
             lon_var.getVar(lon_values);
-        }
+        } else if (n_dimensions != 1)
+            throw std::runtime_error("Only 1 and 3-dimensional data sets are supported!");
 
         // Get the data of the variable; this is later used to select a specific region. This is kinda open file to reference
         data = dataFile->getVar(var_name);
@@ -96,10 +120,11 @@ NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name, un
         exit(1);
     }
 }
+
+/**
+ * mandatory
+ */
 NcFileHandler::~NcFileHandler() {
-    // if (time_values) delete time_values;
-    // if (lat_values) delete lat_values;
-    // if (lon_values) delete lon_values;
 }
 
 /**
@@ -108,10 +133,10 @@ NcFileHandler::~NcFileHandler() {
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-/** Fills out_arr with timeseries of all location for given latitude (lat).
- * Reading data costs a lot of time so it's better to load multiple locations in one step.
+/** Fills the 2D vector `v_out_arr` with time series of all latitudes for given longitude (`lon`).
+ *  -> NcFileHandler must hold 3-dimensional data
  *
- * @param v_out_arr output array
+ * @param v_out_arr 2D output vector
  * @param lon longitude of desired locations
  */
 void NcFileHandler::get_lat_timeseries_for_lon(std::vector<std::vector<float>>& v_out_arr, unsigned lon) {
@@ -131,7 +156,8 @@ void NcFileHandler::get_lat_timeseries_for_lon(std::vector<std::vector<float>>& 
             v_out_arr[lat][ts] = tmp[ts][lat];
 }
 
-/** Fills out_arr with all timesteps of one location of 3-dimensional data set
+/** Fills the 2D vector `v_out_arr` with all timesteps of one location of 3-dimensional data set based on longitude (`lon`)
+ *  -> NcFileHandler must hold 3-dimensional data
  *
  * @param v_out_arr output array
  * @param lat latitude of desired location
@@ -157,7 +183,8 @@ void NcFileHandler::get_timeseries(std::vector<float>& v_out_arr, unsigned lat, 
     }
 }
 
-/** Fills out_arr with all timesteps of one location of 1-dimensional data set
+/** Fills the 1D vector `v_out_arr` with all timesteps of one location of 1-dimensional data set
+ *  -> NcFileHandler must hold a 1-dimensional data
  *
  * @param v_out_arr output array
  */
@@ -180,12 +207,12 @@ void NcFileHandler::get_timeseries(std::vector<float>& v_out_arr) {
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-/** Saves a data set with one variable for one time dimension (1d vector)
+/** Saves a data set with one variable for one time dimension (1D vector)
  *  -> time dimension gets same attributes as handled file
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param out_data 1d array of data
+ * @param out_data 1D array of data to save
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float* out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -220,11 +247,11 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
     output_var.putVar(startp, countp, out_data);
 }
 
-/** Saves a data set with one variable over time dimension (1d vector)
+/** Saves a data set with one variable for one time dimension (1D vector)
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param v_out_data 1d array of data
+ * @param v_out_data 1D array of data to save
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -275,56 +302,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param v_out_data 2d array of data
- */
-void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<float>>& v_out_data) {
-    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
-
-    // Create netCDF dimensions
-    netCDF::NcDim
-        out_lat_dim = output_file.addDim(lat_name, n_lat),
-        out_lon_dim = output_file.addDim(lon_name, n_lon);
-
-    // Create dimension names
-    netCDF::NcVar
-        out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
-        out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
-
-    // Sett attributes
-    out_lat_var.putAtt(units, lat_unit);
-    out_lon_var.putAtt(units, lon_unit);
-
-    // Define the netCDF variables for the minCorr and location data.
-    std::vector<netCDF::NcDim> dim_vector;
-    dim_vector.push_back(out_lat_dim);
-    dim_vector.push_back(out_lon_dim);
-
-    netCDF::NcVar
-        output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
-
-    // Write the coordinate variable data to the file.
-    out_lat_var.putVar(lat_values);
-    out_lon_var.putVar(lon_values);
-
-    std::vector<size_t> countp, startp;
-    startp.push_back(0);
-    startp.push_back(0);
-    startp.push_back(0);
-    countp.push_back(n_lat);
-    countp.push_back(n_lon);
-
-    float data_to_save[n_lat][n_lon];
-    for (unsigned lat = 0; lat < n_lat; lat++)
-        for (unsigned lon = 0; lon < n_lon; lon++)
-            data_to_save[lat][lon] = v_out_data[lat][lon];
-
-    output_var.putVar(startp, countp, data_to_save);
-}
-/** Saves a 2-dimensional data set with one variable for one timestep to file
- *
- * @param out_fpath output file path
- * @param variable_name name of the output variable
- * @param out_data 2d array of data
+ * @param out_data 2D array of data to save
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float** out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -370,11 +348,61 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
     output_var.putVar(startp, countp, data_to_save);
 }
 
-/** Saves a data set to file (3 dimensions: time x lat x lon )
+/** Saves a 2-dimensional data set with one variable for one timestep to file
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param out_data 3d array of data
+ * @param v_out_data 2D vector of data to save
+ */
+void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<float>>& v_out_data) {
+    netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
+
+    // Create netCDF dimensions
+    netCDF::NcDim
+        out_lat_dim = output_file.addDim(lat_name, n_lat),
+        out_lon_dim = output_file.addDim(lon_name, n_lon);
+
+    // Create dimension names
+    netCDF::NcVar
+        out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
+        out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
+
+    // Sett attributes
+    out_lat_var.putAtt(units, lat_unit);
+    out_lon_var.putAtt(units, lon_unit);
+
+    // Define the netCDF variables for the minCorr and location data.
+    std::vector<netCDF::NcDim> dim_vector;
+    dim_vector.push_back(out_lat_dim);
+    dim_vector.push_back(out_lon_dim);
+
+    netCDF::NcVar
+        output_var = output_file.addVar(variable_name, netCDF::ncFloat, dim_vector);
+
+    // Write the coordinate variable data to the file.
+    out_lat_var.putVar(lat_values);
+    out_lon_var.putVar(lon_values);
+
+    std::vector<size_t> countp, startp;
+    startp.push_back(0);
+    startp.push_back(0);
+    startp.push_back(0);
+    countp.push_back(n_lat);
+    countp.push_back(n_lon);
+
+    float data_to_save[n_lat][n_lon];
+    for (unsigned lat = 0; lat < n_lat; lat++)
+        for (unsigned lon = 0; lon < n_lon; lon++)
+            data_to_save[lat][lon] = v_out_data[lat][lon];
+
+    output_var.putVar(startp, countp, data_to_save);
+}
+
+/** Saves a 3-dimensional data set to file (3 dimensions: time x lat x lon )
+ *
+ * @param out_fpath output file path
+ * @param variable_name name of the output variable
+ * @param out_data 3d array of data to save
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -449,11 +477,11 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
     }
 }
 
-/** Saves a data set to file (3 dimensions: time x lat x lon )
+/** Saves a 3-dimensional data set to file (3 dimensions: time x lat x lon )
  *
  * @param out_fpath output file path
  * @param variable_name name of the output variable
- * @param v_out_data 3d vector of data
+ * @param v_out_data 3D vector of data to save
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<std::vector<float>>>& v_out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -531,7 +559,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  *
  * @param out_fpath output file path
  * @param variable_names names of the output variables
- * @param out_data vector of 2d arrays of data
+ * @param out_data vector of 2D arrays of data
  */
 void NcFileHandler::to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
@@ -583,7 +611,3 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::vector<std::string> va
         output_var.putVar(startp, countp, data_to_save);
     }
 }
-
-/*
- * ----- ----- ----- E O F ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- |
- */

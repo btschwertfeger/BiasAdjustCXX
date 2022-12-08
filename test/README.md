@@ -5,12 +5,6 @@
 ## Compilation:
 
 ```bash
-./build.sh
-```
-
-or build form source:
-
-```bash
 mkdir build && cd build
 cmake .. && cmake --build .
 ```
@@ -29,8 +23,8 @@ cmake .. && cmake --build .
 
 ```bash
 ComputeIndicatorCXX                     \
-    -i output/linear_scaling_result.nc  \ # result data set to evaluate
-    -i input/observations.nc            \ # reference data
+    -i output/linear_scaling_result.nc  \ # data set to evaluate
+    -i input_data/observations.nc       \ # reference data
     -o output/mean_bias_error_ls_obs.nc \ # output file path
     -v tas                              \ # variable to adjust
     -m mbe                              \ # method to use

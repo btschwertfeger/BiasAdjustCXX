@@ -41,6 +41,8 @@ class CMethods {
     static std::vector<std::string> distribution_method_names;
 
     static double get_adjusted_scaling_factor(double factor, double max_factor);
+    static std::vector<std::vector<float>> get_long_term_dayofyear(std::vector<float>& v_in);
+
     static void Linear_Scaling_add(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, bool interval31_scaling = false);
     static void Linear_Scaling_mult(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor, bool interval31_scaling = false);
     static void Variance_Scaling_add(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor, bool interval31_scaling = false);
@@ -48,10 +50,9 @@ class CMethods {
     static void Delta_Method_mult(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, double max_scaling_factor, bool interval31_scaling = false);
 
     static std::vector<double> get_xbins(std::vector<float>& a, std::vector<float>& b, unsigned n_quantiles, std::string kind);
+
     static void Quantile_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);
     static void Quantile_Delta_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, std::string kind, unsigned n_quantiles);
-
-    static std::vector<std::vector<float>> get_long_term_dayofyear(std::vector<float>& v_in);
 
    private:
 };

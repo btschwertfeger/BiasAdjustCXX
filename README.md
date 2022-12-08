@@ -1,4 +1,4 @@
-# Command Line Tool for Bias Adjustments using C++
+# BiasAdjustCXX command-line tool for climatic research
 
 <div align="center">
 
@@ -8,7 +8,7 @@
 
 </div>
 
-### Command line tool/program to apply different scale- and distribution-based bias adjustment techniques for climatic research. Most of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
+### Command-line tool to apply different scale- and distribution-based bias adjustment techniques for climatic research. Most of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
 
 ---
 
@@ -39,14 +39,14 @@ These programs and data structures are designed to help minimize discrepancies b
   <figcaption>Figure 1: Schematic representation of a bias adjustment procedure</figcaption>
 </figure>
 
-In this way, for example, modeled data, which on average represent values that are too cold, can be adjusted by applying an adjustment procedure. The following figure shows the observed, the modeled and the adjusted values. It is directly visible that the delta adjusted time series ($T^{*DM}_{sim,p}$) are much more similar to the observed data ($T_{obs,p}$) than the raw modeled data ($T_{sim,p}$).
+In this way, for example, modeled data, which on average represent values that are too cold, can be adjusted by applying an adjustment procedure. The following figure shows the observed, the modeled, and the adjusted values. It is directly visible that the delta adjusted time series ($T^{*DM}_{sim,p}$) are much more similar to the observed data ($T_{obs,p}$) than the raw modeled data ($T_{sim,p}$).
 
 <figure>
   <img
   src="images/dm-doy-plot.png?raw=true"
   alt="Temperature per day of year in modeled, observed and bias-adjusted climate data"
   style="background-color: white; border-radius: 7px">
-  <figcaption>Figure 2: Temperature per day of year in observed, modeled and bias-adjusted climate data</figcaption>
+  <figcaption>Figure 2: Temperature per day of year in observed, modeled, and bias-adjusted climate data</figcaption>
 </figure>
 
 ---
@@ -76,7 +76,7 @@ cmake .. && cmake --build .
 
 ### Requirements:
 
-- Installed NetCDF4 C++ Library ([How to install NetCDF4 for C++](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
+- NetCDF-4 C library ([How to install NetCDF-4 C](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 - [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 

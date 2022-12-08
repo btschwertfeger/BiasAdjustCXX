@@ -8,7 +8,7 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
- * * Copyright (C) 2022  Benjamin Thomas Schwertfeger
+ * * Copyright (C) 2022 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,7 +40,13 @@
  *          src/NcFileHandler.cxx   \
  *          -I include              \
  *          -lnetcdf-cxx4
- * * ... or use the CMakeLists.txt file.
+ * * ... or use the CMakeLists.txt for os-independand compilation.
+ */
+
+/**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *                        Includes
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
 #include <math.h>
@@ -54,12 +60,9 @@
 #include "colors.h"
 
 /**
- * ------------------------------------------------------------
- *  ____        __ _       _ _   _
- * |  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___
- * | | | |/ _ \ |_| | '_ \| | __| |/ _ \| '_ \/ __|
- * | |_| |  __/  _| | | | | | |_| | (_) | | | \__ \
- * |____/ \___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *              Definitions
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
 static NcFileHandler
@@ -108,8 +111,15 @@ static CM_Func_ptr_scaling_B scaling_func_B = NULL;
 static CM_Func_ptr_distribution distribution_func = NULL;
 
 /**
- * ------------------------------------------------------------------
- * ==== Program Management ======
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *              Program Management
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
+
+/**
+ * Command-line output of the program usage hints.
+ *
+ * @param name Name of this program
  */
 void show_usage(std::string name) {
     std::cerr << BOLDBLUE << "Usage: " RESET << name << "\t\t\t\\\n"
@@ -171,6 +181,11 @@ void show_usage(std::string name) {
     std::cout.flush();
 }
 
+/**
+ * Returns the selected adjustment kind
+ *
+ * @return adjustment kind, additive or multiplicative
+ */
 static std::string get_adjustment_kind() {
     return (adjustment_kind == "add" || adjustment_kind == "+")
                ? "add"
@@ -325,6 +340,12 @@ static void parse_args(int argc, char** argv) {
         throw std::runtime_error("Unkonwn adjustment kind " + adjustment_kind + "!");
 }
 
+/**
+ * Command-line output of the duraton between a start time
+ *
+ * @param start_time start time to calculate the duration
+ *
+ */
 template <typename T>
 static void stdcout_runtime(T start_time) {
     auto end_time = std::chrono::high_resolution_clock::now();
@@ -333,13 +354,19 @@ static void stdcout_runtime(T start_time) {
 }
 
 /**
- * ------------------------------------------------------------
- *   ____                            _        _   _
- *  / ___|___  _ __ ___  _ __  _   _| |_ __ _| |_(_) ___  _ __
- * | |   / _ \| '_ ` _ \| '_ \| | | | __/ _` | __| |/ _ \| '_ \
- * | |__| (_) | | | | | | |_) | |_| | || (_| | |_| | (_) | | | |
- *  \____\___/|_| |_| |_| .__/ \__,_|\__\__,_|\__|_|\___/|_| |_|
- *                      |_|
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *              Computational Functions
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
+
+/**
+ * Invokes the selected bias adjustment function (that is not NULL)
+ * to adjust the 1-dimensional time series v_scenario
+ *
+ * @param v_data_out 1D vector to store the adjusted result/time series in
+ * @param v_reference 1D reference data (control period)
+ * @param v_control 1D modeled data (control period)
+ * @param v_scenario 1D data to adjust (scenario period)
  */
 static void adjust_1d(
     std::vector<float>& v_data_out,
@@ -356,6 +383,15 @@ static void adjust_1d(
         throw std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
 }
 
+/**
+ * Handles the adjustment of a 3-dimensional data set by loading the input data
+ * per latitude
+ * -> All longitudes per latitude are adjusted in one iteration, this is because
+ *    loading all time series at once would crash the most systems and loading
+ *    every time series alone takes too much time.
+ *
+ * @param v_data_out 3D vector that is used to store the bias adjusted results
+ */
 static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) {
     for (unsigned lon = 0; lon < ds_scenario.n_lon; lon++) {
         utils::progress_bar((float)lon, (float)(v_data_out[0].size()));
@@ -384,12 +420,9 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
 }
 
 /**
- * ------------------------------------------------------------------------
- *  __  __       _
- * |  \/  | __ _(_)_ __
- * | |\/| |/ _` | | '_ \
- * | |  | | (_| | | | | |
- * |_|  |_|\__,_|_|_| |_|
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *              Main/Entry
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
 int main(int argc, char** argv) {
@@ -410,7 +443,6 @@ int main(int argc, char** argv) {
                         "Scaling will be performed based on the whole data set. "
                         "The input files should only contain the data for a specific month over the entire period. "
                         "(i.e. this program must be applied to 12 data sets, that contain values only for a specific month over all years.)");
-
                 break;
             }
         }
@@ -470,7 +502,3 @@ int main(int argc, char** argv) {
     }
     return 0;
 }
-
-/*
- * ----- ----- ----- E O F ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- */

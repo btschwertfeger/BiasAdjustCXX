@@ -6,7 +6,7 @@
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
  *
- * * Copyright (C) 2022  Benjamin Thomas Schwertfeger
+ * * Copyright (C) 2022 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -68,9 +68,10 @@ CMethods::~CMethods() {}
  */
 
 /**
- * returns 2d vector (dimensionss: [365, 31 * years]) containing the values with index -15...0...+15 around a day over all years
- * @param v_in input vector containing 365 entries for n years
+ * Get 365 long-term 31-day moving windows
  *
+ * @param v_in input vector containing 365 entries for n years
+ * @return 2D vector (dimensionss: [365, 31 * y]) containing the values with index -15...0...+15 around a day over all years
  */
 std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<float> &v_in) {
     std::vector<std::vector<float>> v_out(365, std::vector<float>());
@@ -99,10 +100,11 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
 }
 
 /**
- * returns either the factor or the maximum factor
+ * Checks and returns the desired scaling factor based on `max_factor`
  *
  * @param factor value to check
  * @param max_factor max allowed factor
+ * @return either `factor` if ths ok or `nax_factor`
  */
 double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
     return (factor > 0 && factor > max_factor)
@@ -119,25 +121,20 @@ double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
  */
 
 /**
- * Method to adjust 1 dimensional climate data by the linear scaling method.
+ * Method to adjust 1-dimensional climate data by the additive linear scaling method.
  * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
  * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
  * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
  *
- * @param v_output output vector where to save the adjusted data
- * @param v_reference observation data (control period)
- * @param v_control modeled data of the control period
- * @param v_scenario data to adjust
- * @param max_scaling_factor maximum scaling for the multiplicative variant
- * @param interval31_scaling calculate the means based on 30days around the adjusted time step instead on monthly means
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param interval31_scaling calculate the means based on long-term 31-day moving windows or on the whole data at once
  *
  * Add ('+'):
- *  (1.)    $T^{*}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
- *  (2.)    $T^{*}_{scen}(d)=T_{scen}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{scen}(d))$
- * Mult ('*'):
- *  (3.)    $ T_{contr}^{*}(d) = \mu_{m}(T_{obs}(d))\cdot\left[\frac{T_{contr}(d)}{\mu_{m}(T_{contr}(d))}\right]$
- *  (4.)    $ T_{scen}^{*}(d) = \mu_{m}(T_{obs}(d))\cdot\left[\frac{T_{contr}(d)}{\mu_{m}(T_{scen}(d))}\right]$
- *
+ *  (1.)    $T^{*}_{contr}(d) = T_{contr}(d) + \mu_{m}(T_{obs}(d)) - \mu_{m}(T_{contr}(d))$
+ *  (2.)    $T^{*}_{scen}(d) = T_{scen}(d) + \mu_{m}(T_{obs}(d)) - \mu_{m}(T_{scen}(d))$
  */
 void CMethods::Linear_Scaling_add(
     std::vector<float> &v_output,
@@ -148,9 +145,11 @@ void CMethods::Linear_Scaling_add(
     if (!interval31_scaling) {
         const double scaling_factor = MathUtils::mean(v_reference) - MathUtils::mean(v_control);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_scenario[ts] + scaling_factor;  // Eq. 1f.
+            v_output[ts] = v_scenario[ts] + scaling_factor;  // Eq. 2
+
     } else if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
         throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete. Deactivate \"interval31_scaling\" for the regular method.");
+
     else {
         std::vector<float>
             ref_365_means,
@@ -169,10 +168,27 @@ void CMethods::Linear_Scaling_add(
             scaling_factors.push_back(ref_365_means[day] - contr_365_means[day]);
 
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_scenario[ts] + scaling_factors[ts % 365];
+            v_output[ts] = v_scenario[ts] + scaling_factors[ts % 365];  // Eq. 2
     }
 }
 
+/**
+ * Method to adjust 1-dimensional climate data by the multiplicative linear scaling method.
+ * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
+ * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
+ * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
+ *
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param max_scaling_factor maximum scaling to avoid unrealistic results in some cases
+ * @param interval31_scaling calculate the means based on long-term 31-day moving windows or on the whole data at once
+ *
+ * Mult ('*'):
+ *  (1.)    $ T_{contr}^{*}(d) = \mu_{m}(T_{obs}(d)) \cdot \left[\frac{T_{contr}(d)}{\mu_{m}(T_{contr}(d))}\right]$
+ *  (2.)    $ T_{scen}^{*}(d) = \mu_{m}(T_{obs}(d)) \cdot \left[\frac{T_{contr}(d)}{\mu_{m}(T_{scen}(d))}\right]$
+ */
 void CMethods::Linear_Scaling_mult(
     std::vector<float> &v_output,
     std::vector<float> &v_reference,
@@ -183,9 +199,11 @@ void CMethods::Linear_Scaling_mult(
     if (!interval31_scaling) {
         const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_reference) / MathUtils::mean(v_control), max_scaling_factor);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;  // Eq. 3f.
+            v_output[ts] = v_scenario[ts] * adjusted_scaling_factor;  // Eq. 2
+
     } else if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
         throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete. Deactivate \"interval31_scaling\" for the regular method.");
+
     else {
         std::vector<float>
             ref_365_means,
@@ -203,7 +221,7 @@ void CMethods::Linear_Scaling_mult(
             adj_scaling_factors.push_back(get_adjusted_scaling_factor((ref_365_means[day] / contr_365_means[day]), max_scaling_factor));
 
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_scenario[ts] * adj_scaling_factors[ts % 365];
+            v_output[ts] = v_scenario[ts] * adj_scaling_factors[ts % 365];  // Eq. 2
     }
 }
 
@@ -213,23 +231,23 @@ void CMethods::Linear_Scaling_mult(
  * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
  * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
  *
- * @param v_output output vector where to save the adjusted data
- * @param v_reference observation data (control period)
- * @param v_control modeled data of the control period
- * @param v_scenario data to adjust
- * @param interval31_scaling
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param interval31_scaling calculate the means based on long-term 31-day moving windows or on the whole data at once
  *
- * (1.) $T^{*1}_{contr}(d)=T_{contr}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{contr}(d))$
- * (2.) $T^{*1}_{scen}(d)=T_{scen}(d)+\mu_{m}(T_{obs}(d))-\mu_{m}(T_{scen}(d))$
+ * (1.) $T^{*1}_{contr}(d) = T_{contr}(d) + \mu_{m}(T_{obs}(d)) - \mu_{m}(T_{contr}(d))$
+ * (2.) $T^{*1}_{scen}(d) = T_{scen}(d) + \mu_{m}(T_{obs}(d)) - \mu_{m}(T_{scen}(d))$
  *
- * (3.) $T^{*2}_{contr}(d)=T^{*1}_{contr}(d)-\mu_{m}(T^{*1}_{contr}(d))$
- * (4.) $T^{*2}_{scen}(d)=T^{*1}_{scen}(d)-\mu_{m}(T^{*1}_{scen}(d))$
+ * (3.) $T^{*2}_{contr}(d) = T^{*1}_{contr}(d) - \mu_{m}(T^{*1}_{contr}(d))$
+ * (4.) $T^{*2}_{scen}(d) = T^{*1}_{scen}(d) - \mu_{m}(T^{*1}_{scen}(d))$
  *
- * (5.) $T^{*3}_{contr}(d)=T^{*2}_{scen}(d)\cdot\left[\frac{\sigma_{m}(T_{obs}(d))}{\sigma_{m}(T^{*2}_{contr}(d))}\right]$
- * (6.) $T^{*3}_{scen}(d)=T^{*2}_{scen}(d)\cdot\left[\frac{\sigma_{m}(T_{obs}(d))}{\sigma_{m}(T^{*2}_{contr}(d))}\right]$
+ * (5.) $T^{*3}_{contr}(d) = T^{*2}_{scen}(d) \cdot \left[\frac{\sigma_{m}(T_{obs}(d))}{\sigma_{m}(T^{*2}_{contr}(d))}\right]$
+ * (6.) $T^{*3}_{scen}(d) = T^{*2}_{scen}(d) \cdot \left[\frac{\sigma_{m}(T_{obs}(d))}{\sigma_{m}(T^{*2}_{contr}(d))}\right]$
  *
- * (7.) $T^{*}_{contr}(d)=T^{*3}_{contr}(d)+\mu_{m}(T^{*1}_{contr}(d))$
- * (8.) $T^{*}_{scen}(d)=T^{*3}_{scen}(d)+\mu_{m}(T^{*1}_{scen}(d))$
+ * (7.) $T^{*}_{contr}(d) = T^{*3}_{contr}(d) + \mu_{m}(T^{*1}_{contr}(d))$
+ * (8.) $T^{*}_{scen}(d) = T^{*3}_{scen}(d) + \mu_{m}(T^{*1}_{scen}(d))$
  */
 void CMethods::Variance_Scaling_add(
     std::vector<float> &v_output,
@@ -262,6 +280,7 @@ void CMethods::Variance_Scaling_add(
         const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::sd(v_reference) / MathUtils::sd(VS1_contr), max_scaling_factor);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (VS1_scen[ts] * adjusted_scaling_factor) + LS_scen_mean;  // Eq. 6 and 8
+
     } else {
         std::vector<std::vector<float>>
             LS_contr_long_term_dayofyear = get_long_term_dayofyear(LS_contr),
@@ -303,22 +322,19 @@ void CMethods::Variance_Scaling_add(
 }
 
 /**
- * Method to adjust 1 dimensional climate data by delta method.
- * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
+ * Method to adjust 1-dimensional climate data by the additive delta method.
+ * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias
+ * correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
  *
  * NOTE: v_reference.size() must be equal to v_scenario.size()
- * @param v_output output vector where to save the adjusted data
- * @param v_reference observation data (control period)
- * @param v_control modeled data of the control period
- * @param v_scenario data to adjust
- * @param max_scaling_factor maximum scaling for the multiplicative variant
- * @param interval31_scaling calculate the means based on 31days around the adjusted time step instead on monthly means
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param interval31_scaling calculate the means based on long-term 31-day moving windows or on the whole data at once
  *
  * Add (+):
  *   (1.) $T^{*}_{contr}(d) = T_{contr}(d) + (\mu_{m}(T_{scen}(d)) - \mu_{m}(T_{obs}(d)))$
- * Mult (*):
- *   (2.) $T^{*}_{contr}(d) = T_{contr}(d) \cdot \left[\frac{\mu_{m}(T_{scen}(d))}{\mu_{m}(T_{obs}(d))}\right]$
- *
  */
 void CMethods::Delta_Method_add(
     std::vector<float> &v_output,
@@ -330,8 +346,10 @@ void CMethods::Delta_Method_add(
         const double scaling_factor = MathUtils::mean(v_scenario) - MathUtils::mean(v_control);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = v_reference[ts] + scaling_factor;  // Eq. 1
+
     } else if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
         throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete. Deactivate \"interval31_scaling\" for the regular method.");
+
     else {
         std::vector<float>
             contr_365_means,
@@ -346,9 +364,25 @@ void CMethods::Delta_Method_add(
         }
 
         for (unsigned ts = 0; ts < v_reference.size(); ts++)
-            v_output[ts] = v_reference[ts] + (scen_365_means[ts % 365] - contr_365_means[ts % 365]);
+            v_output[ts] = v_reference[ts] + (scen_365_means[ts % 365] - contr_365_means[ts % 365]);  // Eq. 1
     }
 }
+/**
+ * Method to adjust 1-dimensional climate data by the multiplicative delta method.
+ * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias
+ * correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
+ *
+ * NOTE: v_reference.size() must be equal to v_scenario.size()
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param max_scaling_factor maximum scaling to avoid unrealistic results in some cases
+ * @param interval31_scaling calculate the means based on long-term 31-day moving windows or on the whole data at once
+ *
+ * Mult (*):
+ *   (1.) $T^{*}_{contr}(d) = T_{contr}(d) \cdot \left[\frac{\mu_{m}(T_{scen}(d))}{\mu_{m}(T_{obs}(d))}\right]$
+ */
 void CMethods::Delta_Method_mult(
     std::vector<float> &v_output,
     std::vector<float> &v_reference,
@@ -359,9 +393,11 @@ void CMethods::Delta_Method_mult(
     if (!interval31_scaling) {
         const double adjusted_scaling_factor = get_adjusted_scaling_factor(MathUtils::mean(v_scenario) / MathUtils::mean(v_control), max_scaling_factor);
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_reference[ts] * adjusted_scaling_factor;  // Eq. 2
+            v_output[ts] = v_reference[ts] * adjusted_scaling_factor;  // Eq. 1
+
     } else if (!(v_reference.size() % 365 == 0 && v_control.size() % 365 == 0 && v_scenario.size() % 365 == 0))
         throw std::runtime_error("The time dimensions must have 365 entries for every year. Every year must be complete. Deactivate \"interval31_scaling\" for the regular method.");
+
     else {
         std::vector<float>
             contr_365_means,
@@ -380,15 +416,21 @@ void CMethods::Delta_Method_mult(
             adj_scaling_factors.push_back(get_adjusted_scaling_factor(scen_365_means[day] / contr_365_means[day], max_scaling_factor));
 
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = v_reference[ts] * adj_scaling_factors[ts % 365];
+            v_output[ts] = v_reference[ts] * adj_scaling_factors[ts % 365];  // Eq. 1
     }
 }
 
 /**
+ * Returns the probability boundaries based on two input time series
+ * -> This is required to compute the bin boundaries for the Probability Density and Cumulative Distribution Funtion.
+ * -> Used by Quantile and Quantile Delta Mapping by invoking this funtion to get the bins based on the time
+ *    series of the control period.
  *
  * @param a time series
- * @param b time series
- * @param kind regular or bounded: defines if min is the real minimum or set to 0
+ * @param b another time series
+ * @param kind regular or bounded: defines if mininum value of a (climate) variable can be lower than in the data
+ *             or is set to 0 (0 ratio based variables)
+ * @return the probability boundaries mentioned above
  */
 std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float> &b, unsigned n_quantiles, std::string kind) {
     if (kind == "regular") {
@@ -432,17 +474,17 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
  * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM
  * simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
- * @param v_output output array where to save the adjusted data
- * @param v_reference observation data (control period)
- * @param v_control modeled data of the control period
- * @param v_scenario data to adjust
- * @param kind type of adjustment; additive or multiplicative
- * @param n_quantiles number of quantiles to use
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param kind type of adjustment: additive (`+`, `add`) or multiplicative (`*`, `mult`)
+ * @param n_quantiles number of quantiles to respect
  *
  * (add):
- *      (1.) $T^{*QM}_{sim,p}(d)=F^{-1}_{obs,h} \left\{F_{sim,h}\left[T_{sim,p}(d)\right]\right\}$
+ *      (1.) $T^{*QM}_{sim,p}(d) = F^{-1}_{obs,h} \left\{F_{sim,h}\left[T_{sim,p}(d)\right]\right\}$
  * (mult):
- *      same but experimental
+ *      same but with bounded values
  */
 void CMethods::Quantile_Mapping(
     std::vector<float> &v_output,
@@ -491,12 +533,12 @@ void CMethods::Quantile_Mapping(
  * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM
  * simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
- * @param v_output output vector where to save the adjusted data
- * @param v_reference observation data (control period)
- * @param v_control modeled data of the control period
- * @param v_scenario data to adjust
- * @param kind type of adjustment; additive or multiplicative (absolute or relative change)
- * @param n_quantiles number of quantiles to use
+ * @param v_output 1D output vector that stores the adjusted time series
+ * @param v_reference 1D reference time series (control period)
+ * @param v_control 1D modeled time series (control period)
+ * @param v_scenario 1D time series to adjust (scenario period)
+ * @param kind type of adjustment: additive (`+`, `add`) or multiplicative (`*`, `mult`) (absolute or relative change)
+ * @param n_quantiles number of quantiles to respect
  *
  * Add (+):
  *  (1.1) $\varepsilon(t) = F^{(t)}_{sim,p}\left[T_{sim,p}(t)\right]$
@@ -507,8 +549,8 @@ void CMethods::Quantile_Mapping(
  * Mult (*):
  *   (1.1) --//--
  *   (1.2) --//--
- *   (2.3) \Delta(i) & = \frac{ F^{-1}_{sim,p}\left[\varepsilon(i)\right] }{ F^{-1}_{sim,h}\left[\varepsilon(i)\right] } \\
- *                   & = \frac{ X_{sim,p}(i) }{ F^{-1}_{sim,h}\left\{F^{}_{sim,p}\left[X_{sim,p}(i)\right]\right\} }
+ *   (2.3) \Delta(i) & = \frac{F^{-1}_{sim,p}\left[\varepsilon(i)\right] }{ F^{-1}_{sim,h}\left[\varepsilon(i)\right] } \\
+ *                   & = \frac{X_{sim,p}(i) }{ F^{-1}_{sim,h}\left\{F^{}_{sim,p}\left[X_{sim,p}(i)\right]\right\} }
  *   (2.4) X^{*QDM}_{sim,p}(i) = X^{QDM(1)}_{sim,p}(i) \cdot \Delta(i)
  */
 void CMethods::Quantile_Delta_Mapping(
@@ -554,9 +596,3 @@ void CMethods::Quantile_Delta_Mapping(
             v_output[ts] = (float)(QDM1[ts] * (v_scenario[ts] / MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false)));  // Eq. 2.3f.
     }
 }
-
-/**
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *                        E O F
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- */

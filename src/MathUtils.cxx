@@ -8,7 +8,7 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
  *
- *  * Copyright (C) 2022  Benjamin Thomas Schwertfeger
+ *  * Copyright (C) 2022 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,9 +36,10 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *                        Attributes
+ * *                        Definitions
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
@@ -61,6 +62,12 @@ MathUtils::~MathUtils() {}
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
+/**
+ * Returns the pointer to a function based on `name`
+ *
+ * @param name name of the desired funtion
+ * @return point to desired funciton
+ */
 Func_one MathUtils::get_method_for_1_ds(std::string name) {
     if (name == "sd")
         return sd;
@@ -71,7 +78,12 @@ Func_one MathUtils::get_method_for_1_ds(std::string name) {
     else
         return NULL;
 }
-
+/**
+ * Returns the pointer to a function based on `name`
+ *
+ * @param name name of the desired funtion
+ * @return point to desired funciton
+ */
 Func_two MathUtils::get_method_for_2_ds(std::string name) {
     if (name == "rmse")
         return rmse;
@@ -92,13 +104,22 @@ Func_two MathUtils::get_method_for_2_ds(std::string name) {
  */
 
 /** Returns the correlation coefficient for given x and y arrays
- *  https://www.geeksforgeeks.org/program-find-correlation-coefficient/
  *
- * AgriMetSoft (2019). Online Calculators. Available on: https://agrimetsoft.com/calculators/R-squared%20correlation
- * $r^{2} = \frac{ n(\sum(xy))-\sum(x)\sum(y)}{\sqrt{\left[n\sum{x^{2}}-\sum(x)^{2}\right]\left[n\sum{y^{2}}-(\sum{y})^{2}\right]}}$
+ * References:
+ *  - https://www.geeksforgeeks.org/program-find-correlation-coefficient/
  *
- * @param x reference
- * @param y prediction
+ *  - AgriMetSoft (2019). Online Calculators. Available on: https://agrimetsoft.com/calculators/R-squared%20correlation
+ *    $r^{2} = \frac{
+ *          n(\sum(xy)) - \sum(x)\sum(y)
+ *      }{
+ *          \sqrt{
+ *              \left[n\sum{x^{2}} - \sum(x)^{2}\right] \left[n\sum{y^{2}} - (\sum{y})^{2}\right]
+ *          }
+ *      }$
+ *
+ * @param x 1D reference time series/vector
+ * @param y 1D prediction time series/vector
+ * @return correlation coefficient
  */
 double MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<float>& y) {
     if (x.size() != y.size()) throw std::runtime_error("Cannot calculate correlation coefficient of vectors with different size.");
@@ -121,11 +142,17 @@ double MathUtils::correlation_coefficient(std::vector<float>& x, std::vector<flo
 }
 
 /** Returns the Root Mean Square Error
- *  $RMSE = \sqrt{\frac{\sum_{i=1}^{n}(T_{y,i}-T_{x,i})^{2}}{n}}$
+ *   RMSE = \sqrt{
+ *             \frac{
+ *                \sum_{i=1}^{n}(T_{y,i} - T_{x,i})^{2}
+ *             }{
+ *                 n
+ *             }
+ *         }
  *
- * @param x reference
- * @param y prediction
- * @param n length
+ * @param x 1D reference time series/vector
+ * @param y 1D prediction time series/vector
+ * @return root mean square error
  */
 double MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
     if (x.size() != y.size()) throw std::runtime_error("Cannot calculate rmse of vectors with different size.");
@@ -135,11 +162,12 @@ double MathUtils::rmse(std::vector<float>& x, std::vector<float>& y) {
     return sqrt(result);
 }
 
-/** Returns the mean bias error
- *  $MBE=\frac{1}{n}\sum_{i=1}^{n}(T_{y,i}-T_{x,i})$
+/** Returns the Mean Bias Error
+ *  $MBE = \frac{1}{n} \sum_{i=1}^{n}(T_{y,i} - T_{x,i})$
  *
- * @param x reference
- * @param y prediction
+ * @param x 1D reference time series/vector
+ * @param y 1D prediction time series/vector
+ * @ return mean bias error
  */
 double MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
     if (x.size() != y.size()) throw std::runtime_error("Cannot calculate mbe of vectors with different size.");
@@ -148,16 +176,18 @@ double MathUtils::mbe(std::vector<float>& x, std::vector<float>& y) {
     for (unsigned ts = 0; ts < x.size(); ts++) result += y[ts] - x[ts];
     return result * (double(1.0) / (int)x.size());
 }
+
 /** Returns the index of agreement
  *  $d = 1 - \frac{
- *              \sum^{n}_{i=1}(T_{obs,p,i} - T_{sim,p}(i))^{2}
- *           }{
- *              \sum^{n}_{i=1}(| T_{sim,p}(i) - \mu({T_{obs,p}})|+|T_{obs,p}(i) - \mu({T_{obs,p}})|)
- *           },  \hspace{1em}  d\in \{0,1\}
+ *       \sum^{n}_{i=1}(T_{obs,p,i} - T_{sim,p}(i))^{2}
+ *      }{
+ *       \sum^{n}_{i=1}(| T_{sim,p}(i) - \mu({T_{obs,p}})|+|T_{obs,p}(i) - \mu({T_{obs,p}})|)
+ *      }, \hspace{1em}  d\in \{0,1\}
  *  $
  *
- * @param x reference
- * @param y prediction
+ * @param x 1D reference time series/vector
+ * @param y 1D prediction time series/vector
+ * @return index of agreenemnt
  */
 double MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
     if (x.size() != y.size()) throw std::runtime_error("Cannot calculate ioa of vectors with different size.");
@@ -172,9 +202,10 @@ double MathUtils::ioa(std::vector<float>& x, std::vector<float>& y) {
 }
 
 /** Returns the variance
- *  $\sigma^{2}(x) = \frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}$
+ *  $\sigma^{2}(x) = \frac{\sum_{i=1}^{n}(x_{i} - \mu(x)^{2}}{n-1}$
  *
- * @param x reference
+ * @param x 1D vector of interest
+ * @return variance of `x`
  */
 double MathUtils::variance(std::vector<float>& x) {
     std::vector<double> v(x.size());
@@ -182,20 +213,22 @@ double MathUtils::variance(std::vector<float>& x) {
     for (unsigned i = 0; i < x.size(); i++) v[i] = pow(x[i] - m, 2);
     return mean(v);
 }
+
 /** Returns the standard deviation
  *  $\sigma(x) = \sqrt{\frac{\sum_{i=1}^{n}(x_{i}-\mu(x)^{2}}{n-1}}$
  *
- * @param x reference
+ * @param x 1D vector of interest
+ * @return standard deviation of `x`
  */
 double MathUtils::sd(std::vector<float>& x) {
     return sqrt(variance(x));
 }
 
-/** Mean
+/** Returns the mean
  *
  * @param a 1D array of floats to get the mean from
+ * @return mean of `a`
  */
-
 double MathUtils::mean(std::vector<float>& a) {
     double sum = 0;
     for (unsigned i = 0; i < a.size(); i++) sum += a[i];
@@ -207,9 +240,10 @@ double MathUtils::mean(std::vector<double>& a) {
     return sum / a.size();
 }
 
-/** Median
+/** Returns the median
  *
  * @param a 1D vector of floats/doubles to get the median from
+ * @return median of `a`
  */
 
 float MathUtils::median(std::vector<float>& a) {
@@ -222,8 +256,11 @@ double MathUtils::median(std::vector<double>& a) {
 }
 
 /**
- * Probabillity density function
+ * Computes the Probabillity Density Function (PDF)
  *
+ * @param arr 1D vector to compute the PDF from
+ * @param bins probability boundaries to assign the probabilities
+ * @return probability densitiy function of `arr` based on `bins` as integer vector
  */
 std::vector<int> MathUtils::get_pdf(std::vector<float>& arr, std::vector<double>& bins) {
     std::vector<int> v_pdf(bins.size() - 1);
@@ -245,7 +282,11 @@ std::vector<int> MathUtils::get_pdf(std::vector<float>& arr, std::vector<double>
 }
 
 /**
- * Cumulative distribution function
+ * Computes the Cumulative Distribution Function (CDF)
+ *
+ * @param arr 1D vector to compute the CDF from
+ * @param bins probability boundaries to assign the probabilities
+ * @return cumulative distribution function of `arr` based on `bins` as int vector
  */
 std::vector<int> MathUtils::get_cdf(std::vector<float>& arr, std::vector<double>& bins) {
     std::vector<int> v_pdf = MathUtils::get_pdf(arr, bins);
@@ -261,15 +302,16 @@ double MathUtils::lerp(double a, double b, double x) {
 }
 
 /**
- * Returns interpolated value at x from parallel arrays ( xData, yData )
+ * Returns interpolated value at `x` from parallel arrays ( xData, yData )
  *  Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
  *  boolean argument extrapolate determines behaviour beyond ends of array (if needed)
- *  source: https://www.cplusplus.com/forum/general/216928/
+ *  Reference: https://www.cplusplus.com/forum/general/216928/
  *
  * @param xData increasing vector of double values
  * @param yData y values corresponding to xData
  * @param x value to interpolate
  * @param extrapolate behaviour outside xData range
+ * @return the interpolated value
  */
 double MathUtils::interpolate(std::vector<double>& xData, std::vector<double>& yData, double x, bool extrapolate) {
     int size = xData.size();
@@ -298,9 +340,3 @@ double MathUtils::interpolate(std::vector<double>& xData, std::vector<double>& y
         dydx = (yR - yL) / (xR - xL);  // gradient
     return yL + dydx * (x - xL);       // linear interpolation
 }
-
-/**
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *                        End of file
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- */
