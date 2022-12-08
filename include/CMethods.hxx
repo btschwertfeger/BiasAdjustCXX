@@ -6,7 +6,7 @@
  * @author Benjamin Thomas Schwertfeger
  * @copyright Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
+ * @github https://github.com/btschwertfeger/BiasAdjustCXX
  *
  *  * Copyright (C) 2022  Benjamin Thomas Schwertfeger
  *

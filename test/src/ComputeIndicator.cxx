@@ -6,7 +6,7 @@
  * @author Benjamin Thomas Schwertfeger
  * @email: development@b-schwertfeger.de
  * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
+ * @github https://github.com/btschwertfeger/BiasAdjustCXX
  *
  * * Copyright (C) 2022  Benjamin Thomas Schwertfeger
  *
@@ -67,7 +67,7 @@ static bool isInStrV(std::vector<std::string> v, std::string string) {
 static void show_usage(std::string name) {
     std::cout << BOLDBLUE << "Usage: " RESET << name
               << GREEN << " -i " << RESET << "inputfile1.nc"
-              << GREEN << " -i" << RESET << "inputfile2.nc"
+              << GREEN << " -i" << RESET << " inputfile2.nc"
               << GREEN << " -o " << RESET << "outputfile.nc"
               << GREEN << " -v " << RESET << "temperature"
               << GREEN << " -m " << RESET << "rmse\n"
@@ -81,7 +81,7 @@ static void show_usage(std::string name) {
               << RESET
               << "\tNone\n"
               << BOLDBLUE << "Requirements: \n"
-              << RESET << "\t-> Data must be in format: [time][lat][lon] and values type int or float\n"
+              << RESET << "\t-> Data must 3-dimensional an dimensions in the following order: [time][lat][lon] and values type int or float\n"
               << "\t-> Latitudes and longitudes must be named 'lat' and 'lon', Time == 'time'\n"
               << BOLDBLUE << "Available methods: \n"
               << RESET;

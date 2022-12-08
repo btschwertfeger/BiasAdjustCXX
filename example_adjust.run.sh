@@ -3,7 +3,7 @@
 # @author Benjamin Thomas Schwertfeger
 # @email development@b-schwertfeger.de
 # @link https://b-schwertfeger.de
-# @github https://github.com/btschwertfeger/Bias-Adjustment-Cpp
+# @github https://github.com/btschwertfeger/BiasAdjustCXX
 #
 #    * Copyright (C) 2022 Benjamin Thomas Schwertfeger
 #
@@ -101,7 +101,7 @@ $exec_file                                \
     -m "linear_scaling"                   \
     -v $variable                          \
     -k "add"                              \
-    -o "${output_dir}/${variable}_linear_scaling_kind-add_30dIntervals_result_${timespan}.nc" 
+    -o "${output_dir}/${variable}_linear_scaling_kind-add_scalingtype-31dayinterval_result_${timespan}.nc" 
 
 
 # * -------------------------------------------------------------------
@@ -141,7 +141,7 @@ for method in "${month_methods[@]}"; do
     # ? Merge corrected datasets
     cdo -f nc \
         -mergetime $tmp_path/results/*${method}.nc \
-        "${output_dir}/${variable}_${method}_kind-${kind}_${quant}result_${timespan}.nc"
+        "${output_dir}/${variable}_${method}_kind-${kind}_scalingtype-monthly_${quant}result_${timespan}.nc"
 done
 
 

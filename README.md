@@ -1,10 +1,14 @@
-# BiasAdjustCXX command-line tool for climatic research
+# BiasAdjustCXX command-line tool for the application of bias corrections in climatic research
 
 <div align="center">
 
-[![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/Bias-Adjustment-Cpp)
+[![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/BiasAdjustCXX)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
+
+![release](https://img.shields.io/badge/release-v1.7-informational)
+![GCC](https://img.shields.io/badge/Required-C%2B%2B20-brightgreen)
+![CMake](https://img.shields.io/badge/Required-CMake3.10-brightgreen)
 
 </div>
 
