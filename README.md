@@ -153,7 +153,7 @@ build/BiasAdjustCXX                     \
 
 d.) Help
 
-````bash
+```bash
 build/BiasAdjustCXX -h
 ```
 
@@ -186,4 +186,7 @@ adjustment for this data set. After that you have to do the same for the rest of
 - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
 
 ---
-````
+
+```
+
+```
