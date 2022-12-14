@@ -7,8 +7,8 @@
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
 
 ![release](https://img.shields.io/badge/release-v1.7-informational)
-![GCC](https://img.shields.io/badge/Required-C%2B%2B20-brightgreen)
-![CMake](https://img.shields.io/badge/Required-CMake3.10-brightgreen)
+![GCC](https://img.shields.io/badge/Required-C%2B%2B20-green)
+![CMake](https://img.shields.io/badge/Required-CMake3.10-green)
 
 </div>
 
@@ -78,6 +78,8 @@ mkdir build && cd build
 cmake .. && cmake --build .
 ```
 
+Optional: Move the executable file `BiasAdjustCXX` into you binary directory.
+
 ### Requirements:
 
 - NetCDF-4 C library ([How to install NetCDF-4 C](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
@@ -107,14 +109,14 @@ Examples:
 a.) Additive Linear Scaling based on long-term 31-day interval-means:
 
 ```bash
-BiasAdjustCXX                        \
+build/BiasAdjustCXX                  \
     --ref input_data/observations.nc \ # observations/reference time series of the control period
     --contr input_data/control.nc    \ # simulated time series of the control period
     --scen input_data/scenario.nc    \ # time series to adjust
-    -v tas                           \ # variable to adjust
+    -o linear_scaling_result.nc      \ # output file
     -m linear_scaling                \ # adjustment method
     -k "+"                           \ # kind of adjustment ("+" == "add" and "*" == "mult")
-    -o linear_scaling_result.nc        # output file
+    -v tas                             # variable to adjust
 ```
 
 Note/alternative: The regular linear scaling procedure as described by Teutschbein, Claudia and Seibert, Jan ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--monthly` flag needs to be used then.
@@ -122,15 +124,15 @@ Note/alternative: The regular linear scaling procedure as described by Teutschbe
 b.) Multiplicative Linear Scaling based on long-term 31-day interval-means:
 
 ```bash
-BiasAdjustCXX                        \
+build/BiasAdjustCXX                  \
     --ref input_data/observations.nc \
     --contr input_data/control.nc    \
     --scen input_data/scenario.nc    \
-    -v tas                           \
+    -o linear_scaling_result.nc      \
     -m linear_scaling                \
     -k "*"                           \
-    --max-scaling-factor 3           \  # set custom max-scaling factor to avoid unrealistic results (default: 10)
-    -o linear_scaling_result.nc
+    -v tas                           \
+    --max-scaling-factor 3             # set custom max-scaling factor to avoid unrealistic results (default: 10)
 ```
 
 Note: The multiplicative variant is only prefered when adjusting ratio based variables like precipitaiton.
@@ -138,21 +140,21 @@ Note: The multiplicative variant is only prefered when adjusting ratio based var
 c.) Additive Quantile Delta Mapping:
 
 ```bash
-BiasAdjustCXX                        \
-    --ref input_data/observations.nc \
-    --contr input_data/control.nc    \
-    --scen input_data/scenario.nc    \
-    -v tas                           \
-    -m quantile_delta_mapping        \
-    -k "+"                           \
-    -q 250                           \  # quantiles to respect
-    -0 quantile_delta_mapping_result.nc
+build/BiasAdjustCXX                     \
+    --ref input_data/observations.nc    \
+    --contr input_data/control.nc       \
+    --scen input_data/scenario.nc       \
+    -0 quantile_delta_mapping_result.nc \
+    -m quantile_delta_mapping           \
+    -k "+"                              \
+    -v tas                              \
+    -q 250         # quantiles to respect
 ```
 
 d.) Help
 
-```bash
-BiasAdjustCXX -h
+````bash
+build/BiasAdjustCXX -h
 ```
 
 ---
@@ -184,3 +186,4 @@ adjustment for this data set. After that you have to do the same for the rest of
 - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
 
 ---
+````

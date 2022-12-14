@@ -3,7 +3,7 @@
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+#  any later version.
 #
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,8 +17,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(BiasAdjustCXX
-    VERSION 1.0
-    DESCRIPTION "Bias adjustment/correction command line tool for NetCDF-based climate data"
+    VERSION 1.8
+    DESCRIPTION "Bias correction command-line tool for NetCDF-based climate data"
     LANGUAGES CXX
 )
 

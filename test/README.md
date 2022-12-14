@@ -1,4 +1,4 @@
-# Validation/Testing of the results
+# Validation/Testing of the adjusted time series
 
 `ComputeIndicator.cxx` enables creating a matrix that contains for example the $RMSE$ of every time series between two data sets.
 
@@ -29,3 +29,7 @@ ComputeIndicatorCXX                     \
     -v tas                              \ # variable to adjust
     -m mbe                              \ # method to use
 ```
+
+## Notes
+
+- The application of this program to the adjusted example time series will produce a very high approximation to the reference data.
