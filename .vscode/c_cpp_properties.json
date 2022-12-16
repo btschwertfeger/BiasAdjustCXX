@@ -1,17 +1,16 @@
-{   "env":{},
-    "configurations": [{
-            "name": "Mac",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/include"
-            ],
-            "macFrameworkPath": ["/System/Library/Frameworks"],
-            "defines": [],
-            "compilerPath": "/usr/bin/g++",
-            "cStandard": "c11",
-            "cppStandard": "c++11",
-            "intelliSenseMode": "macos-gcc-x64"
-        }
-    ],
-    "version": 4
+{
+  "env": {},
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": ["${workspaceFolder}/**", "${workspaceFolder}/include"],
+      "macFrameworkPath": ["/System/Library/Frameworks"],
+      "defines": [],
+      "compilerPath": "/usr/bin/g++",
+      "cStandard": "c11",
+      "cppStandard": "c++20",
+      "intelliSenseMode": "macos-gcc-x64"
+    }
+  ],
+  "version": 4
 }
