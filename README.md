@@ -62,8 +62,8 @@ In this way, for example, modeled data, which on average represent values that a
 
 ### Distribution-based techniques:
 
-- Quantile Mapping (additive and multuplicative)
-- Quantile Delta Mapping (additive and multuplicative)
+- Quantile Mapping (additive and multiplicative)
+- Quantile Delta Mapping (additive and multiplicative)
 
 ### Scaling-based techniques:
 
@@ -71,7 +71,7 @@ In this way, for example, modeled data, which on average represent values that a
 - Linear Scaling\* (additive and multiplicative)
 - Variance Scaling\* (additive)
 
-\* All data sets must exclude the 29th February and every year must have 365 entries. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required to match the techniques described in the referenced papers but requires that this program is applied on monthly separated data sets. On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the prefered method and is enabled by default for all scaling-based techniques.
+\* All data sets must exclude the 29th February and every year must have 365 entries. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required if you want to apply the techniques described in the referenced papers. This also requires that BiasAdjustCXX is applied on monthly separated data sets. On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the prefered method and is enabled by default for all scaling-based techniques.
 
 ---
 
@@ -107,7 +107,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 
 (There is also an `environment.yml` file that creates a working environment for this notebook.)
 
-### 3.4 Data requirements:
+### 3.3 Data requirements:
 
 - All input files must have the same shape, i.e. the same resolution and time span.
 - The variable of interest must have the same name in all data sets.
