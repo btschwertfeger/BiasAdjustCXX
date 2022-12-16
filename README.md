@@ -21,9 +21,10 @@
 1. [ About ](#about)
 2. [ Available Methods ](#methods)
 3. [ Compilation and Requirements ](#compilation)
-4. [ Usage and Examples ](#examples)
-5. [ Notes ](#notes)
-6. [ References ](#references)
+4. [ Arguments and Parameters](#notes)
+5. [ Usage and Examples ](#examples)
+6. [ Notes ](#notes)
+7. [ References ](#references)
 
 ---
 
@@ -57,15 +58,20 @@ In this way, for example, modeled data, which on average represent values that a
 
 <a name="methods"></a>
 
-## 2. Available methods:
+## 2. Available Methods
 
-- Linear Scaling\* (additive and multiplicative)
-- Variance Scaling\* (additive)
-- Delta (Change) Method\* (additive and multiplicative)
+### Distribution-based techniques:
+
 - Quantile Mapping (additive and multuplicative)
 - Quantile Delta Mapping (additive and multuplicative)
 
-\* The data sets must exclude the 29th February and every year must have 365 entries. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required to match the techniques described in the referenced papers but requires that this program is applied on monthly separated data sets. On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the prefered method and is enabled by default for all scaling-based techniques.
+### Scaling-based techniques:
+
+- Delta (Change) Method\* (additive and multiplicative)
+- Linear Scaling\* (additive and multiplicative)
+- Variance Scaling\* (additive)
+
+\* All data sets must exclude the 29th February and every year must have 365 entries. Otherwise it is also possible to adjust the data based on long-term monthly means instead based on 31-day long-term means (-15 <= i <= +15 days over all years) using the `--monthly` flag. The `--monthly` flag is required to match the techniques described in the referenced papers but requires that this program is applied on monthly separated data sets. On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the prefered method and is enabled by default for all scaling-based techniques.
 
 ---
 
@@ -73,20 +79,25 @@ In this way, for example, modeled data, which on average represent values that a
 
 ## 3. Compilation and Requirements
 
+### 3.1 Compilation:
+
 ```bash
+git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
+cd BiasAdjustCXX
+
 mkdir build && cd build
 cmake .. && cmake --build .
 ```
 
-Optional: Move the executable file `BiasAdjustCXX` into you binary directory.
+<b>Optional</b>: Move the executable file `BiasAdjustCXX` into you binary directory.
 
-### Requirements:
+### 3.2 Compilation requirements/dependencies:
 
 - NetCDF-4 C library ([How to install NetCDF-4 C](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 - [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 
-### Optional for working examples notebook `examples.ipynb`:
+Optional for working example notebook `examples.ipynb`:
 
 ```bash
 conda create --name clingenv
@@ -94,11 +105,40 @@ conda activate clingenv
 conda install xeus-cling notebook -c conda-forge/label/gcc7
 ```
 
+(There is also an `environment.yml` file that creates a working environment for this notebook.)
+
+### 3.4 Data requirements:
+
+- All input files must have the same shape, i.e. the same resolution and time span.
+- The variable of interest must have the same name in all data sets.
+- The dimensions must be named 'time', 'lat' and 'lon' (i.e. times, latitudes and longitudes) in exactily this order in case the data sets have more than one dimension.
+- Executed scaling-based techniques without the `--monthly` flag require that the data sets exclude the 29th February and every year has exactly 365 entries.
+
+---
+
+<a name="arguments"></a>
+
+## 4. Arguments and Parameters
+
+| <div style="width:170px">Argument</div> | Description                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ref`, <br> `--reference`             | path to observational/reference data set(control period)                                                                                                                                                                                                                                                          |
+| `--contr`, <br> `--control`             | path to modeled data set (control period)                                                                                                                                                                                                                                                                         |
+| `--scen`, <br> `--scenario`             | path to data set that is to be adjusted (scenario period)                                                                                                                                                                                                                                                         |
+| `-v`, <br> `--variable`                 | variable to adjust                                                                                                                                                                                                                                                                                                |
+| `-k`, <br> `--kind`                     | kind of adjustment; one of: `+` or `add` and `*` or `mult`                                                                                                                                                                                                                                                        |
+| `-m`, <br> `--methohd`                  | adjustment method name; one of: `linear_scaling`, `variance_scaling`, `delta_method`, `quantile_mapping` and `quantile_delta_mapping`                                                                                                                                                                             |
+| `-q`, <br> `--n_quantiles`              | [optional] number of quantiles to respect (only required for distribution-based methods)                                                                                                                                                                                                                          |
+| `--1dim`                                | [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)                                                                                                                                                                                                                    |
+| `--monthly`                             | [optional] Disables the adjustment based on 31-day moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommanded to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
+| `--max-scaling-factor`                  | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating unproportional high scaling factors. (only for scaling-based methods; default: 10)               |
+| `-h`, `--help`                          | [optional] display usage example, arguments, hints, and exits the program                                                                                                                                                                                                                                         |
+
 ---
 
 <a name="examples"></a>
 
-## 4. Usage and Examples
+## 5. Usage and Examples
 
 The script `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
 
@@ -109,7 +149,7 @@ Examples:
 a.) Additive Linear Scaling based on long-term 31-day interval-means:
 
 ```bash
-build/BiasAdjustCXX                  \
+BiasAdjustCXX                        \
     --ref input_data/observations.nc \ # observations/reference time series of the control period
     --contr input_data/control.nc    \ # simulated time series of the control period
     --scen input_data/scenario.nc    \ # time series to adjust
@@ -124,7 +164,7 @@ Note/alternative: The regular linear scaling procedure as described by Teutschbe
 b.) Multiplicative Linear Scaling based on long-term 31-day interval-means:
 
 ```bash
-build/BiasAdjustCXX                  \
+BiasAdjustCXX                        \
     --ref input_data/observations.nc \
     --contr input_data/control.nc    \
     --scen input_data/scenario.nc    \
@@ -140,7 +180,7 @@ Note: The multiplicative variant is only prefered when adjusting ratio based var
 c.) Additive Quantile Delta Mapping:
 
 ```bash
-build/BiasAdjustCXX                     \
+BiasAdjustCXX                           \
     --ref input_data/observations.nc    \
     --contr input_data/control.nc       \
     --scen input_data/scenario.nc       \
@@ -154,14 +194,14 @@ build/BiasAdjustCXX                     \
 d.) Help
 
 ```bash
-build/BiasAdjustCXX -h
+BiasAdjustCXX -h
 ```
 
 ---
 
 <a name="notes"></a>
 
-## 5. Notes
+## 6. Notes
 
 1.) For adjusting data using the linear scaling, variance scaling or delta method and the `--monthly` flag:
 
@@ -175,7 +215,7 @@ adjustment for this data set. After that you have to do the same for the rest of
 
 <a name="references"></a>
 
-## 6. References
+## 7. References
 
 - Schwertfeger, Benjamin Thomas (2022) The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe (https://epic.awi.de/id/eprint/56689/)
 - Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
@@ -186,7 +226,3 @@ adjustment for this data set. After that you have to do the same for the rest of
 - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
 
 ---
-
-```
-
-```
