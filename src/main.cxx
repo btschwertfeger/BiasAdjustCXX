@@ -148,7 +148,7 @@ void show_usage(std::string name) {
               << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; "
                                                               "mean calculation will be performed on the whole data set\n"
               << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
-                                                                     "(only for scaling methods; default: 10)"
+                                                                     "(only for scaling methods; default: 10)\n"
               << GREEN << "\t-p, --n_processes\t\t\t" << RESET << "Number of threads to start (default: 1)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
