@@ -52,6 +52,7 @@
 #include <math.h>
 
 #include <chrono>
+#include <future>
 #include <vector>
 
 #include "CMethods.hxx"
@@ -81,6 +82,8 @@ static double max_scaling_factor = 10.0;
 static bool
     one_dim = false,
     interval31_scaling = true;
+
+static unsigned n_jobs = 1;
 static utils::Log Log = utils::Log();
 
 typedef void (*CM_Func_ptr_scaling_A)(
@@ -146,10 +149,11 @@ void show_usage(std::string name) {
                                                               "mean calculation will be performed on the whole data set\n"
               << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
                                                                      "(only for scaling methods; default: 10)"
+              << GREEN << "\t-p, --n_processes\t\t\t" << RESET << "Number of threads to start (default: 1)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
-              << "-> data sets must habe the file type NetCDF\n"
+              << "-> data sets must have the file type NetCDF\n"
               << "-> for scaling-based adjustments: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--monthly" << RESET << " flag is needed (see notes section below)\n"
               << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
               << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
@@ -253,7 +257,9 @@ static void parse_args(int argc, char** argv) {
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--1dim")
             one_dim = true;
-        else if (arg == "-h" || arg == "--help") {
+        else if (arg == "-p" || arg == "--n_processes") {
+            n_jobs = std::stoi(argv[++i]);
+        } else if (arg == "-h" || arg == "--help") {
             show_usage(argv[0]);
             exit(0);
         } else if (arg == "show") {
@@ -311,6 +317,9 @@ static void parse_args(int argc, char** argv) {
         throw std::runtime_error(
             "Data sets should not contain the 29. February and every year must have 365 entries for long-term "
             "31-day interval scaling. Use the \"--monhtly\" flag instead and apply the program on monthly separated data sets.");
+
+    // misc
+    if (n_jobs != 1 && one_dim) Log.warning("Using only one thread because of adjustment of 1-dimensional data set.");
 
     if (get_adjustment_kind() == "add") {
         if (adjustment_method_name == "linear_scaling")
@@ -393,9 +402,9 @@ static void adjust_1d(
  * @param v_data_out 3D vector that is used to store the bias adjusted results
  */
 static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) {
+    std::vector<std::future<void>> tasks;
     for (unsigned lon = 0; lon < ds_scenario.n_lon; lon++) {
-        utils::progress_bar((float)lon, (float)(v_data_out[0].size()));
-
+        // std::cout << "begin " << lon << std::endl;
         std::vector<std::vector<float>> v_reference_lat_data(
             (int)ds_reference.n_lat,
             std::vector<float>((int)ds_reference.n_time));
@@ -412,8 +421,20 @@ static void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) 
         ds_control.get_lat_timeseries_for_lon(v_control_lat_data, lon);
         ds_scenario.get_lat_timeseries_for_lon(v_scenario_lat_data, lon);
 
-        for (unsigned lat = 0; lat < ds_scenario.n_lat; lat++)
-            adjust_1d(v_data_out[lat][lon], v_reference_lat_data[lat], v_control_lat_data[lat], v_scenario_lat_data[lat]);
+        for (unsigned lat = 0; lat < ds_scenario.n_lat; lat++) {
+            tasks.push_back(std::async(
+                adjust_1d,
+                std::ref(v_data_out[lat][lon]),
+                std::ref(v_reference_lat_data[lat]),
+                std::ref(v_control_lat_data[lat]),
+                std::ref(v_scenario_lat_data[lat])));
+
+            if (lat % n_jobs == 0 || ds_scenario.n_lat - 1 == lat) {
+                for (auto& e : tasks) e.get();
+                tasks.clear();
+            }
+        }
+        utils::progress_bar((float)lon, (float)(v_data_out[0].size()));
     }
     utils::progress_bar((float)(v_data_out[0].size()), (float)(v_data_out[0].size()));
     std::cout << std::endl;
@@ -433,6 +454,7 @@ int main(int argc, char** argv) {
         parse_args(argc, argv);
         Log.info("Data sets loaded");
         Log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
+        Log.info("Threads: " + std::to_string(n_jobs));
         if (get_adjustment_kind() == "mult") Log.info("Maximum scaling factor: " + std::to_string(max_scaling_factor));
         for (unsigned i = 0; i < CMethods::scaling_method_names.size(); i++) {
             if (CMethods::scaling_method_names[i] == adjustment_method_name) {

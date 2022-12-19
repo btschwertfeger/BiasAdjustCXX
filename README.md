@@ -21,7 +21,7 @@
 1. [ About ](#about)
 2. [ Available Methods ](#methods)
 3. [ Compilation and Requirements ](#compilation)
-4. [ Arguments and Parameters](#notes)
+4. [ Arguments and Parameters](#arguments)
 5. [ Usage and Examples ](#examples)
 6. [ Notes ](#notes)
 7. [ References ](#references)
@@ -132,6 +132,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 | `--1dim`                                | [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)                                                                                                                                                                                                                    |
 | `--monthly`                             | [optional] Disables the adjustment based on 31-day moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommanded to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
 | `--max-scaling-factor`                  | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating unproportional high scaling factors. (only for scaling-based methods; default: 10)               |
+| `-p`, <br> `--n_processes`              | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                   |
 | `-h`, `--help`                          | [optional] display usage example, arguments, hints, and exits the program                                                                                                                                                                                                                                         |
 
 ---
