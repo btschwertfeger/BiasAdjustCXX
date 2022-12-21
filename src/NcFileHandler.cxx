@@ -70,61 +70,93 @@ NcFileHandler::NcFileHandler() : handles_file(false) {}
  * @param variable_name variable to load into this class (only one variable per NcFileHandler instance)
  * @param n_dimensions number of dimensions of this variable within the data set. Only 1 or 3 is valid.
  */
-NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name, unsigned n_dimensions) : in_filename(filepath),
-                                                                                                       var_name(variable_name),
+NcFileHandler::NcFileHandler(std::string filepath, std::string variable_name, unsigned n_dimensions) : var_name(variable_name),
                                                                                                        handles_file(true),
-                                                                                                       n_dimensions(n_dimensions) {
-    try {
-        std::ifstream ifile;
-        ifile.open(in_filename);
+                                                                                                       n_dimensions(n_dimensions),
+                                                                                                       filepath(filepath) {
+    std::ifstream ifile;
+    ifile.open(filepath);
 
-        if (!ifile)
-            throw std::runtime_error("Could not open file: " + in_filename);
-        else
-            ifile.close();
-        dataFile = new netCDF::NcFile(in_filename, netCDF::NcFile::read);
+    if (!ifile)
+        throw std::runtime_error("Could not open file: " + filepath);
+    else
+        ifile.close();
 
-        time_dim = dataFile->getDim(NcFileHandler::time_name);
-        n_time = time_dim.getSize();
-        time_values = new double[n_time];
-
-        time_var = dataFile->getVar(time_name);
-        if (time_var.isNull()) throw std::runtime_error("Time dimension <" + NcFileHandler::time_name + "> not found!");
-        time_var.getVar(time_values);
-
-        if (n_dimensions == 3) {
-            lat_dim = dataFile->getDim(NcFileHandler::lat_name);
-            n_lat = lat_dim.getSize();
-            lat_values = new float[n_lat];
-
-            lat_var = dataFile->getVar(lat_name);
-            if (lat_var.isNull()) throw std::runtime_error("Latitude dimension <" + NcFileHandler::lat_name + "> not found!");
-            lat_var.getVar(lat_values);
-
-            lon_dim = dataFile->getDim(NcFileHandler::lon_name);
-            n_lon = lon_dim.getSize();
-            lon_values = new float[n_lon];
-
-            lon_var = dataFile->getVar(NcFileHandler::lon_name);
-            if (lon_var.isNull()) throw std::runtime_error("Longitude dimension <" + lon_name + "> not found!");
-            lon_var.getVar(lon_values);
-        } else if (n_dimensions != 1)
-            throw std::runtime_error("Only 1 and 3-dimensional data sets are supported!");
-
-        // Get the data of the variable; this is later used to select a specific region. This is kinda open file to reference
-        data = dataFile->getVar(var_name);
-        if (data.isNull()) throw std::runtime_error("Variable <" + var_name + "> not found in " + in_filename + "!");
-
-    } catch (netCDF::exceptions::NcException& err) {
-        std::cout << err.what() << std::endl;
-        exit(1);
-    }
+    /**
+     * If the content of `read_dataset` is not executed sparately,
+     * unwanted behavior will occur, since multiple NcFileHandler instances can
+     * can overwrite each other within the memory. So far no other solution has been
+     * found for this behavior.
+     */
+    read_dataset(filepath, variable_name, n_dimensions);
 }
 
 /**
  * mandatory
  */
 NcFileHandler::~NcFileHandler() {
+    this->close_file();
+}
+
+/**
+ * Loads a new data set into this NcFileHandler instance
+ *
+ * @param filepath path to file that should be loaded
+ * @param n_dimensions number of dimensions of `variable` in this data set
+ */
+void NcFileHandler::read_dataset(std::string filepath, std::string variable, unsigned n_dimensions) {
+    this->n_dimensions = n_dimensions;
+    this->handles_file = true;
+    this->var_name = variable;
+
+    dataFile = new netCDF::NcFile(filepath, netCDF::NcFile::read);
+
+    time_dim = dataFile->getDim(NcFileHandler::time_name);
+    n_time = time_dim.getSize();
+    time_values = new double[n_time];
+
+    time_var = dataFile->getVar(time_name);
+    if (time_var.isNull()) throw std::runtime_error("Time dimension <" + NcFileHandler::time_name + "> not found!");
+    time_var.getVar(time_values);
+
+    if (n_dimensions == 3) {
+        lat_dim = dataFile->getDim(NcFileHandler::lat_name);
+        n_lat = lat_dim.getSize();
+        lat_values = new float[n_lat];
+
+        lat_var = dataFile->getVar(lat_name);
+        if (lat_var.isNull()) throw std::runtime_error("Latitude dimension <" + NcFileHandler::lat_name + "> not found!");
+        lat_var.getVar(lat_values);
+
+        lon_dim = dataFile->getDim(NcFileHandler::lon_name);
+        n_lon = lon_dim.getSize();
+        lon_values = new float[n_lon];
+
+        lon_var = dataFile->getVar(NcFileHandler::lon_name);
+        if (lon_var.isNull()) throw std::runtime_error("Longitude dimension <" + lon_name + "> not found!");
+        lon_var.getVar(lon_values);
+
+    } else if (n_dimensions != 1)
+        throw std::runtime_error("Only 1 and 3-dimensional data sets are supported!");
+
+    // std::cout << n_time << " " << n_lat << " " << n_lon << std::endl;
+    // Get the data of the variable; this is later used to select a specific region. This is kinda open file to reference
+    data = dataFile->getVar(var_name);
+    if (data.isNull()) throw std::runtime_error("Variable <" + var_name + "> not found in " + filepath + "!");
+}
+
+void NcFileHandler::close_file() {
+    if (dataFile != nullptr) {
+        dataFile->close();
+        delete dataFile;
+    }
+
+    if (time_values != nullptr) delete time_values;
+    if (lat_values != nullptr) delete lat_values;
+    if (lon_values != nullptr) delete lon_values;
+
+    this->handles_file = false;
+    this->n_dimensions = 0;
 }
 
 /**
@@ -150,7 +182,7 @@ void NcFileHandler::get_lat_timeseries_for_lon(std::vector<std::vector<float>>& 
     countp.push_back(1);
 
     float tmp[n_time][n_lat];
-    this->data.getVar(startp, countp, *tmp);
+    data.getVar(startp, countp, *tmp);
     for (unsigned ts = 0; ts < n_time; ts++)
         for (unsigned lat = 0; lat < n_lat; lat++)
             v_out_arr[lat][ts] = tmp[ts][lat];
@@ -197,7 +229,6 @@ void NcFileHandler::get_timeseries(std::vector<float>& v_out_arr) {
 
     float tmp[n_time];
     data.getVar(startp, countp, tmp);
-
     for (unsigned day = 0; day < n_time; day++) v_out_arr[day] = tmp[day];
 }
 
@@ -256,7 +287,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
 void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<float>& v_out_data) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
-    if (this->handles_file) {
+    if (handles_file) {
         netCDF::NcDim out_time_dim = output_file.addDim(time_name, n_time);
         netCDF::NcVar out_time_var = output_file.addVar(time_name, netCDF::ncDouble, out_time_dim);
         // Set attributes
@@ -317,7 +348,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
         out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
         out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
 
-    // Sett attributes
+    // Set attributes
     out_lat_var.putAtt(units, lat_unit);
     out_lon_var.putAtt(units, lon_unit);
 
@@ -367,7 +398,7 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
         out_lat_var = output_file.addVar(lat_name, netCDF::ncFloat, out_lat_dim),
         out_lon_var = output_file.addVar(lon_name, netCDF::ncFloat, out_lon_dim);
 
-    // Sett attributes
+    // Set attributes
     out_lat_var.putAtt(units, lat_unit);
     out_lon_var.putAtt(units, lon_unit);
 

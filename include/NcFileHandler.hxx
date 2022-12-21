@@ -45,7 +45,6 @@ class NcFileHandler {
     void to_netcdf(std::string out_fpath, std::string variable_name, float** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<float>>& v_data_out);
 
-    void to_netcdf(std::string out_fpath, std::string variable_name, double** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, float*** out_data);
     void to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<std::vector<float>>>& v_out_data);
     void to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data);
@@ -58,16 +57,15 @@ class NcFileHandler {
     static std::string lat_unit;
     static std::string lon_unit;
 
-    std::string in_filename;
-
+    std::string filepath;
     std::string var_name;
+    netCDF::NcDim time_dim;
     netCDF::NcDim lat_dim;
     netCDF::NcDim lon_dim;
-    netCDF::NcDim time_dim;
 
-    unsigned int n_lat;
-    unsigned int n_lon;
-    unsigned int n_time;
+    unsigned int n_lat = 0;
+    unsigned int n_lon = 0;
+    unsigned int n_time = 0;
 
     float* lat_values = nullptr;
     float* lon_values = nullptr;
@@ -80,7 +78,11 @@ class NcFileHandler {
     netCDF::NcVar time_var;
 
     bool handles_file;
-    unsigned n_dimensions;  // file contains only one dimension -> data is one vector
+    unsigned n_dimensions;
+
+    void read_dataset(std::string filepath, std::string variable, unsigned n_dimensiions);
+    void close_file();
+
    private:
 };
 
