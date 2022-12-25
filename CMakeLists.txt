@@ -46,6 +46,7 @@ set(SOURCES
     src/Utils.cxx
     src/NcFileHandler.cxx
     src/MathUtils.cxx
+    src/Manager.cxx
 )
 
 # add executable
