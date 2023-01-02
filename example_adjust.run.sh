@@ -5,7 +5,7 @@
 # @link https://b-schwertfeger.de
 # @github https://github.com/btschwertfeger/BiasAdjustCXX
 #
-#    * Copyright (C) 2022 Benjamin Thomas Schwertfeger
+#    * Copyright (C) 2023 Benjamin Thomas Schwertfeger
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -25,7 +25,10 @@
 # * -------------------------------------------------------------------
 # *                  ===== Description =====
 # * -------------------------------------------------------------------
-# ? USAGE: sh example.run.adjust.sh
+#   This script executes different bias correction techniques
+#   and different configurations of the BiasAdjustCXX tool
+# ? USAGE: ./example.run.adjust.sh
+# ? OR: sh example.run.adjust.sh
 # * -------------------------------------------------------------------
 
 work_dir=$(pwd)
@@ -108,7 +111,7 @@ $exec_file                                \
 # *      ===== Scaling Adjustment based on monthly means =====
 # * -------------------------------------------------------------------
 
-# ? OR: Adjust using the regular formulas using long-term monthly means by using the --monthly flag
+# ? OR: Adjust using the regular formulas using long-term monthly means by using the --no-group flag
 echo "Separating months ..."
 # ? Separate months
 for (( month=1; month<13; month++ ));do
@@ -135,7 +138,7 @@ for method in "${month_methods[@]}"; do
             -v $variable                                    \
             -m $method                                      \
             -o "${tmp_results}/${month}_${method}.nc"       \
-            --monthly                                      
+            --no-group                                      
     done
 
     # ? Merge corrected datasets

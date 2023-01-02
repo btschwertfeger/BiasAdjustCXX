@@ -2,7 +2,7 @@
 # Find the netCDF C++ API cmake files
 # @github https://github.com/btschwertfeger/BiasAdjustCXX
 #
-# * Copyright (C) 2022 Benjamin Thomas Schwertfeger
+# * Copyright (C) 2023 Benjamin Thomas Schwertfeger
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

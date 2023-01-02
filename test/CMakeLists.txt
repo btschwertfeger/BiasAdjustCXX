@@ -1,4 +1,4 @@
-# * Copyright (C) 2022 Benjamin Thomas Schwertfeger
+# * Copyright (C) 2023 Benjamin Thomas Schwertfeger
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@ project(ComputeIndicatorCXX
 )
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED OFF)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_COMPILER g++)
 
 # add_compile_options(-Wall -v)

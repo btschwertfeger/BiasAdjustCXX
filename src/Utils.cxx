@@ -9,7 +9,7 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/BiasAdjustCXX
  *
- *  * Copyright (C) 2022 Benjamin Thomas Schwertfeger
+ *  * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ void progress_bar(float part, float all) {
 namespace utils {
 
 void show_copyright_notice(std::string program_name) {
-    std::cerr << program_name << " Copyright (C) 2022 Benjamin Thomas Schwertfeger"
+    std::cerr << program_name << " Copyright (C) 2023 Benjamin Thomas Schwertfeger"
               << "\nThis program comes with ABSOLUTELY NO WARRANTY."
               << "\nThis is free software, and you are welcome to redistribute it"
               << "\nunder certain conditions; type 'show -c' for details."
@@ -731,7 +731,7 @@ void show_license() {
         "    scale- and distribution-based techniques.\n"
         "    (https://github.com/btschwertfeger/BiasAdjustCXX)\n"
         "\n"
-        "    Copyright (C) 2022  Benjamin Thomas Schwertfeger\n"
+        "    Copyright (C) 2023 Benjamin Thomas Schwertfeger\n"
         "\n"
         "    This program is free software: you can redistribute it and/or modify\n"
         "    it under the terms of the GNU General Public License as published by\n"

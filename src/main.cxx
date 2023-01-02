@@ -8,7 +8,7 @@
  * @link https://b-schwertfeger.de
  * @github https://github.com/btschwertfeger/BiasAdjustCXX
  *
- * * Copyright (C) 2022 Benjamin Thomas Schwertfeger
+ * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,12 +43,10 @@
 #include <math.h>
 
 #include <chrono>
-#include <vector>
 
 #include "CMethods.hxx"
 #include "Manager.hxx"
 #include "Utils.hxx"
-#include "colors.h"
 
 /**
  * Command-line output of the duraton between a start time
@@ -63,21 +61,14 @@ static void stdcout_runtime(T start_time) {
     std::cout << "Runtime: " << ms_double.count() << "ms\n";
 }
 
-/**
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- * *              Main/Entry
- * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
- */
-
 int main(int argc, char** argv) {
     auto start_time = std::chrono::high_resolution_clock::now();
     utils::show_copyright_notice("BiasAdjustCXX");
     utils::Log log = utils::Log();
 
     try {
-        Manager* manager = new Manager(argc, argv);
-        manager->run_adjustment();
-        delete manager;
+        Manager manager = Manager(argc, argv);
+        manager.run_adjustment();
 
         stdcout_runtime(start_time);
         return 0;

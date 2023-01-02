@@ -2,11 +2,11 @@
 
 /**
  * @file Manager.cxx
- * @brief class/collection of procedures to bias adjust time series climate data
+ * @brief Manager class which controls the program flow of BiasAdjustCXX
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
  *
- * * Copyright (C) 2022 Benjamin Thomas Schwertfeger
+ * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  *
  */
 
@@ -41,6 +40,12 @@
 #include "Utils.hxx"
 #include "colors.h"
 
+/**
+ * Constructor which parses a string containing arguments
+ * that are passed to the `main` function while executing the
+ * program. This class handles the program flow and is only
+ * instantiate once within the `main` function of `main.cxx`.
+ */
 Manager::Manager(int argc, char** argv) : argc(argc),
                                           argv(argv),
                                           variable_name(""),
@@ -65,6 +70,11 @@ Manager::~Manager() {
     delete ds_scenario;
 }
 
+/**
+ * Prints information about the adjustment which is called within
+ * this function. After the adjustment a bias corrected data set
+ * will be saved.
+ */
 void Manager::run_adjustment() {
     log.info("Data sets available");
     log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
@@ -157,16 +167,16 @@ void Manager::show_usage() {
               << GREEN << "\t-q, --quantiles\t\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
               << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e.g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
               << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i.e. no spatial dimensions)\n"
-              << GREEN << "\t    --monthly\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; "
-                                                              "mean calculation will be performed on the whole data set\n"
+              << GREEN << "\t    --no-group\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; "
+                                                               "mean calculation will be performed on the whole data set\n"
               << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
                                                                      "(only for scaling methods; default: 10)\n"
-              << GREEN << "\t-p, --n_processes\t\t\t" << RESET << "Number of threads to start (default: 1)"
+              << GREEN << "\t-p, --n_processes\t\t\t" << RESET << "Number of threads to start (only for 3-dimensional adjustments; default: 1)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
               << "-> data sets must have the file type NetCDF\n"
-              << "-> for scaling-based adjustments: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--monthly" << RESET << " flag is needed (see notes section below)\n"
+              << "-> for scaling-based adjustments: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--no-group" << RESET << " flag is needed (see notes section below)\n"
               << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
               << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
               << RESET << std::endl;
@@ -180,23 +190,31 @@ void Manager::show_usage() {
     for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
     std::cout << std::endl;
     std::cerr << YELLOW << "\nNotes: " << RESET
-              << "\n- When not using the " << GREEN << "--monthly" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.) "
-              << "The Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--monthly" << RESET << " flag is used to apply this program on monthly separated files i.e. "
+              << "\n- When not using the " << GREEN << "--no-group" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.) "
+              << "The Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--no-group" << RESET << " flag is used to apply this program on for example monthly separated files i.e. "
               << "to adjust 30 years of data, all input files need to be separated into 12 groups, one group for each month, than this program can be applied to every long-term month."
               << "\n\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
 
     std::cerr << YELLOW << "\n\n====== References ======" << RESET
-              << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2022) development@b-schwertfeger.de"
+              << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2023) development@b-schwertfeger.de"
               << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
               << "\n- Mathematical foundations:"
               << "\n(1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
               << "\n\n(2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?, Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
               << "\n\n(3) Maraun, D.: Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums, Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
               << "\n\n(4) Teutschbein, C. and Seibert, J.: Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods, Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
-              << "\n\n(5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021.";
+              << "\n\n(5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021."
+              << std::endl;
     std::cout.flush();
 }
 
+/**
+ * Parses the arguments that were passed to the constructor.
+ * This includes loading the input data sets, checking if
+ * the respective adjustment conditions met and sets
+ * the adjustment relevant variables like the `kind`,
+ * `n_quantiles`, `max_scaling_factor´, ...
+ */
 void Manager::parse_args() {
     if (argc == 1) {
         show_usage();
@@ -247,7 +265,7 @@ void Manager::parse_args() {
                 max_scaling_factor = std::stoi(argv[++i]);
             else
                 throw std::runtime_error(arg + " requires one argument!");
-        } else if (arg == "--monthly")
+        } else if (arg == "--no-group")
             interval31_scaling = false;
         else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
@@ -273,37 +291,34 @@ void Manager::parse_args() {
         } else
             log.warning("Unknown argument: " + arg + "!");
     }
-    if (variable_name.empty())
-        throw std::runtime_error("No variable name defined!");
-    else if (reference_fpath.empty())
-        throw std::runtime_error("No reference file defined!");
-    else if (control_fpath.empty())
-        throw std::runtime_error("No control file defined!");
-    else if (scenario_fpath.empty())
-        throw std::runtime_error("No scenario file defined!");
-    else if (output_filepath.empty())
-        throw std::runtime_error("No output file defined!");
-    else if (adjustment_method_name.empty())
-        throw std::runtime_error("No method specified!");
-    else if (adjustment_kind.empty())
-        throw std::runtime_error("Adjustmend kind is empty!");
-    else {
-        if (one_dim) {
-            ds_reference = new NcFileHandler(reference_fpath, variable_name, 1);
-            ds_control = new NcFileHandler(control_fpath, variable_name, 1);
-            ds_scenario = new NcFileHandler(scenario_fpath, variable_name, 1);
-        } else {
-            ds_reference = new NcFileHandler(reference_fpath, variable_name, 3);
-            ds_control = new NcFileHandler(control_fpath, variable_name, 3);
-            ds_scenario = new NcFileHandler(scenario_fpath, variable_name, 3);
 
-            if (ds_reference->n_lat != ds_control->n_lat || ds_reference->n_lat != ds_scenario->n_lat)
-                throw std::runtime_error("Input files have unqual lengths of the `lat` (latitude) dimension.");
-            else if (ds_reference->n_lon != ds_control->n_lon || ds_reference->n_lon != ds_scenario->n_lon)
-                throw std::runtime_error("Input files have unqual lengths of the `lon` (longitude) dimension.");
-        }
+    /* Requirements/Conditions for the whole adjustment procedure */
+    if (variable_name.empty()) throw std::runtime_error("No variable name defined!");
+    if (reference_fpath.empty()) throw std::runtime_error("No reference file defined!");
+    if (control_fpath.empty()) throw std::runtime_error("No control file defined!");
+    if (scenario_fpath.empty()) throw std::runtime_error("No scenario file defined!");
+    if (output_filepath.empty()) throw std::runtime_error("No output file defined!");
+    if (adjustment_method_name.empty()) throw std::runtime_error("No method specified!");
+    if (adjustment_kind.empty()) throw std::runtime_error("Adjustmend kind is empty!");
+
+    // 1- or 3-dimensional adjustment
+    if (one_dim) {
+        ds_reference = new NcFileHandler(reference_fpath, variable_name, 1);
+        ds_control = new NcFileHandler(control_fpath, variable_name, 1);
+        ds_scenario = new NcFileHandler(scenario_fpath, variable_name, 1);
+    } else {
+        ds_reference = new NcFileHandler(reference_fpath, variable_name, 3);
+        ds_control = new NcFileHandler(control_fpath, variable_name, 3);
+        ds_scenario = new NcFileHandler(scenario_fpath, variable_name, 3);
+
+        // latitudes and longitudes must have the same lengths in all input files
+        if (ds_reference->n_lat != ds_control->n_lat || ds_reference->n_lat != ds_scenario->n_lat)
+            throw std::runtime_error("Input files have unqual lengths of the `lat` (latitude) dimension.");
+        else if (ds_reference->n_lon != ds_control->n_lon || ds_reference->n_lon != ds_scenario->n_lon)
+            throw std::runtime_error("Input files have unqual lengths of the `lon` (longitude) dimension.");
     }
 
+    // Time dimensions can have different lenghts but it is not recommanded
     if (ds_reference->n_time != ds_control->n_time || ds_reference->n_time != ds_scenario->n_time)
         log.warning("Input files have different sizes for the time dimension.");
 
@@ -315,11 +330,12 @@ void Manager::parse_args() {
     if (interval31_scaling && !(ds_reference->n_time % 365 == 0 && ds_control->n_time % 365 == 0 && ds_scenario->n_time % 365 == 0))
         throw std::runtime_error(
             "Data sets should not contain the 29. February and every year must have 365 entries for long-term "
-            "31-day interval scaling. Use the '--monhtly' flag instead and apply the program on monthly separated data sets.");
+            "31-day interval scaling. Use the '--no-group' flag to adjust the data set without any moving window.");
 
     // misc
     if (n_jobs != 1 && one_dim) log.warning("Using only one thread because of the adjustment of a 1-dimensional data set.");
 
+    // setting the method
     if (get_adjustment_kind() == "add") {
         if (adjustment_method_name == "linear_scaling")
             scaling_func_A = CMethods::Linear_Scaling_add;
