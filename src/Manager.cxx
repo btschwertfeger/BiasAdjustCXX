@@ -42,7 +42,7 @@
 
 /**
  * Constructor which parses a string containing arguments
- * that are passed to the `main` function while executing the
+ * that are passed to the `main` function while executing the BiasAdjustCXX
  * program. This class handles the program flow and is only
  * instantiate once within the `main` function of `main.cxx`.
  */
@@ -51,15 +51,10 @@ Manager::Manager(int argc, char** argv) : argc(argc),
                                           variable_name(""),
                                           output_filepath(""),
                                           adjustment_method_name(""),
-                                          adjustment_kind("add"),
-                                          n_quantiles(250),
-                                          max_scaling_factor(10.0),
+                                          adjustment_settings(AdjustmentSettings(10, 250, true, "add")),
                                           one_dim(false),
-                                          interval31_scaling(true),
                                           n_jobs(1),
-                                          scaling_func_A(NULL),
-                                          scaling_func_B(NULL),
-                                          distribution_func(NULL),
+                                          adjustment_function(NULL),
                                           log(utils::Log()) {
     parse_args();
 }
@@ -79,10 +74,10 @@ void Manager::run_adjustment() {
     log.info("Data sets available");
     log.info("Method: " + adjustment_method_name + " (" + get_adjustment_kind() + ")");
     log.info("Threads: " + std::to_string(n_jobs));
-    if (get_adjustment_kind() == "mult") log.info("Maximum scaling factor: " + std::to_string(max_scaling_factor));
+    if (get_adjustment_kind() == "mult") log.info("Maximum scaling factor: " + std::to_string(adjustment_settings.max_scaling_factor));
     for (unsigned i = 0; i < CMethods::scaling_method_names.size(); i++) {
         if (CMethods::scaling_method_names[i] == adjustment_method_name) {
-            if (interval31_scaling)
+            if (adjustment_settings.interval31_scaling)
                 log.info("Scaling will be performed based on long-term 31-day intervals.");
             else
                 log.info(
@@ -105,8 +100,7 @@ void Manager::run_adjustment() {
         ds_scenario->get_timeseries(v_scenario);
 
         adjust_1d(v_data_out, v_reference, v_control, v_scenario);
-        std::cout << std::endl;
-        log.info("Saving: " + output_filepath + " ...");
+        std::cout << "Adjustment done!" log.info("Saving: " + output_filepath + " ...");
         ds_scenario->to_netcdf(output_filepath, variable_name, v_data_out);
 
     } else {  // adjustment of 3-dimensional data set
@@ -134,7 +128,7 @@ void Manager::run_adjustment() {
                 for (unsigned time = 0; time < v_data_out[lat][lon].size(); time++)
                     v_data_to_save[time][lat][lon] = v_data_out[lat][lon][time];
 
-        log.info("Saving: " + output_filepath + " ...");
+        log.info("Saving: " + output_filepath);
         ds_scenario->to_netcdf(output_filepath, variable_name, v_data_to_save);
     }
     log.info("Done!");
@@ -249,24 +243,26 @@ void Manager::parse_args() {
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-q" || arg == "--quantiles") {
             if (i + 1 < argc)
-                n_quantiles = (unsigned)std::stoi(argv[++i]);
+                adjustment_settings.n_quantiles = (unsigned)std::stoi(argv[++i]);
         } else if (arg == "-m" || arg == "--method") {
             if (i + 1 < argc)
                 adjustment_method_name = argv[++i];
             else
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "-k" || arg == "--kind") {
-            if (i + 1 < argc)
-                adjustment_kind = argv[++i];
-            else
+            if (i + 1 < argc) {
+                adjustment_settings.kind = argv[++i];
+                adjustment_settings.kind = get_adjustment_kind();
+
+            } else
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--max-scaling-factor") {
             if (i + 1 < argc)
-                max_scaling_factor = std::stoi(argv[++i]);
+                adjustment_settings.max_scaling_factor = std::stoi(argv[++i]);
             else
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--no-group")
-            interval31_scaling = false;
+            adjustment_settings.interval31_scaling = false;
         else if (arg == "-o" || arg == "--output") {
             if (i + 1 < argc)
                 output_filepath = argv[++i];
@@ -299,7 +295,7 @@ void Manager::parse_args() {
     if (scenario_fpath.empty()) throw std::runtime_error("No scenario file defined!");
     if (output_filepath.empty()) throw std::runtime_error("No output file defined!");
     if (adjustment_method_name.empty()) throw std::runtime_error("No method specified!");
-    if (adjustment_kind.empty()) throw std::runtime_error("Adjustmend kind is empty!");
+    if (adjustment_settings.kind.empty()) throw std::runtime_error("Adjustmend kind is empty!");
 
     // 1- or 3-dimensional adjustment
     if (one_dim) {
@@ -327,7 +323,7 @@ void Manager::parse_args() {
         throw std::runtime_error("Time dimension of reference and scenario input files does not have the same length! This is required for the delta method.");
 
     // when using long-term 31-day interval scaling, leap years should not be included and every year must be full.
-    if (interval31_scaling && !(ds_reference->n_time % 365 == 0 && ds_control->n_time % 365 == 0 && ds_scenario->n_time % 365 == 0))
+    if (adjustment_settings.interval31_scaling && !(ds_reference->n_time % 365 == 0 && ds_control->n_time % 365 == 0 && ds_scenario->n_time % 365 == 0))
         throw std::runtime_error(
             "Data sets should not contain the 29. February and every year must have 365 entries for long-term "
             "31-day interval scaling. Use the '--no-group' flag to adjust the data set without any moving window.");
@@ -336,32 +332,24 @@ void Manager::parse_args() {
     if (n_jobs != 1 && one_dim) log.warning("Using only one thread because of the adjustment of a 1-dimensional data set.");
 
     // setting the method
-    if (get_adjustment_kind() == "add") {
+    if (adjustment_settings.kind == "add" || adjustment_settings.kind == "mult") {
         if (adjustment_method_name == "linear_scaling")
-            scaling_func_A = CMethods::Linear_Scaling_add;
-        else if (adjustment_method_name == "variance_scaling")
-            scaling_func_B = CMethods::Variance_Scaling_add;
-        else if (adjustment_method_name == "delta_method")
-            scaling_func_A = CMethods::Delta_Method_add;
+            adjustment_function = CMethods::Linear_Scaling;
+        else if (adjustment_method_name == "variance_scaling") {
+            if (adjustment_settings.kind != "mult")
+                adjustment_function = CMethods::Variance_Scaling;
+            else
+                throw std::runtime_error("Multiplicative Variance Scaling not available!");
+        } else if (adjustment_method_name == "delta_method")
+            adjustment_function = CMethods::Delta_Method;
         else if (adjustment_method_name == "quantile_mapping")
-            distribution_func = CMethods::Quantile_Mapping;
+            adjustment_function = CMethods::Quantile_Mapping;
         else if (adjustment_method_name == "quantile_delta_mapping")
-            distribution_func = CMethods::Quantile_Delta_Mapping;
+            adjustment_function = CMethods::Quantile_Delta_Mapping;
         else
-            throw std::runtime_error("Additive " + adjustment_method_name + " not found!");
-    } else if (get_adjustment_kind() == "mult") {
-        if (adjustment_method_name == "linear_scaling")
-            scaling_func_B = CMethods::Linear_Scaling_mult;
-        else if (adjustment_method_name == "delta_method")
-            scaling_func_B = CMethods::Delta_Method_mult;
-        else if (adjustment_method_name == "quantile_mapping")
-            distribution_func = CMethods::Quantile_Mapping;
-        else if (adjustment_method_name == "quantile_delta_mapping")
-            distribution_func = CMethods::Quantile_Delta_Mapping;
-        else
-            throw std::runtime_error("Multiplicative " + adjustment_method_name + " not found!");
+            throw std::runtime_error("Method " + adjustment_method_name + "(" + adjustment_settings.kind + ") not found!");
     } else
-        throw std::runtime_error("Unkonwn adjustment kind " + adjustment_kind + "!");
+        throw std::runtime_error("Unkonwn adjustment kind " + adjustment_settings.kind + "!");
 }
 
 /**
@@ -370,9 +358,9 @@ void Manager::parse_args() {
  * @return adjustment kind, additive or multiplicative
  */
 std::string Manager::get_adjustment_kind() {
-    return (adjustment_kind == "add" || adjustment_kind == "+")
+    return (adjustment_settings.kind == "add" || adjustment_settings.kind == "+")
                ? "add"
-           : (adjustment_kind == "mult" || adjustment_kind == "*")
+           : (adjustment_settings.kind == "mult" || adjustment_settings.kind == "*")
                ? "mult"
                : "";
 }
@@ -391,14 +379,10 @@ void Manager::adjust_1d(
     std::vector<float>& v_reference,
     std::vector<float>& v_control,
     std::vector<float>& v_scenario) {
-    if (scaling_func_A != NULL)
-        scaling_func_A(v_data_out, v_reference, v_control, v_scenario, interval31_scaling);
-    else if (scaling_func_B != NULL)
-        scaling_func_B(v_data_out, v_reference, v_control, v_scenario, max_scaling_factor, interval31_scaling);
-    else if (distribution_func != NULL)
-        distribution_func(v_data_out, v_reference, v_control, v_scenario, adjustment_kind, n_quantiles);
+    if (adjustment_function != NULL)
+        adjustment_function(v_data_out, v_reference, v_control, v_scenario, adjustment_settings);
     else
-        throw std::runtime_error("Unknown adjustment method " + adjustment_method_name + "!");
+        throw std::runtime_error("Unknown adjustment method " + adjustment_method_name + " (" + adjustment_settings.kind + ")!");
 }
 
 /**

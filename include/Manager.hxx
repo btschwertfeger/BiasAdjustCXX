@@ -28,31 +28,16 @@
 #ifndef __MANAGER__
 #define __MANAGER__
 
+#include "CMethods.hxx"
 #include "NcFileHandler.hxx"
 #include "Utils.hxx"
 
-typedef void (*CM_Func_ptr_scaling_A)(
+typedef void (*AdjustmentFunction)(
     std::vector<float>& v_output,
     std::vector<float>& v_reference,
     std::vector<float>& v_control,
     std::vector<float>& v_scenario,
-    bool interval31_scaling);
-
-typedef void (*CM_Func_ptr_scaling_B)(
-    std::vector<float>& v_output,
-    std::vector<float>& v_reference,
-    std::vector<float>& v_control,
-    std::vector<float>& v_scenario,
-    double max_scaling_factor,
-    bool interval31_scaling);
-
-typedef void (*CM_Func_ptr_distribution)(
-    std::vector<float>& v_output,
-    std::vector<float>& v_reference,
-    std::vector<float>& v_control,
-    std::vector<float>& v_scenario,
-    std::string kind,
-    unsigned n_quantiles);
+    AdjustmentSettings& settings);
 
 class Manager {
    public:
@@ -76,9 +61,8 @@ class Manager {
     int argc;
     char** argv;
 
-    CM_Func_ptr_scaling_A scaling_func_A;
-    CM_Func_ptr_scaling_B scaling_func_B;
-    CM_Func_ptr_distribution distribution_func;
+    AdjustmentFunction adjustment_function;
+    AdjustmentSettings adjustment_settings;
 
     NcFileHandler* ds_reference;
     NcFileHandler* ds_control;
@@ -87,13 +71,8 @@ class Manager {
     std::string variable_name;
     std::string output_filepath;
     std::string adjustment_method_name;
-    std::string adjustment_kind;
 
-    unsigned n_quantiles;
-    double max_scaling_factor;
     bool one_dim;
-    bool interval31_scaling;
-
     unsigned n_jobs;
     utils::Log log;
 };

@@ -131,7 +131,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 | `-q`, <br> `--n_quantiles`              | [optional] number of quantiles to respect (only required for distribution-based methods)                                                                                                                                                                                                                                    |
 | `--1dim`                                | [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)                                                                                                                                                                                                                              |
 | `--no-group`                            | [optional] Disables the adjustment based on 31-day long-term moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommended to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
-| `--max-scaling-factor`                  | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating disproportional high scaling factors. (only for scaling-based methods; default: 10)                        |
+| `--max-scaling-factor`                  | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating disproportional high scaling factors. (only for multiplicative methods except QM; default: 10)             |
 | `-p`, <br> `--n_processes`              | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                             |
 | `-h`, `--help`                          | [optional] display usage example, arguments, hints, and exits the program                                                                                                                                                                                                                                                   |
 
@@ -142,7 +142,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 ## 5. Usage and Examples
 
 The script `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
-`Hands-On-BiasAdjustCXX.ipynb` shows how to install, build, and run the `BiasAdjustCXX` command-line tool. Also plots validating the results are presented here.
+`Hands-On-BiasAdjustCXX.ipynb` shows how to clone, build, compile, and run the `BiasAdjustCXX` command-line tool. Also plots validating the results are presented here.
 
 All methods to bias-adjust climate data can be found in `src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with C++ kernel) to test scripts and develop custom algorithms (see `examples.ipynb`).
 
