@@ -2,7 +2,7 @@
 
 /**
  * @file main.cxx
- * @brief Main program to bias adjust NetCDF-based climate data
+ * @brief Main program to bias adjust NetCDF-based climate data using the `BiasAdjustCXX` command-line tool
  * @author Benjamin Thomas Schwertfeger
  * @email: development@b-schwertfeger.de
  * @link https://b-schwertfeger.de
@@ -26,7 +26,7 @@
  * * Description
  *      Main program to bias adjust climate data;
  *      - loads data sets
- *      - iteration over all grid cells (if 3-dimensional data set)
+ *      - iteration over all grid cells (if inputs are 3-dimensional data sets)
  *      - application/execution of the selected adjustment
  *      - save results to .nc file
  *
@@ -49,10 +49,15 @@
 #include "Utils.hxx"
 
 /**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *                        Helper functions
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
+
+/**
  * Command-line output of the duraton between a start time
  *
  * @param start_time start time to calculate the duration
- *
  */
 template <typename T>
 static void stdcout_runtime(T start_time) {
@@ -60,6 +65,12 @@ static void stdcout_runtime(T start_time) {
     std::chrono::duration<double, std::milli> ms_double = end_time - start_time;
     std::cout << "Runtime: " << ms_double.count() << "ms\n";
 }
+
+/**
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ * *                        Main
+ * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+ */
 
 int main(int argc, char** argv) {
     auto start_time = std::chrono::high_resolution_clock::now();

@@ -45,13 +45,16 @@
  * that are passed to the `main` function while executing the BiasAdjustCXX
  * program. This class handles the program flow and is only
  * instantiate once within the `main` function of `main.cxx`.
+ *
+ * @param argc number of arguments
+ * @param argv qrgv passed through main function
  */
 Manager::Manager(int argc, char** argv) : argc(argc),
                                           argv(argv),
                                           variable_name(""),
                                           output_filepath(""),
                                           adjustment_method_name(""),
-                                          adjustment_settings(AdjustmentSettings(10, 250, true, "add")),
+                                          adjustment_settings(AdjustmentSettings()),
                                           one_dim(false),
                                           n_jobs(1),
                                           adjustment_function(NULL),
@@ -100,7 +103,8 @@ void Manager::run_adjustment() {
         ds_scenario->get_timeseries(v_scenario);
 
         adjust_1d(v_data_out, v_reference, v_control, v_scenario);
-        std::cout << "Adjustment done!" log.info("Saving: " + output_filepath + " ...");
+        log.info("Adjustment done!");
+        log.info("Saving: " + output_filepath + " ...");
         ds_scenario->to_netcdf(output_filepath, variable_name, v_data_out);
 
     } else {  // adjustment of 3-dimensional data set
@@ -140,7 +144,7 @@ void Manager::run_adjustment() {
  * @param name Name of this program
  */
 void Manager::show_usage() {
-    std::cerr << BOLDBLUE << "Usage: " RESET << "BiasAdjustCXX"
+    std::cout << BOLDBLUE << "Usage: " RESET << "BiasAdjustCXX"
               << "\t\t\t\\\n"
               << GREEN << "\t --ref " << RESET << "observation_data.nc\t\\\n"
               << GREEN << "\t --contr " << RESET << "control_data.nc\t\\\n"
@@ -175,21 +179,21 @@ void Manager::show_usage() {
               << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
               << RESET << std::endl;
 
-    std::cerr << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
+    std::cout << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
     std::vector<std::string> all_methods;
     all_methods.reserve(CMethods::scaling_method_names.size() + CMethods::distribution_method_names.size());  // preallocate memory
     all_methods.insert(all_methods.end(), CMethods::scaling_method_names.begin(), CMethods::scaling_method_names.end());
     all_methods.insert(all_methods.end(), CMethods::distribution_method_names.begin(), CMethods::distribution_method_names.end());
 
-    for (size_t i = 0; i < all_methods.size(); i++) std::cerr << all_methods[i] << " ";
+    for (size_t i = 0; i < all_methods.size(); i++) std::cout << all_methods[i] << " ";
     std::cout << std::endl;
-    std::cerr << YELLOW << "\nNotes: " << RESET
+    std::cout << YELLOW << "\nNotes: " << RESET
               << "\n- When not using the " << GREEN << "--no-group" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.) "
               << "The Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--no-group" << RESET << " flag is used to apply this program on for example monthly separated files i.e. "
               << "to adjust 30 years of data, all input files need to be separated into 12 groups, one group for each month, than this program can be applied to every long-term month."
               << "\n\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
 
-    std::cerr << YELLOW << "\n\n====== References ======" << RESET
+    std::cout << YELLOW << "\n\n====== References ======" << RESET
               << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2023) development@b-schwertfeger.de"
               << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
               << "\n- Mathematical foundations:"
@@ -206,8 +210,7 @@ void Manager::show_usage() {
  * Parses the arguments that were passed to the constructor.
  * This includes loading the input data sets, checking if
  * the respective adjustment conditions met and sets
- * the adjustment relevant variables like the `kind`,
- * `n_quantiles`, `max_scaling_factor´, ...
+ * the adjustment relevant variables.
  */
 void Manager::parse_args() {
     if (argc == 1) {
@@ -355,7 +358,7 @@ void Manager::parse_args() {
 /**
  * Returns the selected adjustment kind
  *
- * @return adjustment kind, additive or multiplicative
+ * @return adjustment kind, additive ("add"||"+") or multiplicative ("mult"||"*")
  */
 std::string Manager::get_adjustment_kind() {
     return (adjustment_settings.kind == "add" || adjustment_settings.kind == "+")
@@ -397,7 +400,6 @@ void Manager::adjust_1d(
 void Manager::adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out) {
     std::vector<std::future<void>> tasks;
     for (unsigned lon = 0; lon < ds_scenario->n_lon; lon++) {
-        // std::cout << "begin " << lon << std::endl;
         std::vector<std::vector<float>> v_reference_lat_data(
             (int)ds_reference->n_lat,
             std::vector<float>((int)ds_reference->n_time));

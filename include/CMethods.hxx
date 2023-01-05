@@ -33,15 +33,19 @@
 #include <vector>
 
 struct AdjustmentSettings {
+    AdjustmentSettings() : max_scaling_factor(10),    // maximum scaling factor
+                           n_quantiles(250),          // number of quantiles to respect
+                           interval31_scaling(true),  // calculate the means based on long-term 31-day moving windows or on the whole data at once
+                           kind("add"){};             // adjustment kind => additive or multiplicative
+
     AdjustmentSettings(
-        double max_scaling_factor = 10,
-        unsigned n_quantiles = 250,
-        bool interval31_scaling = false,
-        std::string kind = "add") : max_scaling_factor(max_scaling_factor),  // maximum scaling factor
-                                    n_quantiles(n_quantiles),                // number of quantiles to respect
-                                    interval31_scaling(interval31_scaling),  // calculate the means based on long-term 31-day moving windows or on the whole data at once
-                                    kind(kind)                               // adjustment kind => additive or multiplicative
-                                    {};
+        double max_scaling_factor,
+        unsigned n_quantiles,
+        bool interval31_scaling,
+        std::string kind) : max_scaling_factor(max_scaling_factor),
+                            n_quantiles(n_quantiles),
+                            interval31_scaling(interval31_scaling),
+                            kind(kind){};
     double max_scaling_factor;
     unsigned n_quantiles;
     bool interval31_scaling;

@@ -186,7 +186,7 @@ BiasAdjustCXX                           \
     --ref input_data/observations.nc    \
     --contr input_data/control.nc       \
     --scen input_data/scenario.nc       \
-    -0 quantile_delta_mapping_result.nc \
+    -o quantile_delta_mapping_result.nc \
     -m quantile_delta_mapping           \
     -k "+"                              \
     -v tas                              \

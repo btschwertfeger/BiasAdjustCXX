@@ -95,7 +95,7 @@ void progress_bar(float part, float all) {
 namespace utils {
 
 void show_copyright_notice(std::string program_name) {
-    std::cerr << program_name << " Copyright (C) 2023 Benjamin Thomas Schwertfeger"
+    std::cout << program_name << " Copyright (C) 2023 Benjamin Thomas Schwertfeger"
               << "\nThis program comes with ABSOLUTELY NO WARRANTY."
               << "\nThis is free software, and you are welcome to redistribute it"
               << "\nunder certain conditions; type 'show -c' for details."
@@ -744,9 +744,8 @@ void show_license() {
         "    GNU General Public License for more details.\n"
         "\n"
         "    You should have received a copy of the GNU General Public License\n"
-        "    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n\n";
-    std::cerr
-        << license;
+        "    along with this program.  If not, see <https://www.gnu.org/licenses/>.";
+    std::cout << license << std::endl;
 }
 }  // namespace utils
 /*

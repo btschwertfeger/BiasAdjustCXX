@@ -70,8 +70,8 @@ CMethods::~CMethods() {}
 /**
  * Get 365 long-term 31-day moving windows
  *
- * @param v_in input vector containing 365 entries for n years
- * @return 2D vector (dimensionss: [365, 31 * y]) containing the values with index -15...0...+15 around a day over all years
+ * @param v_in input vector containing 365 entries for $n$ years
+ * @return 2D vector (dimensions: [365, 31 * y]) containing the values with index -15...0...+15 around a day over all years
  */
 std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<float> &v_in) {
     std::vector<std::vector<float>> v_out(365, std::vector<float>());
@@ -124,16 +124,16 @@ double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
  * Method to adjust 1-dimensional climate data by the linear scaling method.
  * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
  * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
- * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
+ * Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
  *
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
  * @param v_control 1D modeled time series (control period)
  * @param v_scenario 1D time series to adjust (scenario period)
  * @param settings struct with attributes:
- *      double max_scaling_factor = 10,
- *      unsigned n_quantiles = 250,
- *      bool interval31_scaling = false,
+ *      double max_scaling_factor,
+ *      unsigned n_quantiles,
+ *      bool interval31_scaling,
  *      std::string kind
  *
  * Add ('+'):
@@ -172,6 +172,7 @@ void CMethods::Linear_Scaling(
             ref_long_term_dayofyear = get_long_term_dayofyear(v_reference),
             contr_long_term_dayofyear = get_long_term_dayofyear(v_control);
 
+        // ? compute 365 means based on long-term 31-day moving windows
         for (unsigned day = 0; day < 365; day++) {
             ref_365_means.push_back(MathUtils::mean(ref_long_term_dayofyear[day]));
             contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
@@ -198,7 +199,7 @@ void CMethods::Linear_Scaling(
  * Method to adjust 1 dimensional climate data by variance scaling method.
  * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
  * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
- * Review and evaluation of different methods https://doi.org/10.1016/j.jhydrol.2012.05.052
+ * Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
  *
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
@@ -300,15 +301,15 @@ void CMethods::Variance_Scaling(
  * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias
  * correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
  *
- * NOTE: v_reference.size() must be equal to v_scenario.size()
+ * NOTE: `v_reference.size()` must be equal to `v_scenario.size()`
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
  * @param v_control 1D modeled time series (control period)
  * @param v_scenario 1D time series to adjust (scenario period)
  * @param settings struct with attributes:
- *      double max_scaling_factor = 10,
- *      unsigned n_quantiles = 250,
- *      bool interval31_scaling = false,
+ *      double max_scaling_factor,
+ *      unsigned n_quantiles,
+ *      bool interval31_scaling,
  *      std::string kind
  *
  * Add (+):
@@ -347,6 +348,7 @@ void CMethods::Delta_Method(
             contr_long_term_dayofyear = get_long_term_dayofyear(v_control),
             scen_long_term_dayofyear = get_long_term_dayofyear(v_scenario);
 
+        // ? compute 365 means based on long-term 31-day moving windows
         for (unsigned day = 0; day < 365; day++) {
             contr_365_means.push_back(MathUtils::mean(contr_long_term_dayofyear[day]));
             scen_365_means.push_back(MathUtils::mean(scen_long_term_dayofyear[day]));
@@ -378,7 +380,7 @@ void CMethods::Delta_Method(
  * @param a time series
  * @param b another time series
  * @param kind regular or bounded: defines if mininum value of a (climate) variable can be lower than in the data
- *             or is set to 0 (0 ratio based variables)
+ *             or is set to 0 (ratio based variables => 0)
  * @return the probability boundaries mentioned above
  */
 std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float> &b, unsigned n_quantiles, std::string kind) {
@@ -428,15 +430,15 @@ std::vector<double> CMethods::get_xbins(std::vector<float> &a, std::vector<float
  * @param v_control 1D modeled time series (control period)
  * @param v_scenario 1D time series to adjust (scenario period)
  * @param settings struct with attributes:
- *      double max_scaling_factor = 10,
- *      unsigned n_quantiles = 250,
- *      bool interval31_scaling = false,
+ *      double max_scaling_factor,
+ *      unsigned n_quantiles,
+ *      bool interval31_scaling,
  *      std::string kind
  *
  * (add):
  *      (1.) $T^{*QM}_{sim,p}(d) = F^{-1}_{obs,h} \left\{F_{sim,h}\left[T_{sim,p}(d)\right]\right\}$
  * (mult):
- *      same but with bounded values
+ *      same but with bounded values => 0 is the minimum value
  */
 void CMethods::Quantile_Mapping(
     std::vector<float> &v_output,
@@ -489,9 +491,9 @@ void CMethods::Quantile_Mapping(
  * @param v_control 1D modeled time series (control period)
  * @param v_scenario 1D time series to adjust (scenario period)
  * @param settings struct with attributes:
- *      double max_scaling_factor = 10,
- *      unsigned n_quantiles = 250,
- *      bool interval31_scaling = false,
+ *      double max_scaling_factor,
+ *      unsigned n_quantiles,
+ *      bool interval31_scaling,
  *      std::string kind
  *
  * Add (+):
