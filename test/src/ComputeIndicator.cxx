@@ -29,6 +29,7 @@
  */
 #include <math.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "MathUtils.hxx"
@@ -184,7 +185,8 @@ static void stdcout_runtime(T start_time) {
 void compute_col_for_one_file(std::vector<std::vector<float>>& data_out, unsigned lon) {
     std::vector<std::vector<float>> dataset_lats(
         (int)v_NcFileHandlers[0]->n_lat,
-        std::vector<float>((int)v_NcFileHandlers[0]->n_time));
+        std::vector<float>((int)v_NcFileHandlers[0]->n_time)
+    );
 
     v_NcFileHandlers[0]->get_lat_timeseries_for_lon(dataset_lats, lon);
     Func_one method = MathUtils::get_method_for_1_ds(method_name);
@@ -202,10 +204,12 @@ void compute_col_for_one_file(std::vector<std::vector<float>>& data_out, unsigne
 void compute_col_for_two_files(std::vector<std::vector<float>>& v_data_out, unsigned lon) {
     std::vector<std::vector<float>> dataset_1_lats(
         (int)v_NcFileHandlers[0]->n_lat,
-        std::vector<float>((int)v_NcFileHandlers[0]->n_time));
+        std::vector<float>((int)v_NcFileHandlers[0]->n_time)
+    );
     std::vector<std::vector<float>> dataset_2_lats(
         (int)v_NcFileHandlers[1]->n_lat,
-        std::vector<float>((int)v_NcFileHandlers[1]->n_time));
+        std::vector<float>((int)v_NcFileHandlers[1]->n_time)
+    );
 
     v_NcFileHandlers[0]->get_lat_timeseries_for_lon(dataset_1_lats, lon);
     v_NcFileHandlers[1]->get_lat_timeseries_for_lon(dataset_2_lats, lon);
@@ -251,7 +255,8 @@ int main(int argc, char** argv) {
         Log.info("Method: " + method_name);
         std::vector<std::vector<float>> v_data_out(
             (int)v_NcFileHandlers[0]->n_lat,
-            std::vector<float>((int)v_NcFileHandlers[0]->n_lon));
+            std::vector<float>((int)v_NcFileHandlers[0]->n_lon)
+        );
 
         Log.info("Starting computation!");
         compute_indicator(v_data_out);

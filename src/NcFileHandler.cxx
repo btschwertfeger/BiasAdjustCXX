@@ -385,7 +385,11 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  * @param variable_name name of the output variable
  * @param v_out_data 2D vector of data to save
  */
-void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<float>>& v_out_data) {
+void NcFileHandler::to_netcdf(
+    std::string out_fpath,
+    std::string variable_name,
+    std::vector<std::vector<float>>& v_out_data
+) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
     // Create netCDF dimensions
@@ -514,7 +518,11 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  * @param variable_name name of the output variable
  * @param v_out_data 3D vector of data to save
  */
-void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, std::vector<std::vector<std::vector<float>>>& v_out_data) {
+void NcFileHandler::to_netcdf(
+    std::string out_fpath,
+    std::string variable_name,
+    std::vector<std::vector<std::vector<float>>>& v_out_data
+) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
     netCDF::NcDim
@@ -592,7 +600,11 @@ void NcFileHandler::to_netcdf(std::string out_fpath, std::string variable_name, 
  * @param variable_names names of the output variables
  * @param out_data vector of 2D arrays of data
  */
-void NcFileHandler::to_netcdf(std::string out_fpath, std::vector<std::string> variable_names, std::vector<float**> out_data) {
+void NcFileHandler::to_netcdf(
+    std::string out_fpath,
+    std::vector<std::string> variable_names,
+    std::vector<float**> out_data
+) {
     netCDF::NcFile output_file(out_fpath, netCDF::NcFile::replace);
 
     netCDF::NcDim

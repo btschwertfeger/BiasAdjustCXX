@@ -47,11 +47,8 @@ utils::Log::Log() {}
 utils::Log::~Log() {}
 
 void utils::Log::debug(std::string message) { std::cout << WHITE << "DEBUG: " << RESET << message << std::endl; }
-
 void utils::Log::info(std::string message) { std::cout << GREEN << "INFO: " << RESET << message << std::endl; }
-
 void utils::Log::warning(std::string message) { std::cout << YELLOW << "WARNING: " << RESET << message << std::endl; }
-
 void utils::Log::error(std::string message) { std::cout << BOLDRED << "ERROR: " << RESET << message << std::endl; }
 }  // namespace utils
 

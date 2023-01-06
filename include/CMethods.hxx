@@ -32,6 +32,11 @@
 #include <stdexcept>
 #include <vector>
 
+/**
+ * Structure that stores parameters for the
+ * adjustment methods LS, VS, DM, QM and QDM, implemented in
+ * the class `CMethods`
+ */
 struct AdjustmentSettings {
     AdjustmentSettings() : max_scaling_factor(10),    // maximum scaling factor
                            n_quantiles(250),          // number of quantiles to respect
@@ -42,10 +47,11 @@ struct AdjustmentSettings {
         double max_scaling_factor,
         unsigned n_quantiles,
         bool interval31_scaling,
-        std::string kind) : max_scaling_factor(max_scaling_factor),
-                            n_quantiles(n_quantiles),
-                            interval31_scaling(interval31_scaling),
-                            kind(kind){};
+        std::string kind
+    ) : max_scaling_factor(max_scaling_factor),
+        n_quantiles(n_quantiles),
+        interval31_scaling(interval31_scaling),
+        kind(kind){};
     double max_scaling_factor;
     unsigned n_quantiles;
     bool interval31_scaling;
@@ -63,13 +69,48 @@ class CMethods {
     static double get_adjusted_scaling_factor(double factor, double max_factor);
     static std::vector<std::vector<float>> get_long_term_dayofyear(std::vector<float>& v_in);
 
-    static void Linear_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, AdjustmentSettings& settings);
-    static void Variance_Scaling(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, AdjustmentSettings& settings);
-    static void Delta_Method(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, AdjustmentSettings& settings);
+    static void Linear_Scaling(
+        std::vector<float>& v_output,
+        std::vector<float>& v_reference,
+        std::vector<float>& v_control,
+        std::vector<float>& v_scenario,
+        AdjustmentSettings& settings
+    );
+    static void Variance_Scaling(
+        std::vector<float>& v_output,
+        std::vector<float>& v_reference,
+        std::vector<float>& v_control,
+        std::vector<float>& v_scenario,
+        AdjustmentSettings& settings
+    );
+    static void Delta_Method(
+        std::vector<float>& v_output,
+        std::vector<float>& v_reference,
+        std::vector<float>& v_control,
+        std::vector<float>& v_scenario,
+        AdjustmentSettings& settings
+    );
 
-    static std::vector<double> get_xbins(std::vector<float>& a, std::vector<float>& b, unsigned n_quantiles, std::string kind);
-    static void Quantile_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, AdjustmentSettings& settings);
-    static void Quantile_Delta_Mapping(std::vector<float>& v_output, std::vector<float>& v_reference, std::vector<float>& v_control, std::vector<float>& v_scenario, AdjustmentSettings& settings);
+    static std::vector<double> get_xbins(
+        std::vector<float>& a,
+        std::vector<float>& b,
+        unsigned n_quantiles, std::string kind
+    );
+
+    static void Quantile_Mapping(
+        std::vector<float>& v_output,
+        std::vector<float>& v_reference,
+        std::vector<float>& v_control,
+        std::vector<float>& v_scenario,
+        AdjustmentSettings& settings
+    );
+    static void Quantile_Delta_Mapping(
+        std::vector<float>& v_output,
+        std::vector<float>& v_reference,
+        std::vector<float>& v_control,
+        std::vector<float>& v_scenario,
+        AdjustmentSettings& settings
+    );
 
    private:
 };

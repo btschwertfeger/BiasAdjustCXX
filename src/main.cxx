@@ -94,7 +94,8 @@ int main(int argc, char** argv) {
             "       - 3-dimensional: time, lat, lon | without '--1dim' flag\n"
             "       - 1-dimensional: time           | '--1dim' flag is required\n"
             "    - the resolutions of the input files must be the same."
-            "    - the variable has the same name in all input files.");
+            "    - the variable has the same name in all input files."
+        );
         stdcout_runtime(start_time);
         return 1;
     } catch (const std::runtime_error& error) {

@@ -86,7 +86,8 @@ void Manager::run_adjustment() {
                 log.info(
                     "Scaling will be performed based on the whole data set. "
                     "The input files should only contain the data for a specific month over the entire period. "
-                    "(i.e. this program must be applied to 12 data sets, that contain values only for a specific month over all years.)");
+                    "(i.e. this program must be applied to 12 data sets, that contain values only for a specific month over all years.)"
+                );
             break;
         }
     }
@@ -113,7 +114,9 @@ void Manager::run_adjustment() {
             (int)ds_scenario->n_lat,
             std::vector<std::vector<float>>(
                 (int)ds_scenario->n_lon,
-                std::vector<float>((int)ds_scenario->n_time)));
+                std::vector<float>((int)ds_scenario->n_time)
+            )
+        );
 
         log.info("Starting the adjustment ...");
         adjust_3d(v_data_out);
@@ -124,7 +127,9 @@ void Manager::run_adjustment() {
                 (int)ds_scenario->n_time,
                 std::vector<std::vector<float>>(
                     (int)ds_scenario->n_lat,
-                    std::vector<float>((int)ds_scenario->n_lon)));
+                    std::vector<float>((int)ds_scenario->n_lon)
+                )
+            );
 
         // ? reshape to time x lat x lon
         for (unsigned lat = 0; lat < v_data_out.size(); lat++)
@@ -140,8 +145,6 @@ void Manager::run_adjustment() {
 
 /**
  * Command-line output of the program usage hints.
- *
- * @param name Name of this program
  */
 void Manager::show_usage() {
     std::cout << BOLDBLUE << "Usage: " RESET << "BiasAdjustCXX"
@@ -323,13 +326,20 @@ void Manager::parse_args() {
 
     // Delta Method needs same length of time dimension for reference and scenario
     if (ds_reference->n_time != ds_scenario->n_time && adjustment_method_name == std::string("delta_method"))
-        throw std::runtime_error("Time dimension of reference and scenario input files does not have the same length! This is required for the delta method.");
+        throw std::runtime_error(
+            "Time dimension of reference and scenario input files "
+            "does not have the same length! This is required for the delta method."
+        );
 
-    // when using long-term 31-day interval scaling, leap years should not be included and every year must be full.
-    if (adjustment_settings.interval31_scaling && !(ds_reference->n_time % 365 == 0 && ds_control->n_time % 365 == 0 && ds_scenario->n_time % 365 == 0))
+    // When using long-term 31-day interval scaling, leap years should not be included and every year must be complete.
+    if (adjustment_settings.interval31_scaling &&
+        !(ds_reference->n_time % 365 == 0 &&
+          ds_control->n_time % 365 == 0 &&
+          ds_scenario->n_time % 365 == 0))
         throw std::runtime_error(
             "Data sets should not contain the 29. February and every year must have 365 entries for long-term "
-            "31-day interval scaling. Use the '--no-group' flag to adjust the data set without any moving window.");
+            "31-day interval scaling. Use the '--no-group' flag to adjust the data set without any moving window."
+        );
 
     // misc
     if (n_jobs != 1 && one_dim) log.warning("Using only one thread because of the adjustment of a 1-dimensional data set.");
@@ -358,12 +368,16 @@ void Manager::parse_args() {
 /**
  * Returns the selected adjustment kind
  *
- * @return adjustment kind, additive ("add"||"+") or multiplicative ("mult"||"*")
+ * @return adjustment kind, additive ("add" || "+") or multiplicative ("mult" || "*")
  */
 std::string Manager::get_adjustment_kind() {
-    return (adjustment_settings.kind == "add" || adjustment_settings.kind == "+")
+    return (adjustment_settings.kind == "additive" ||
+            adjustment_settings.kind == "add" ||
+            adjustment_settings.kind == "+")
                ? "add"
-           : (adjustment_settings.kind == "mult" || adjustment_settings.kind == "*")
+           : (adjustment_settings.kind == "multiplicative" ||
+              adjustment_settings.kind == "mult" ||
+              adjustment_settings.kind == "*")
                ? "mult"
                : "";
 }
@@ -381,7 +395,8 @@ void Manager::adjust_1d(
     std::vector<float>& v_data_out,
     std::vector<float>& v_reference,
     std::vector<float>& v_control,
-    std::vector<float>& v_scenario) {
+    std::vector<float>& v_scenario
+) {
     if (adjustment_function != NULL)
         adjustment_function(v_data_out, v_reference, v_control, v_scenario, adjustment_settings);
     else
@@ -402,15 +417,18 @@ void Manager::adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out
     for (unsigned lon = 0; lon < ds_scenario->n_lon; lon++) {
         std::vector<std::vector<float>> v_reference_lat_data(
             (int)ds_reference->n_lat,
-            std::vector<float>((int)ds_reference->n_time));
+            std::vector<float>((int)ds_reference->n_time)
+        );
 
         std::vector<std::vector<float>> v_control_lat_data(
             (int)ds_control->n_lat,
-            std::vector<float>((int)ds_control->n_time));
+            std::vector<float>((int)ds_control->n_time)
+        );
 
         std::vector<std::vector<float>> v_scenario_lat_data(
             (int)ds_scenario->n_lat,
-            std::vector<float>((int)ds_scenario->n_time));
+            std::vector<float>((int)ds_scenario->n_time)
+        );
 
         ds_reference->get_lat_timeseries_for_lon(v_reference_lat_data, lon);
         ds_control->get_lat_timeseries_for_lon(v_control_lat_data, lon);
@@ -423,7 +441,8 @@ void Manager::adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out
                 std::ref(v_data_out[lat][lon]),
                 std::ref(v_reference_lat_data[lat]),
                 std::ref(v_control_lat_data[lat]),
-                std::ref(v_scenario_lat_data[lat])));
+                std::ref(v_scenario_lat_data[lat])
+            ));
 
             if (lat % n_jobs == 0 || ds_scenario->n_lat - 1 == lat) {
                 for (auto& e : tasks) e.get();

@@ -104,7 +104,7 @@ Func_two MathUtils::get_method_for_2_ds(std::string name) {
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-/** Returns the correlation coefficient for given x and y arrays
+/** Returns the correlation coefficient for given `x` and `y` vectors
  *
  * References:
  *  - https://www.geeksforgeeks.org/program-find-correlation-coefficient/
@@ -227,7 +227,7 @@ double MathUtils::sd(std::vector<float>& x) {
 
 /** Returns the mean
  *
- * @param a 1D array of floats to get the mean from
+ * @param a 1D vector of floats/doubles to get the mean from
  * @return mean of `a`
  */
 double MathUtils::mean(std::vector<float>& a) {
@@ -258,6 +258,9 @@ double MathUtils::median(std::vector<double>& a) {
 
 /**
  * Computes the Probabillity Density Function (PDF)
+ * $F(x) = P(a \leq x \leq b) = \int_{a}^b f(x)dx \geq 0$
+ * where:
+ *   $a$ and $b$ are the first resp. last value of `bins`
  *
  * @param arr 1D vector to compute the PDF from
  * @param bins probability boundaries to assign the probabilities
@@ -284,6 +287,7 @@ std::vector<int> MathUtils::get_pdf(std::vector<float>& arr, std::vector<double>
 
 /**
  * Computes the Cumulative Distribution Function (CDF)
+ *  summed up PDF
  *
  * @param arr 1D vector to compute the CDF from
  * @param bins probability boundaries to assign the probabilities
@@ -297,15 +301,22 @@ std::vector<int> MathUtils::get_cdf(std::vector<float>& arr, std::vector<double>
         v_cdf[i + 1] = v_cdf[i] + v_pdf[i];
     return v_cdf;
 }
-
+/**
+ * Linear interpolation between two values
+ * $y = a + x \cdot (b - a)$
+ *
+ * @param a fist value
+ * @param b second value
+ * @param x value to interpolate between `a` and `b`
+ */
 double MathUtils::lerp(double a, double b, double x) {
     return a + x * (b - a);
 }
 
 /**
- * Returns interpolated value at `x` from parallel arrays ( xData, yData )
- *  Assumes that xData has at least two elements, is sorted and is strictly monotonic increasing
- *  boolean argument extrapolate determines behaviour beyond ends of array (if needed)
+ * Returns interpolated value at `x` from parallel vectors ( `xData`, `yData` )
+ *  "Assumes that `xData` has at least two elements, is sorted and is strictly monotonic increasing
+ *  boolean argument extrapolate determines behaviour beyond ends of array (if needed)"
  *  Reference: https://www.cplusplus.com/forum/general/216928/
  *
  * @param xData increasing vector of double values

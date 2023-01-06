@@ -37,7 +37,8 @@ typedef void (*AdjustmentFunction)(
     std::vector<float>& v_reference,
     std::vector<float>& v_control,
     std::vector<float>& v_scenario,
-    AdjustmentSettings& settings);
+    AdjustmentSettings& settings
+);
 
 class Manager {
    public:
@@ -55,7 +56,8 @@ class Manager {
         std::vector<float>& v_data_out,
         std::vector<float>& v_reference,
         std::vector<float>& v_control,
-        std::vector<float>& v_scenario);
+        std::vector<float>& v_scenario
+    );
     void adjust_3d(std::vector<std::vector<std::vector<float>>>& v_data_out);
 
     int argc;
