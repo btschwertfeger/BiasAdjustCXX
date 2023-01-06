@@ -84,6 +84,7 @@ for method in "${quant_methods[@]}"; do
         -m $method                              \
         -k $kind                                \
         -q $n_quantiles                         \
+        -p 4                                    \
         -o "${output_dir}/${variable}_${method}_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"
 done
 
@@ -98,13 +99,14 @@ done
 # this only works if every dataset has 365 days per year (no January 29th)
 # this is available for all scaling methods
 
-$exec_file                                \
+$exec_file                             \
     --ref input_data/observations.nc   \
     --contr input_data/control.nc      \
     --scen input_data/scenario.nc      \
-    -m "linear_scaling"                   \
-    -v $variable                          \
-    -k "add"                              \
+    -m "linear_scaling"                \
+    -v $variable                       \
+    -k "add"                           \
+    -p 4                               \
     -o "${output_dir}/${variable}_linear_scaling_kind-add_scalingtype-31dayinterval_result_${timespan}.nc" 
 
 
@@ -139,6 +141,7 @@ for method in "${month_methods[@]}"; do
             -v $variable                                    \
             -m $method                                      \
             -o "${tmp_results}/${month}_${method}.nc"       \
+            -p 4                                            \
             --no-group                                      
     done
 

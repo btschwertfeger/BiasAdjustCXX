@@ -158,22 +158,24 @@ BiasAdjustCXX                        \
     -o linear_scaling_result.nc      \ # output file
     -m linear_scaling                \ # adjustment method
     -k "+"                           \ # kind of adjustment ("+" == "add" and "*" == "mult")
-    -v tas                             # variable to adjust
+    -v tas                           \ # variable to adjust
+    -p 4                             \ # number of threads
 ```
 
 Note/alternative: The regular linear scaling procedure as described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--no-group` flag needs to be used then.
 
-b.) Multiplicative Linear Scaling based on means of long-term 31-day intervals:
+b.) Multiplicative Delta Method based on means of long-term 31-day intervals:
 
 ```bash
 BiasAdjustCXX                        \
     --ref input_data/observations.nc \
     --contr input_data/control.nc    \
     --scen input_data/scenario.nc    \
-    -o linear_scaling_result.nc      \
-    -m linear_scaling                \
+    -o delta_method_result.nc        \
+    -m delta_method                  \
     -k "*"                           \
     -v tas                           \
+    -p 4                             \
     --max-scaling-factor 3             # set custom max-scaling factor to avoid unrealistic results (default: 10)
 ```
 
@@ -190,6 +192,7 @@ BiasAdjustCXX                           \
     -m quantile_delta_mapping           \
     -k "+"                              \
     -v tas                              \
+    -p 4                                \
     -q 250                                # quantiles to respect
 ```
 
