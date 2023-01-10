@@ -97,7 +97,7 @@ cmake .. && cmake --build .
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 - [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 
-Optional for working example notebook `examples.ipynb`:
+Optional for working example notebook `/examples/examples.ipynb`:
 
 ```bash
 conda create --name clingenv
@@ -105,7 +105,7 @@ conda activate clingenv
 conda install xeus-cling notebook -c conda-forge/label/gcc7
 ```
 
-(There is also an `environment.yml` file that creates a working environment for this notebook.)
+(There is also an `/examples/environment.yml` file that creates a working environment for this notebook.)
 
 ### 3.3 Data requirements:
 
@@ -141,10 +141,10 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 
 ## 5. Usage and Examples
 
-The script `example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
-`Hands-On-BiasAdjustCXX.ipynb` shows how to clone, build, compile, and run the `BiasAdjustCXX` command-line tool. Also plots validating the results are presented here.
+The script `/examples/example_all_methods.run.sh` serves as an example on how to adjust the example data using all implemented methods.
+`/examples/Hands-On-BiasAdjustCXX.ipynb` shows how to clone, build, compile, and run the `BiasAdjustCXX` command-line tool. Also plots validating the results are presented here.
 
-All methods to bias-adjust climate data can be found in `src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with C++ kernel) to test scripts and develop custom algorithms (see `examples.ipynb`).
+All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. These can be imported into a Jupyter Notebook (with C++ kernel) to test scripts and develop custom algorithms (see `/examples/examples.ipynb`).
 
 Examples:
 
@@ -211,7 +211,7 @@ BiasAdjustCXX -h
 1.) For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
 
 > You have to separate the files by month and then apply the correction for each month individually.
-> e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `example_adjust.run.sh`).
+> e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
 
 2.) Formulas and references can be found below and at the implementation of the corresponding functions.
 

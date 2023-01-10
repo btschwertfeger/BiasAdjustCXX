@@ -31,21 +31,22 @@
 # ? OR: sh example.run.adjust.sh
 # * -------------------------------------------------------------------
 
-work_dir=$(pwd)
+work_dir=$(pwd) # you may have to change the path here
 mkdir -p "${work_dir}/output"
 output_dir="${work_dir}/output"
 rm -rf tmp/
 
+input_dir="../input_data"
 timespan="19810101_20101231"
-observations="${work_dir}/input_data/observations.nc"
-control="${work_dir}/input_data/control.nc"
-scenario="${work_dir}/input_data/scenario.nc"
+observations="${input_dir}/observations.nc"
+control="${input_dir}/control.nc"
+scenario="${input_dir}/scenario.nc"
 
 variable="tas"
 kind="+"
 n_quantiles=100
 
-exec_file="${work_dir}/build/BiasAdjustCXX"
+exec_file="${work_dir}/../build/BiasAdjustCXX"
 
 declare -a month_methods=("delta_method" "linear_scaling" "variance_scaling")
 declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")
@@ -91,7 +92,7 @@ done
 
 
 # * -------------------------------------------------------------------
-# *            ===== Default Scaling Adjustent =====
+# *  ===== Default Scaling Adjustent (long-term 31-day intervals) =====
 # * -------------------------------------------------------------------
 
 # ? Additive linear scaling based on 31 day long-term mean interval instead of 
@@ -100,9 +101,9 @@ done
 # this is available for all scaling methods
 
 $exec_file                             \
-    --ref input_data/observations.nc   \
-    --contr input_data/control.nc      \
-    --scen input_data/scenario.nc      \
+    --ref $observations                \
+    --contr $control                   \
+    --scen $scenario                   \
     -m "linear_scaling"                \
     -v $variable                       \
     -k "add"                           \
@@ -111,7 +112,7 @@ $exec_file                             \
 
 
 # * -------------------------------------------------------------------
-# *      ===== Scaling Adjustment based on monthly means =====
+# *   ===== Scaling Adjustment based on long-term monthly means =====
 # * -------------------------------------------------------------------
 
 # ? OR: Adjust using the regular formulas using long-term monthly means by using the --no-group flag
@@ -157,18 +158,16 @@ done
 # * -------------------------------------------------------------------
 
 # ? Adjustment of a data set with only one dimension (time)
-$exec_file                                \
-    --ref input_data/1d_observations.nc   \
-    --contr input_data/1d_control.nc      \
-    --scen input_data/1d_scenario.nc      \
-    -m "quantile_mapping"                 \
-    -v $variable                          \
-    -q $n_quantiles                       \
-    -k $kind                              \
-    --1dim                                \
+$exec_file                                              \
+    --ref "${input_dir}/1d_observations.nc"             \
+    --contr "${input_dir}/1d_control.nc"                \
+    --scen "${input_dir}/1d_scenario.nc"                \
+    -m "quantile_mapping"                               \
+    -v $variable                                        \
+    -q $n_quantiles                                     \
+    -k $kind                                            \
+    --1dim                                              \
     -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc" 
-
-
 
 # * -------------------------------------------------------------------
 # *                    ===== clean-up =====
