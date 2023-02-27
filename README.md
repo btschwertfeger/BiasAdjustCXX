@@ -7,8 +7,10 @@
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
 
 ![release](https://img.shields.io/badge/release-v1.8-informational)
-![GCC](https://img.shields.io/badge/Required-C%2B%2B11-green)
-![CMake](https://img.shields.io/badge/Required-CMake3.10-green)
+![GCC](https://img.shields.io/badge/required-C%2B%2B11-green)
+![CMake](https://img.shields.io/badge/required-CMake3.10-green)
+
+[![DOI](https://zenodo.org/badge/495881923.svg)](https://zenodo.org/badge/latestdoi/495881923)
 
 </div>
 
@@ -71,7 +73,7 @@ In this way, for example, modeled data, which on average represent values that a
 - Linear Scaling\* (additive and multiplicative)
 - Variance Scaling\* (additive)
 
-\* All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teuschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
+\* All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
 
 ---
 
@@ -208,12 +210,14 @@ BiasAdjustCXX -h
 
 ## 6. Notes
 
-1.) For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
+*  For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
 
 > You have to separate the files by month and then apply the correction for each month individually.
 > e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
 
-2.) Formulas and references can be found below and at the implementation of the corresponding functions.
+* Formulas and references can be found below and at the implementation of the corresponding functions.
+
+* Speed/Performance tests and comparison to other tools can be found here: https://github.com/btschwertfeger/BiasAdjustCXX-Performance-Test
 
 ---
 
