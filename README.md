@@ -7,7 +7,8 @@
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
 ![Docker-build](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/docker_build.yaml/badge.svg)
 
-![release](https://img.shields.io/badge/release-v1.8-informational)
+![release](https://shields.io/github/release-date/btschwertfeger/BiasAdjustCXX)
+![release](https://shields.io/github/v/release/btschwertfeger/BiasAdjustCXX?display_name=tag)
 ![GCC](https://img.shields.io/badge/required-C%2B%2B11-green)
 ![CMake](https://img.shields.io/badge/required-CMake3.10-green)
 
