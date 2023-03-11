@@ -6,6 +6,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
 ![Docker-build](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/docker_build.yaml/badge.svg)
+![Docker-pulls](https://img.shields.io/docker/pulls/btschwertfeger/biasadjustcxx.svg)
 
 ![release](https://shields.io/github/release-date/btschwertfeger/BiasAdjustCXX)
 ![release](https://shields.io/github/v/release/btschwertfeger/BiasAdjustCXX?display_name=tag)
@@ -118,7 +119,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 
 ### 3.3 Alternative: Docker 🐳
 
-The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of NetCDF4 C++ on the local system is not wanted. It also makes easier to access this tool since Docker container can run on nearly every operating system.
+The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of NetCDF4 C++, CMake or BiasAdjustCXX on the local system is not wanted. It also makes easier to access this tool since Docker container can run on nearly every operating system.
 
 ```bash
 docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /work/ \
