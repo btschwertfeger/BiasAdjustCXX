@@ -25,4 +25,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/biasadjustcxx:${{ GITHUB_REF_NAMEGITHUB_REF }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/biasadjustcxx:${{ GITHUB_REF_NAME }}
