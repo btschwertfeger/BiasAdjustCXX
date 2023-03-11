@@ -5,6 +5,7 @@
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/BiasAdjustCXX)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
+![Docker-build](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/docker_build.yaml/badge.svg)
 
 ![release](https://img.shields.io/badge/release-v1.8-informational)
 ![GCC](https://img.shields.io/badge/required-C%2B%2B11-green)
@@ -25,8 +26,8 @@
 3. [ Compilation and Requirements ](#compilation)
 4. [ Arguments and Parameters](#arguments)
 5. [ Usage and Examples ](#examples)
-6. [ Notes ](#notes)
-7. [ References ](#references)
+7. [ Notes ](#notes)
+8. [ References ](#references)
 
 ---
 
@@ -81,6 +82,9 @@ In this way, for example, modeled data, which on average represent values that a
 
 ## 3. Compilation and Requirements
 
+#### 📍 If you are familiar with Docker, you can also use the Docker image as shown in Section [3.3 Alternative: Docker](#docker).
+
+Otherwise - you can build BiasAdjustCXX from source as described below.
 ### 3.1 Compilation:
 
 ```bash
@@ -95,7 +99,7 @@ cmake .. && cmake --build .
 
 ### 3.2 Compilation requirements/dependencies:
 
-- NetCDF-4 C library ([How to install NetCDF-4 C](https://docs.geoserver.org/stable/en/user/extensions/netcdf-out/nc4.html))
+- NetCDF-4 C++ library ([How to install NetCDF-4 C++](https://github.com/Unidata/netcdf-cxx4))
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 - [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 
@@ -109,14 +113,35 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 
 (There is also an `/examples/environment.yml` file that creates a working environment for this notebook.)
 
-### 3.3 Data requirements:
+<a name="docker"></a>
+
+### 3.3 Alternative: Docker 🐳
+
+The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of NetCDF4 C++ on the local system is not wanted. It also makes easier to access this tool since Docker container can run on nearly every operating system.
+
+```bash
+docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /work/ \
+    && BiasAdjustCXX \
+        --ref input_data/observations.nc \
+        --contr input_data/control.nc    \
+        --scen input_data/scenario.nc    \
+        -o linear_scaling_result.nc      \
+        -m linear_scaling                \
+        -k \"+\"                         \
+        -v tas                           \
+        -p 4                             \
+"
+```
+
+
+### 3.4 Data requirements:
 
 - All input files must have the same shape, i.e. the same resolution and time span.
 - The variable of interest must have the same name in all data sets.
 - The dimensions must be named 'time', 'lat' and 'lon' (i.e. times, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
 - Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries.
 
----
+___
 
 <a name="arguments"></a>
 
@@ -203,6 +228,7 @@ d.) Help
 ```bash
 BiasAdjustCXX -h
 ```
+
 
 ---
 
