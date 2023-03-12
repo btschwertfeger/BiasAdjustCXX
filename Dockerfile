@@ -24,5 +24,6 @@ RUN git clone https://github.com/btschwertfeger/BiasAdjustCXX.git \
     && cmake --build build \
     && cd build \
     && ctest \
-    && cp BiasAdjustCXX /usr/local/bin \
-    && rm -rf ../../BiasAdjustCXX
+    && cp BiasAdjustCXX /usr/local/bin
+
+# Example data sets and Notebooks can be found in /BiasAdjustCXX
