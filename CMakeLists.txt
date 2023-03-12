@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(BiasAdjustCXX
-    VERSION 1.8
+    VERSION 1.8.1
     DESCRIPTION "Bias correction command-line tool for NetCDF-based climate data"
     LANGUAGES CXX
 )
@@ -25,9 +25,7 @@ project(BiasAdjustCXX
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
-# set(CMAKE_CXX_COMPILER g++)
 
-# add_compile_options(-Wall -v)
 # find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 include(FindNetCDFCxx)
@@ -43,10 +41,13 @@ endif()
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.13.0
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(BUILD_GMOCK ON CACHE BOOL "" FORCE)
+set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 
@@ -85,6 +86,7 @@ target_include_directories( BiasAdjustCXX
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
     PRIVATE include
 )
+
 target_include_directories( TestBiasAdjustCXX
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
     PRIVATE include

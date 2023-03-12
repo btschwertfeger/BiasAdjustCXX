@@ -5,6 +5,7 @@
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/BiasAdjustCXX)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
+![Build and Test](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/build_and_test.yaml/badge.svg)
 ![Docker-build](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/docker_build.yaml/badge.svg)
 ![Docker-pulls](https://img.shields.io/docker/pulls/btschwertfeger/biasadjustcxx.svg)
 
@@ -87,15 +88,19 @@ In this way, for example, modeled data, which on average represent values that a
 #### 📍 If you are familiar with Docker, you can also use the Docker image as shown in Section [3.3 Alternative: Docker](#docker).
 
 Otherwise - you can build BiasAdjustCXX from source as described below.
-### 3.1 Compilation:
+### 3.1 Compilation and test:
 
 ```bash
 git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
 cd BiasAdjustCXX
 
-mkdir build && cd build
-cmake .. && cmake --build .
+cmake -S . -B build
+cmake --build build
+
+cd build && ctest
 ```
+
+
 
 <b>Optional</b>: Move the executable file `BiasAdjustCXX` into you binary directory.
 
@@ -119,7 +124,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 
 ### 3.3 Alternative: Docker 🐳
 
-The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of NetCDF4 C++, CMake or BiasAdjustCXX on the local system is not wanted. It also makes easier to access this tool since Docker container can run on nearly every operating system.
+The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of [NetCDF-4 C++](https://github.com/Unidata/netcdf-cxx4), [CMake](https://cmake.org) or BiasAdjustCXX on the local system is not desired. It also makes easier to access this tool since Docker container can run on nearly every operating system.
 
 ```bash
 docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /work/ \
@@ -135,6 +140,7 @@ docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /wo
 "
 ```
 
+See the Dockerhub registry to access the dev or older versions: [https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general](https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general)
 
 ### 3.4 Data requirements:
 

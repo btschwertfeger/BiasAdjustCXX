@@ -31,7 +31,7 @@ namespace TestBiasAdjustCXX {
 namespace Manager {
 namespace {
 
-// The fixture for testing class CMethods.
+// The fixture for testing class Manager.
 class TestManager : public ::testing::Test {
    protected:
     TestManager() {

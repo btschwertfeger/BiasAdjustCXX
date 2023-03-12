@@ -31,7 +31,7 @@ namespace TestBiasAdjustCXX {
 namespace NcFileHandler {
 namespace {
 
-// The fixture for testing class CMethods.
+// The fixture for testing class NcFileHandler.
 class TestNcFileHandler : public ::testing::Test {
    protected:
     TestNcFileHandler() {
