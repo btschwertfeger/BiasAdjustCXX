@@ -3,8 +3,11 @@ name: Docker build branch
 on:
   push:
     branches:
-      - '*'
-      - '!master'
+      - 'dev'
+
+concurrency:
+  group: DOCKER-DEV-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:

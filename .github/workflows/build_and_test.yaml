@@ -3,12 +3,20 @@ name: Build and Test
 on:
   push:
     branches:
+      - 'master'
+  pull_request:
+    branches:
       - '*'
+
+concurrency:
+  group: BUILDTEST-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: alpine-13.7
     steps:
+      - name: Get Alpine
+        uses: docker://alpine:3.17
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install dependencies
