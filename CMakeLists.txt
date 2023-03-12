@@ -65,6 +65,9 @@ set(SOURCES
 set(TEST_SOURCES
     tests/src/TestUtils.cxx
     tests/src/TestMathUtils.cxx
+    tests/src/TestCMethods.cxx
+    tests/src/TestManager.cxx
+    tests/src/TestNcFileHandler.cxx
     tests/src/main.cxx
     src/CMethods.cxx
     src/Utils.cxx

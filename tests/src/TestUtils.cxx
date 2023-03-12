@@ -1,6 +1,6 @@
 // -*- lsst-c++ -*-
 /**
- * @file TestUtils.c++
+ * @file TestUtils.cxx
  * @brief
  * @author Benjamin Thomas Schwertfeger
  * @link https://b-schwertfeger.de
