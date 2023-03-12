@@ -99,4 +99,3 @@ target_link_libraries( TestBiasAdjustCXX
 
 include(GoogleTest)
 gtest_discover_tests(TestBiasAdjustCXX)
-

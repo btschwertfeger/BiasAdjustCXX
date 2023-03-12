@@ -28,5 +28,6 @@ jobs:
           cmake -S . -B build
           cmake --build build
       - name: Test BiasAdjustCXX
+        run: |
           cd build
           ctest

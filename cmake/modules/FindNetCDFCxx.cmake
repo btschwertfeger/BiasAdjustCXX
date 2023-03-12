@@ -1,4 +1,4 @@
-# 
+#
 # Find the netCDF C++ API cmake files
 # @github https://github.com/btschwertfeger/BiasAdjustCXX
 #
@@ -19,7 +19,7 @@
 #
 # ----- R E F E R E N C E S -----
 # Inspired by:
-#   Peter Hill (2021) 
+#   Peter Hill (2021)
 #   @source: https://gitlab.mpcdf.mpg.de/dave/BOUT-dev/-/blob/manylinux/cmake/FindnetCDFCxx.cmake
 #
 # Exports the following variables:
@@ -41,7 +41,7 @@ find_path(netCDF_CXX_INCLUDE_DIR NAMES netcdf
      "include"
 )
 find_library(netCDF_CXX_LIBRARY NAMES netcdf_c++4 netcdf-cxx4
-    HINTS 
+    HINTS
      "${NCXX4_CONFIG_LOCATION}"
     PATH_SUFFIXES
      "lib" "lib64"
