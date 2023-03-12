@@ -3,19 +3,16 @@
 # Github: https://github.com/btschwertfeger
 #
 
-FROM ubuntu:22.04
+FROM alpine:3.17
 
-RUN apt-get update \
-    && apt-get -y install cmake git build-essential libnetcdf-dev \
-    && apt-get autoremove
+RUN apk add --update linux-headers libc-dev g++ build-base git cmake libaec-dev netcdf-dev hdf5-dev curl-dev
 
 # download and instal NetCDFCXX
 RUN git clone https://github.com/Unidata/netcdf-cxx4.git \
     && cd netcdf-cxx4 \
-    && mkdir build \
+    && cmake -S . -B build \
+    && cmake --build build \
     && cd build \
-    && cmake .. \
-    && make \
     && ctest \
     && make install \
     && rm -rf ../../netcdf-cxx4
@@ -23,8 +20,9 @@ RUN git clone https://github.com/Unidata/netcdf-cxx4.git \
 # download, build and install BiasAdjustCXX
 RUN git clone https://github.com/btschwertfeger/BiasAdjustCXX.git \
     && cd BiasAdjustCXX \
-    && mkdir build && cd build \
-    && cmake .. && cmake --build . \
+    && cmake -S . -B build \
+    && cmake --build build \
+    && cd build \
+    && ctest \
     && cp BiasAdjustCXX /usr/local/bin \
     && rm -rf ../../BiasAdjustCXX
-

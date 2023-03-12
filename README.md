@@ -123,15 +123,15 @@ The execution of BiasAdjustCXX is also possiblie within a Docker container. This
 
 ```bash
 docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /work/ \
-    && BiasAdjustCXX \
-        --ref input_data/observations.nc \
-        --contr input_data/control.nc    \
-        --scen input_data/scenario.nc    \
-        -o linear_scaling_result.nc      \
-        -m linear_scaling                \
-        -k \"+\"                         \
-        -v tas                           \
-        -p 4                             \
+  && BiasAdjustCXX                     \
+      --ref input_data/observations.nc \ # observations/reference time series of the control period
+      --contr input_data/control.nc    \ # simulated time series of the control period
+      --scen input_data/scenario.nc    \ # time series to adjust
+      -o linear_scaling_result.nc      \ # output file
+      -m linear_scaling                \ # adjustment method
+      -k \"+\"                         \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+      -v tas                           \ # variable to adjust
+      -p 4                             \ # number of threads
 "
 ```
 

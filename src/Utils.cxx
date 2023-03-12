@@ -745,5 +745,3 @@ void show_license() {
     std::cout << license << std::endl;
 }
 }  // namespace utils
-/*
- * ----- ----- ----- E O F ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
