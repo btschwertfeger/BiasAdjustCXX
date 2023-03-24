@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(BiasAdjustCXX
-    VERSION 1.8.1
+    VERSION 1.8.2
     DESCRIPTION "Bias correction command-line tool for NetCDF-based climate data"
     LANGUAGES CXX
 )
@@ -104,3 +104,10 @@ target_link_libraries( TestBiasAdjustCXX
 
 include(GoogleTest)
 gtest_discover_tests(TestBiasAdjustCXX)
+
+install(TARGETS BiasAdjustCXX)
+
+# Uninstall target
+add_custom_target(uninstall
+    "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/uninstall.cmake"
+)

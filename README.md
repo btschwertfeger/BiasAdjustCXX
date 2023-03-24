@@ -88,7 +88,7 @@ In this way, for example, modeled data, which on average represent values that a
 #### 📍 If you are familiar with Docker, you can also use the Docker image as shown in Section [3.3 Alternative: Docker](#docker).
 
 Otherwise - you can build BiasAdjustCXX from source as described below.
-### 3.1 Compilation and test:
+### 3.1 Compilation, test, and installation:
 
 ```bash
 git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
@@ -100,9 +100,17 @@ cmake --build build
 cd build && ctest
 ```
 
+After successful tests, the installation can be done usinby executing the following command in the build directory:
 
+```bash
+make install
+```
 
-<b>Optional</b>: Move the executable file `BiasAdjustCXX` into you binary directory.
+The uninstall command is also available:
+
+```bash
+make uninstall
+```
 
 ### 3.2 Compilation requirements/dependencies:
 
