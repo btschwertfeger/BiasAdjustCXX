@@ -1,7 +1,7 @@
 #
 # Creates the uninstall target to remove the installed files
 #
-# https://gist.github.com/royvandam/3033428
+# Source: https://gist.github.com/royvandam/3033428 (March 24, 2023)
 #
 set(MANIFEST "${CMAKE_CURRENT_BINARY_DIR}/install_manifest.txt")
 
