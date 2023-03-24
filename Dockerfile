@@ -17,9 +17,11 @@ RUN git clone https://github.com/Unidata/netcdf-cxx4.git \
     && make install \
     && rm -rf ../../netcdf-cxx4
 
-# download, build and install BiasAdjustCXX
-RUN git clone https://github.com/btschwertfeger/BiasAdjustCXX.git \
-    && cd BiasAdjustCXX \
+# build and install BiasAdjustCXX
+
+COPY . /BiasAdjustCXX
+RUN  cd /BiasAdjustCXX \
+    && rm -rf build \
     && cmake -S . -B build \
     && cmake --build build \
     && cd build \
