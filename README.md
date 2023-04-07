@@ -1,4 +1,4 @@
-# BiasAdjustCXX command-line tool for the application of bias corrections in climatic research
+# BiasadjustCXX Command-Line Tool for the Application of Fast and Efficient Bias Corrections in Climatic Research
 
 <div align="center">
 
@@ -13,10 +13,13 @@
 ![CMake](https://img.shields.io/badge/required-CMake3.10-green)
 
 [![DOI](https://zenodo.org/badge/495881923.svg)](https://zenodo.org/badge/latestdoi/495881923)
+[![Publication DOI](https://img.shields.io/badge/Documentation-doi.org%2F10.1016%2Fj.softx.2023.101379-blue)](https://doi.org/10.1016/j.softx.2023.101379)
 
 </div>
 
-### Command-line tool to apply different scale- and distribution-based bias adjustment techniques for climatic research. Most of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
+The BiasAdjustCXX command-line tool is the subject of a publication that provides an insight into the architecture, possible applications and new scientific questions. This publication referencing [BiasAdjustCXX v1.8.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.8.1) was published in the journal SoftwareX in March 2023 and is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
+
+In addition - most of these methods available here have also been implemented in Python. This can be found in the [python-cmethods](https://github.com/btschwertfeger/Bias-Adjustment-Python) package.
 
 ---
 
@@ -27,8 +30,8 @@
 3. [ Compilation and Requirements ](#compilation)
 4. [ Arguments and Parameters](#arguments)
 5. [ Usage and Examples ](#examples)
-7. [ Notes ](#notes)
-8. [ References ](#references)
+6. [ Notes ](#notes)
+7. [ References ](#references)
 
 ---
 
@@ -36,7 +39,7 @@
 
 ## 1. About
 
-This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://epic.awi.de/id/eprint/56689/). A technical publication is currently being prepared to provide a detailed description of the application.
+This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://epic.awi.de/id/eprint/56689/). A technical publication is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
 
 These programs and data structures are designed to help minimize discrepancies between modeled and observed climate data. Data from past periods are used to adjust variables from current and future time series so that their distributional properties approximate possible actual values.
 
@@ -86,6 +89,7 @@ In this way, for example, modeled data, which on average represent values that a
 #### 📍 If you are familiar with Docker, you can also use the Docker image as shown in Section [3.3 Alternative: Docker](#docker).
 
 Otherwise - you can build BiasAdjustCXX from source as described below.
+
 ### 3.1 Compilation:
 
 ```bash
@@ -134,7 +138,6 @@ docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /wo
 "
 ```
 
-
 ### 3.4 Data requirements:
 
 - All input files must have the same shape, i.e. the same resolution and time span.
@@ -142,7 +145,7 @@ docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /wo
 - The dimensions must be named 'time', 'lat' and 'lon' (i.e. times, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
 - Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries.
 
-___
+---
 
 <a name="arguments"></a>
 
@@ -230,21 +233,20 @@ d.) Help
 BiasAdjustCXX -h
 ```
 
-
 ---
 
 <a name="notes"></a>
 
 ## 6. Notes
 
-*  For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
+- For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
 
 > You have to separate the files by month and then apply the correction for each month individually.
 > e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
 
-* Formulas and references can be found below and at the implementation of the corresponding functions.
+- Formulas and references can be found below and at the implementation of the corresponding functions.
 
-* Speed/Performance tests and comparison to other tools can be found here: https://github.com/btschwertfeger/BiasAdjustCXX-Performance-Test
+- Speed/Performance tests and comparison to other tools can be found here: https://github.com/btschwertfeger/BiasAdjustCXX-Performance-Test
 
 ---
 
