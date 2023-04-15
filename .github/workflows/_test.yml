@@ -5,14 +5,10 @@
 #
 # Workflow to build the test suite and run the unit tests.
 
-name: Build Docker Image
+name: Unit Tests
 
 on:
   workflow_call:
-    inputs:
-      TAG:
-        type: string
-        required: true
 
 jobs:
   build:

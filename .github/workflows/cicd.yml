@@ -30,11 +30,13 @@ jobs:
   ##  Build the BiasAdjustCXX command-line tool
   ##
   Build:
+    needs: [Pre-Commit]
     uses: ./.github/workflows/_build.yml
 
   ## Build the test suite and run the unit tests
   ##
   Test:
+    needs: [Build]
     uses: ./.github/workflows/_test.yml
 
   ##  Create and upload a docker image
