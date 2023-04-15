@@ -31,13 +31,13 @@ jobs:
   ## Build the test suite and run the unit tests
   ##
   Test:
-    needs: [Build]
+    needs: [Pre-Commit]
     uses: ./.github/workflows/_test.yml
 
   ##  Create and upload a docker image
   ##
   Docker:
-    needs: [Test]
+    needs: [Build, Test]
     uses: ./.github/workflows/_build_docker.yml
     with:
       TAG: ${{ github.ref_name }}
@@ -45,7 +45,7 @@ jobs:
   ##  Create and upload the latest docker image
   ##
   Docker-latest:
-    needs: [Test]
+    needs: [Build, Test]
     if: success() && github.ref == 'refs/heads/master'
     uses: ./.github/workflows/_build_docker.yml
     with:
