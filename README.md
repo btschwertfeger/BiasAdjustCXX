@@ -144,17 +144,15 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of [NetCDF-4 C++](https://github.com/Unidata/netcdf-cxx4), [CMake](https://cmake.org) or BiasAdjustCXX on the local system is not desired. It also makes easier to access this tool since Docker container can run on nearly every operating system.
 
 ```bash
-docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /work/ \
-  && BiasAdjustCXX                     \
-      --ref input_data/observations.nc \ # observations/reference time series of the control period
-      --contr input_data/control.nc    \ # simulated time series of the control period
-      --scen input_data/scenario.nc    \ # time series to adjust
-      -o linear_scaling_result.nc      \ # output file
-      -m linear_scaling                \ # adjustment method
-      -k \"+\"                         \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
-      -v tas                           \ # variable to adjust
-      -p 4                             \ # number of threads
-"
+docker run -it -v $(PWD):/work btschwertfeger/biasadjustcxx:latest BiasAdjustCXX \
+  --ref input_data/observations.nc  \ # observations/reference time series of the control period
+  --contr input_data/control.nc     \ # simulated time series of the control period
+  --scen input_data/scenario.nc     \ # time series to adjust
+  -o linear_scaling.nc              \ # output file
+  -m linear_scaling                 \ # adjustment method
+  -k "+"                            \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+  -v tas                            \ # variable to adjust
+  -p 2                                # number of threads
 ```
 
 See the Dockerhub registry to access the dev or older versions: [https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general](https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general)
