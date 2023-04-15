@@ -41,6 +41,9 @@ jobs:
     uses: ./.github/workflows/_build_docker.yml
     with:
       TAG: ${{ github.ref_name }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
   ##  Create and upload the latest docker image
   ##
@@ -50,3 +53,6 @@ jobs:
     uses: ./.github/workflows/_build_docker.yml
     with:
       TAG: latest
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
