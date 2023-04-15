@@ -17,3 +17,8 @@ repos:
       - id: mixed-line-ending
       - id: end-of-file-fixer
       - id: detect-private-key
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        entry: hadolint

@@ -2,30 +2,54 @@
 # Copyright (C) 2023 Benjamin Thomas Schwertfeger
 # Github: https://github.com/btschwertfeger
 #
+FROM alpine:3.17 AS builder
 
-FROM alpine:3.17
+# hadolint ignore=DL3018
+RUN apk add --update --no-cache \
+    linux-headers \
+    libc-dev \
+    libaec-dev \
+    netcdf-dev \
+    hdf5-dev \
+    curl-dev \
+    g++ \
+    build-base \
+    cmake \
+    git \
+    rm -rf /var/cache/apk/*
 
-RUN apk add --update linux-headers libc-dev g++ build-base git cmake libaec-dev netcdf-dev hdf5-dev curl-dev
-
-# download and instal NetCDFCXX
-RUN git clone https://github.com/Unidata/netcdf-cxx4.git \
-    && cd netcdf-cxx4 \
-    && cmake -S . -B build \
-    && cmake --build build \
-    && cd build \
-    && ctest \
-    && make install \
-    && rm -rf ../../netcdf-cxx4
-
-# build and install BiasAdjustCXX
-
-COPY . /BiasAdjustCXX
-RUN  cd /BiasAdjustCXX \
-    && rm -rf build \
+# Install netcdf-cxx4
+WORKDIR /netcdf-cxx4
+# hadolint ignore=DL3003
+RUN git clone https://github.com/Unidata/netcdf-cxx4.git /netcdf-cxx4 \
     && cmake -S . -B build \
     && cmake --build build \
     && cd build \
     && ctest \
     && make install
 
-# Example data sets and Notebooks can be found in /BiasAdjustCXX
+# Install BiasAdjustCXX
+COPY . /BiasAdjustCXX/
+WORKDIR /BiasAdjustCXX
+RUN rm -rf build \
+    && make dev \
+    && make test \
+    && make clean \
+    && make build \
+    && make install
+
+# ===== N E X T - S T A G E ======
+
+FROM alpine:3.17
+
+# hadolint ignore=DL3018
+RUN apk add --update --no-cache \
+    libc-dev \
+    libaec-dev \
+    netcdf-dev \
+    hdf5-dev \
+    rm -rf /var/cache/apk/*
+
+COPY --from=builder /usr/local/ /usr/local/
+
+WORKDIR /work
