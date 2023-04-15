@@ -12,10 +12,15 @@ on:
 
 jobs:
   Build:
-    runs-on: alpine:3.17
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.15
+
       - name: Install dependencies
         run: |
           apk add --update linux-headers libc-dev g++ build-base git cmake libaec-dev etcdf-dev hdf5-dev curl-dev
@@ -28,6 +33,7 @@ jobs:
           make install
           cd ../..
           rm -rf netcdf-cxx4
+
       - name: Build and install BiasAdjustCXX
         run: |
           make build
