@@ -21,6 +21,11 @@ dev:
 
 redev: clean dev
 
+##		Build the validation tool (not actively maintained!)
+##
+build-val:
+	cmake -S validation/ -B validation/build && cmake --build validation/build
+
 ### 	Un-/installation
 
 ##		Installation
@@ -60,4 +65,5 @@ pre-commit:
 ##		Clean the generated files
 ##
 clean:
-	rm -rf build .ipynb_checkpoints tests/build
+	rm -rf build tests/build validation/build \
+		.ipynb_checkpoints
