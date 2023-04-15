@@ -19,7 +19,7 @@ jobs:
 
       - uses: jirutka/setup-alpine@v1
         with:
-          branch: v3.15
+          branch: v3.17
 
       - name: Install dependencies
         run: |
