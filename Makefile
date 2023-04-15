@@ -3,21 +3,24 @@
 # Copyright (C) 2023 Benjamin Thomas Schwertfeger
 # Github: https://github.com/btschwertfeger
 
-.PHONY := build rebuild install uninstall test changelog clean
+PROJECT := BiasAdjustCXX
+TEST_PROJECT := TestBiasAdjustCXX
+TEST_DIR := tests
+.PHONY := build rebuild dev redev install uninstall test changelog clean
 
 ### 	Building
 
 ##		Compile the BiasAdjustCXX command-line tool
 ##
 build:
-	cmake -S . -B build && cmake --build build --target BiasAdjustCXX
+	cmake -S . -B build && cmake --build build --target $(PROJECT)
 
 rebuild: clean build
 
 ##		Build and Compile the testsuite
 ##
 dev:
-	cmake -S tests/ -B tests/build && cmake --build tests/build
+	cmake -S . -B build && cmake --build build --target $(TEST_PROJECT)
 
 redev: clean dev
 
@@ -43,7 +46,7 @@ uninstall:
 ##		Run the unit tests
 ##
 test:
-	cd tests/build && ctest
+	cd build/tests && ctest
 
 ### 	Misc
 

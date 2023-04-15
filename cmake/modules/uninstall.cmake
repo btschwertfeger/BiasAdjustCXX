@@ -3,7 +3,7 @@
 #
 # Source: https://gist.github.com/royvandam/3033428 (March 24, 2023)
 #
-set(MANIFEST "${CMAKE_CURRENT_BINARY_DIR}/install_manifest.txt")
+set(MANIFEST "${CMAKE_CURRENT_BINARY_DIR}/../install_manifest.txt")
 
 if(NOT EXISTS ${MANIFEST})
     message(FATAL_ERROR "Cannot find install manifest: '${MANIFEST}'")

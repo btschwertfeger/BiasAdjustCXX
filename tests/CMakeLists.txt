@@ -14,29 +14,7 @@
 #  along with this program. If not, see <https://www.gnu.org/licenses/>.
 # ================================================================================
 
-cmake_minimum_required(VERSION 3.10)
-
-project(TestBiasAdjustCXX
-    VERSION 1.8.2
-    LANGUAGES CXX
-)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED OFF)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/modules/")
-include(FindNetCDFCxx)
-
-if(netCDFCxx_FOUND)
-    message (STATUS "NetCDFCxx found!")
-    include_directories(${NetCDFCxx_INCLUDE_DIRS})
-else()
-    message (FATAL_ERROR "Cannot find NetCDFCxx!")
-endif()
-
-set(BINARY ${CMAKE_PROJECT_NAME})
+set(BINARY Test${CMAKE_PROJECT_NAME})
 
 include(FetchContent)
 FetchContent_Declare(
@@ -82,8 +60,3 @@ target_link_libraries( ${BINARY}
 
 include(GoogleTest)
 gtest_discover_tests(${BINARY})
-
-# Uninstall target
-add_custom_target(uninstall
-    "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/uninstall.cmake"
-)

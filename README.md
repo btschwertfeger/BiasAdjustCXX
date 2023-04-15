@@ -5,8 +5,7 @@
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/BiasAdjustCXX)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
-![Build and Test](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/build_and_test.yaml/badge.svg)
-![Docker-build](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/docker_build.yaml/badge.svg)
+![Build and Test](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yml/badge.svg)
 ![Docker-pulls](https://img.shields.io/docker/pulls/btschwertfeger/biasadjustcxx.svg)
 
 ![release](https://shields.io/github/release-date/btschwertfeger/BiasAdjustCXX)
@@ -107,11 +106,6 @@ git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
 cd BiasAdjustCXX
 
 make build
-```
-
-After successful tests, the installation can be done by executing the following command:
-
-```bash
 make install
 ```
 
@@ -127,7 +121,7 @@ make uninstall
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 - [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 
-Optional for working example notebook `/examples/examples.ipynb`:
+Optional for working example notebook `/examples/examples.ipynb` (only for hardliner):
 
 ```bash
 conda create --name clingenv
@@ -155,7 +149,7 @@ docker run -it -v $(PWD):/work btschwertfeger/biasadjustcxx:latest BiasAdjustCXX
   -p 2                                # number of threads
 ```
 
-See the Dockerhub registry to access the dev or older versions: [https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general](https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general)
+See the Dockerhub registry to access the dev, pinned and older versions: [https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general](https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general)
 
 ### 3.4 Data requirements:
 
@@ -182,7 +176,7 @@ See the Dockerhub registry to access the dev or older versions: [https://hub.doc
 | `--1dim`                                | [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)                                                                                                                                                                                                                              |
 | `--no-group`                            | [optional] Disables the adjustment based on 31-day long-term moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommended to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
 | `--max-scaling-factor`                  | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating disproportional high scaling factors. (only for multiplicative methods except QM; default: 10)             |
-| `-p`, <br> `--n_processes`              | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                             |
+| `-p`, <br> `--processes`                | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                             |
 | `-h`, `--help`                          | [optional] display usage example, arguments, hints, and exits the program                                                                                                                                                                                                                                                   |
 
 ---
@@ -249,7 +243,7 @@ BiasAdjustCXX                           \
 d.) Help
 
 ```bash
-BiasAdjustCXX -h
+BiasAdjustCXX --help
 ```
 
 ---
@@ -260,8 +254,7 @@ BiasAdjustCXX -h
 
 - For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
 
-> You have to separate the files by month and then apply the correction for each month individually.
-> e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
+> You have to separate the files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
 
 - Formulas and references can be found below and at the implementation of the corresponding functions.
 

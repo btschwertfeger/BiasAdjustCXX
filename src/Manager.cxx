@@ -172,7 +172,7 @@ void Manager::show_usage() {
                                                                "mean calculation will be performed on the whole data set\n"
               << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
                                                                      "(only for scaling methods; default: 10)\n"
-              << GREEN << "\t-p, --n_processes\t\t" << RESET << "number of threads to start (only for 3-dimensional adjustments; default: 1)"
+              << GREEN << "\t-p, --processes\t\t" << RESET << "number of threads to start (only for 3-dimensional adjustments; default: 1)"
               << "\n\n"
               << BOLDBLUE << "Requirements: \n"
               << RESET
@@ -276,7 +276,7 @@ void Manager::parse_args() {
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--1dim")
             one_dim = true;
-        else if (arg == "-p" || arg == "--n_processes") {
+        else if (arg == "-p" || arg == "--processes") {
             n_jobs = std::stoi(argv[++i]);
         } else if (arg == "-h" || arg == "--help") {
             show_usage();

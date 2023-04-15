@@ -47,6 +47,13 @@ class TestCMethods : public ::testing::Test {
     }
 };
 
+TEST_F(TestCMethods, CheckGetLongTermDayOfYear) {}
+TEST_F(TestCMethods, CheckGetAdjustedScalingFactor) {}
+TEST_F(TestCMethods, CheckLinearScaling) {}
+TEST_F(TestCMethods, CheckVarianceScaling) {}
+TEST_F(TestCMethods, CheckDeltaMethod) {}
+TEST_F(TestCMethods, CheckQuantileMapping) {}
+TEST_F(TestCMethods, CheckQuantileDeltaMapping) {}
 }  // namespace
 }  // namespace CMethods
 }  // namespace TestBiasAdjustCXX
