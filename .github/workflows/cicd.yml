@@ -18,14 +18,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ##
+  ##  Run the pre-commit content
   Pre-Commit:
     uses: ./.github/workflows/_pre_commit.yml
-
-  ##  Discover vulnerabilities
-  ##
-  CodeQL:
-    uses: ./.github/workflows/_codeql.yml
 
   ##  Build the BiasAdjustCXX command-line tool
   ##
