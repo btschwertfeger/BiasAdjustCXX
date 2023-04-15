@@ -54,6 +54,9 @@ changelog:
 		--breaking-labels Breaking \
 		--enhancement-labels Feature
 
+pre-commit:
+	pre-commit run -a
+
 ##		Clean the generated files
 ##
 clean:

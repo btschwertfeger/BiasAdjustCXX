@@ -1,13 +1,18 @@
-name: Build and Test - Master
+##    Checks the code logic, style and more
+# -*- coding: utf-8 -*-
+# Copyright (C) 2023 Benjamin Thomas Schwertfeger
+# Github: https://github.com/btschwertfeger
+#
+# Workflow to build the test suite and run the unit tests.
+
+name: Build Docker Image
 
 on:
-  push:
-    branches:
-      - 'master'
-
-concurrency:
-  group: BUILDTEST-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_call:
+    inputs:
+      TAG:
+        type: string
+        required: true
 
 jobs:
   build:
@@ -29,12 +34,7 @@ jobs:
           make install
           cd ../..
           rm -rf netcdf-cxx4
-      - name: Build BiasAdjustCXX
-        run: |
-          cmake -S . -B build
-          cmake --build build
       - name: Test BiasAdjustCXX
         run: |
-          cd build
-          ctest
-          make install
+          make dev
+          make test
