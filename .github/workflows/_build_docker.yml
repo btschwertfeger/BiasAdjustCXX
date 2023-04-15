@@ -36,4 +36,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/biasadjustcxx:${{ TAG }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/biasadjustcxx:${{ inputs.TAG }}
