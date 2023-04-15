@@ -29,8 +29,8 @@
 3. [ Compilation and Requirements ](#compilation)
 4. [ Arguments and Parameters](#arguments)
 5. [ Usage and Examples ](#examples)
-7. [ Notes ](#notes)
-8. [ References ](#references)
+6. [ Notes ](#notes)
+7. [ References ](#references)
 
 ---
 
@@ -79,6 +79,17 @@ In this way, for example, modeled data, which on average represent values that a
 
 \* All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
 
+Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
+climate variables. Variance scaling can only be applied on non-stochastic climate variables.
+
+- Stochastic climate variables are those that are subject to random fluctuations
+  and are not predictable. They have no predictable trend or pattern. Examples of
+  stochastic climate variables include precipitation, air temperature, and humidity.
+
+- Non-stochastic climate variables, on the other hand, have clear trend and pattern histories
+  and can be readily predicted. They are often referred to as climate elements and include
+  variables such as water temperature and air pressure.
+
 ---
 
 <a name="compilation"></a>
@@ -88,25 +99,23 @@ In this way, for example, modeled data, which on average represent values that a
 #### 📍 If you are familiar with Docker, you can also use the Docker image as shown in Section [3.3 Alternative: Docker](#docker).
 
 Otherwise - you can build BiasAdjustCXX from source as described below.
+
 ### 3.1 Compilation, test, and installation:
 
 ```bash
 git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
 cd BiasAdjustCXX
 
-cmake -S . -B build
-cmake --build build
-
-cd build && ctest
+make build
 ```
 
-After successful tests, the installation can be done usinby executing the following command in the build directory:
+After successful tests, the installation can be done by executing the following command:
 
 ```bash
 make install
 ```
 
-The uninstall command is also available:
+Uninstall using:
 
 ```bash
 make uninstall
@@ -157,7 +166,7 @@ See the Dockerhub registry to access the dev or older versions: [https://hub.doc
 - The dimensions must be named 'time', 'lat' and 'lon' (i.e. times, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
 - Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries.
 
-___
+---
 
 <a name="arguments"></a>
 
@@ -245,21 +254,20 @@ d.) Help
 BiasAdjustCXX -h
 ```
 
-
 ---
 
 <a name="notes"></a>
 
 ## 6. Notes
 
-*  For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
+- For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
 
 > You have to separate the files by month and then apply the correction for each month individually.
 > e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
 
-* Formulas and references can be found below and at the implementation of the corresponding functions.
+- Formulas and references can be found below and at the implementation of the corresponding functions.
 
-* Speed/Performance tests and comparison to other tools can be found here: https://github.com/btschwertfeger/BiasAdjustCXX-Performance-Test
+- Speed/Performance tests and comparison to other tools can be found here: https://github.com/btschwertfeger/BiasAdjustCXX-Performance-Test
 
 ---
 

@@ -1,5 +1,5 @@
 #
-# Creates the uninstall target to remove the installed files
+# Creates the uninstall target to remove the installed program(s)
 #
 # Source: https://gist.github.com/royvandam/3033428 (March 24, 2023)
 #

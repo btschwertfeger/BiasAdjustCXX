@@ -16,9 +16,8 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(BiasAdjustCXX
+project(TestBiasAdjustCXX
     VERSION 1.8.2
-    DESCRIPTION "Bias correction command-line tool for NetCDF-based climate data"
     LANGUAGES CXX
 )
 
@@ -27,7 +26,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../cmake/modules/")
 include(FindNetCDFCxx)
 
 if(netCDFCxx_FOUND)
@@ -37,35 +36,52 @@ else()
     message (FATAL_ERROR "Cannot find NetCDFCxx!")
 endif()
 
-# add_subdirectory(src)
-# add_subdirectory(tests)
-
 set(BINARY ${CMAKE_PROJECT_NAME})
 
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.13.0
+)
 
-set(SOURCES
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(BUILD_GMOCK ON CACHE BOOL "" FORCE)
+set(BUILD_GTEST ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+set(TEST_SOURCES
+    src/TestUtils.cxx
+    src/TestMathUtils.cxx
+    src/TestCMethods.cxx
+    src/TestManager.cxx
+    src/TestNcFileHandler.cxx
     src/main.cxx
-    src/CMethods.cxx
-    src/Utils.cxx
-    src/NcFileHandler.cxx
-    src/MathUtils.cxx
-    src/Manager.cxx
+    ../src/CMethods.cxx
+    ../src/Utils.cxx
+    ../src/NcFileHandler.cxx
+    ../src/MathUtils.cxx
+    ../src/Manager.cxx
 )
 
-add_executable(${BINARY} ${SOURCES})
+# add executable
+add_executable(${BINARY} ${TEST_SOURCES})
 
-# Include the netcdf headers
-target_include_directories( ${BINARY}
+target_include_directories(${BINARY}
     PUBLIC ${netCDFCxx_INCLUDE_DIRS}
-    PRIVATE include
+    PRIVATE ../include
 )
 
-target_link_libraries(${BINARY}
-    PUBLIC
-        ${netCDFCxx_LIBRARIES}
+target_link_libraries( ${BINARY}
+    GTest::gtest_main
+    ${netCDFCxx_LIBRARIES}
 )
 
-install(TARGETS ${BINARY})
+include(GoogleTest)
+gtest_discover_tests(${BINARY})
 
 # Uninstall target
 add_custom_target(uninstall

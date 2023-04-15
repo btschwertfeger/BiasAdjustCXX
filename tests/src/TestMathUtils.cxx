@@ -169,12 +169,52 @@ TEST_F(TestMathUtils, CheckDoubleMedian) {
 
 // Test to get the probability density function
 TEST_F(TestMathUtils, CheckProbabilityDensityFunction) {
-    std::vector<double> bins1({-5, 0, 5});
-    std::vector<double> bins2({-10, -5, -2.5, 0, 2.5, 5, 10});
+    std::vector<double>
+        bins1({-5, 0, 5}),
+        bins2({-10, -5, -2.5, 0, 2.5, 5, 10});
+    std::vector<int> target({2, 4});
 
-    // ASSERT_THAT(::MathUtils::get_pdf(x, bins1), {2, 4});
+    std::vector<int> pdf = ::MathUtils::get_pdf(v, bins1);
+    ASSERT_EQ(pdf.size(), bins1.size() - 1);
+
+    for (unsigned i = 0; i < bins1.size() - 1; i++)
+        ASSERT_EQ(pdf[i], target[i]);
 }
 
+// Test to get the cumulative distribution function
+TEST_F(TestMathUtils, CheckCumulativeDistributionFunction) {
+    std::vector<double>
+        bins1({-5, 0, 5}),
+        bins2({-10, -5, -2.5, 0, 2.5, 5, 10});
+    std::vector<int> target({0, 2, 6});
+
+    std::vector<int> cdf = ::MathUtils::get_cdf(v, bins1);
+    ASSERT_EQ(cdf.size(), bins1.size());
+
+    for (unsigned i = 0; i < bins1.size() - 1; i++)
+        ASSERT_EQ(cdf[i], target[i]);
+}
+// Test the linear inpterpolation
+TEST_F(TestMathUtils, CheckLinearInterpolation) {
+    std::vector<double> targets({2, -1.5, -3, 12, 3, -9});
+    for (unsigned i = 0; i < v.size(); i++)
+        ASSERT_EQ(targets[i], ::MathUtils::lerp(v[i], w[i], z[i]));
+}
+
+// Test linear interpolation of a value - 2-dimensional
+TEST_F(TestMathUtils, CheckLinearInterpolation2d) {
+    std::vector<double>
+        xData({1.12, 1.1456, 1.234, 12.345, 13.456, 14.5678}),
+        yData({0.1, 0.5, -12, 1.2245, 17.98, 25.98}),
+        x({13, -1.223, -3.23, 3.33, 5.44, 0.9}),
+        targets_no_extrapolation({11.102849714462536, 0.10000000149011612, 0.10000000149011612, -9.5053053412748589, -6.9939476845575568, 0.10000000149011612}),
+        targets_with_extrapolation({11.102849714462536, -36.509437637865666, -67.868866230547567, -9.5053053412748589, -6.9939476845575568, -3.3375059476496061});
+
+    for (unsigned i = 0; i < x.size(); i++) {
+        ASSERT_EQ(targets_no_extrapolation[i], ::MathUtils::interpolate(xData, yData, x[i], false));
+        ASSERT_EQ(targets_with_extrapolation[i], ::MathUtils::interpolate(xData, yData, x[i], true));
+    }
+}
 }  // namespace
 }  // namespace MathUtils
 }  // namespace TestBiasAdjustCXX
