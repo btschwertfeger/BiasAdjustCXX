@@ -40,7 +40,7 @@
 
 The BiasAdjustCXX command-line tool is the subject of a publication by Schwertfeger, Benjamin Thomas, Lohmann, Gerrit, and Lipskoch, Henrik (2023) _"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"_. It provides an insight into the architecture, possible applications and new scientific questions. This publication referencing [BiasAdjustCXX v1.8.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.8.1) was published in the journal SoftwareX in March 2023 and is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
 
-These programs and data structures are developed with the aim of reducing discrepancies between modeled and observed climate data. Historical data is utilized to calibrate variables from current and future time series to achieve distributional properties that closely resemble the possible actual values.
+These tool and data structures are developed with the aim of reducing discrepancies between modeled and observed climate data. Historical data is utilized to calibrate variables from current and future time series to achieve distributional properties that closely resemble the possible actual values.
 
 <figure>
   <img
@@ -75,22 +75,30 @@ Für fragen, anmerkungen, hilfestellungne, ideen oder kooperationen, kann jederz
 
 ### Scaling-based techniques:
 
-- Delta (Change) Method\* (additive and multiplicative)
-- Linear Scaling\* (additive and multiplicative)
-- Variance Scaling\* (additive)
+- Delta (Change) Method (additive and multiplicative)
+- Linear Scaling (additive and multiplicative)
+- Variance Scaling (additive)
 
-\* All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
+#### General Notes:
 
-Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
-climate variables. Variance scaling can only be applied on non-stochastic climate variables.
+- Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
+  climate variables. Variance scaling can only be applied on non-stochastic climate variables.
 
-- Stochastic climate variables are those that are subject to random fluctuations
-  and are not predictable. They have no predictable trend or pattern. Examples of
-  stochastic climate variables include precipitation, air temperature, and humidity.
+  - Stochastic climate variables are those that are subject to random fluctuations
+    and are not predictable. They have no predictable trend or pattern. Examples of
+    stochastic climate variables include precipitation, air temperature, and humidity.
 
-- Non-stochastic climate variables, on the other hand, have clear trend and pattern histories
-  and can be readily predicted. They are often referred to as climate elements and include
-  variables such as water temperature and air pressure.
+  - Non-stochastic climate variables, on the other hand, have clear trend and pattern histories
+    and can be readily predicted. They are often referred to as climate elements and include
+    variables such as water temperature and air pressure.
+
+- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.
+
+<a name="notes-scaling"> </a>
+
+#### Notes regarding the scaling-based techniques:
+
+- All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
 
 ---
 
@@ -141,6 +149,7 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of [NetCDF-4 C++](https://github.com/Unidata/netcdf-cxx4), [CMake](https://cmake.org) or BiasAdjustCXX on the local system is not desired. It also makes easier to access this tool since Docker container can run on nearly every operating system.
 
 ```bash
+# remove the comments before execution ...
 docker run -it -v $(PWD):/work btschwertfeger/biasadjustcxx:latest BiasAdjustCXX \
   --ref input_data/observations.nc  \ # observations/reference time series of the control period
   --contr input_data/control.nc     \ # simulated time series of the control period
@@ -156,10 +165,9 @@ See the Dockerhub registry to access the dev, pinned and older versions: [https:
 
 ### 3.4 Data requirements:
 
-- All input files must have the same shape, i.e. the same resolution and time span.
 - The variable of interest must have the same name in all data sets.
-- The dimensions must be named 'time', 'lat' and 'lon' (i.e. times, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
-- Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries.
+- The dimensions must be named "time", "lat" and "lon" (i.e. time, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
+- Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries (see [Notes regarding the scaling-based techniques](#notes-scaling)).
 
 ---
 
@@ -195,7 +203,7 @@ All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. The
 
 Examples:
 
-a.) Additive Linear Scaling based on means of long-term 31-day intervals:
+a.) Additive Linear Scaling based on means of long-term 31-day intervals applied on a non-stochastic variable like temperatures ("tas"):
 
 ```bash
 BiasAdjustCXX                        \
@@ -209,9 +217,9 @@ BiasAdjustCXX                        \
     -p 4                             \ # number of threads
 ```
 
-Note/alternative: The regular linear scaling procedure as described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--no-group` flag needs to be used then.
+Note/alternative: The regular linear scaling procedure as described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. To do so, you have to separate the input data sets into individual long-term months and apply the tool on each of these long-term months using the `--no-group` flag. This is shown in `/examples/example_all_methods.run.sh`.
 
-b.) Multiplicative Delta Method based on means of long-term 31-day intervals:
+b.) Multiplicative Delta Method based on means of long-term 31-day intervals applied on a stochastic variable like precipitation ("pr"):
 
 ```bash
 BiasAdjustCXX                        \
@@ -221,14 +229,14 @@ BiasAdjustCXX                        \
     -o delta_method_result.nc        \
     -m delta_method                  \
     -k "*"                           \
-    -v tas                           \
-    -p 4                             \
+    -v pr                            \
+    -p 4                             \ # use 4 threds (only if the input data is 3-dimensinoal)
     --max-scaling-factor 3             # set custom max-scaling factor to avoid unrealistic results (default: 10)
 ```
 
-Note: The multiplicative variant is only preferred when adjusting ratio based variables like precipitaiton.
+Note: The multiplicative variant is only preferred when adjusting non-stochastic variables like precipitaiton.
 
-c.) Additive Quantile Delta Mapping:
+c.) Additive Quantile Delta Mapping applied on a non-stochastic variable like temperatures ("tas"):
 
 ```bash
 BiasAdjustCXX                           \
@@ -255,9 +263,7 @@ BiasAdjustCXX --help
 
 ## 📍 6. Notes
 
-- For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
-
-> You have to separate the files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
+- For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag: You have to separate the input files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to prepare the three input data sets so that they first contain all time series for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_all_methods.run.sh`).
 
 - Formulas and references can be found below and at the implementation of the corresponding functions.
 

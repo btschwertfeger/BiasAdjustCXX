@@ -145,72 +145,6 @@ void Manager::run_adjustment() {
 }
 
 /**
- * Command-line output of the program usage hints.
- */
-void Manager::show_usage() {
-    std::cout << BOLDBLUE << "Usage: " RESET << "BiasAdjustCXX"
-              << "\t\t\t\\\n"
-              << GREEN << "\t --ref " << RESET << "observation_data.nc\t\\\n"
-              << GREEN << "\t --contr " << RESET << "control_data.nc\t\\\n"
-              << GREEN << "\t --scen " << RESET << "data_to_adjust.nc\t\\\n"
-              << GREEN << "\t -v " << RESET << "tas\t\t\t\t\\\n"
-              << GREEN << "\t -m " << RESET << "linear_scaling\t\t\\\n"
-              << GREEN << "\t -o " << RESET << "result_linear_scaling.nc\n\n"
-              << BOLDBLUE << "Parameters:\n"
-              << RESET
-              << "    required:\n"
-              << GREEN << "\t--ref, --reference\t\t" << RESET << "observation/reanalysis data => input file/file path\n"
-              << GREEN << "\t--contr, --control\t\t" << RESET << "modeled control period data => input file/file path\n"
-              << GREEN << "\t--scen, --scenario\t\t" << RESET << "modeled scenario period data to adjust => input file/file path\n"
-              << GREEN << "\t-o, --output\t\t\t" << RESET << "output file/file path\n"
-              << GREEN << "\t-v, --variable\t\t\t" << RESET << "variable name (e.g.: tas, tsurf, pr) \n"
-              << "    optional:\n"
-              << GREEN << "\t-h, --help\t\t\t" << RESET << "show this help message\n"
-              << GREEN << "\t-q, --quantiles\t\t\t" << RESET << "number of quantiles to use when using a quantile adjustment method\n"
-              << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e.g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
-              << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i.e. no spatial dimensions)\n"
-              << GREEN << "\t    --no-group\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; "
-                                                               "mean calculation will be performed on the whole data set\n"
-              << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
-                                                                     "(only for scaling methods; default: 10)\n"
-              << GREEN << "\t-p, --processes\t\t" << RESET << "number of threads to start (only for 3-dimensional adjustments; default: 1)"
-              << "\n\n"
-              << BOLDBLUE << "Requirements: \n"
-              << RESET
-              << "-> data sets must have the file type NetCDF\n"
-              << "-> for scaling-based adjustments: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--no-group" << RESET << " flag is needed (see notes section below)\n"
-              << "-> all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
-              << "-> latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
-              << RESET << std::endl;
-
-    std::cout << BOLDBLUE << "Available methods: " << RESET << "\n-> ";
-    std::vector<std::string> all_methods;
-    all_methods.reserve(CMethods::scaling_method_names.size() + CMethods::distribution_method_names.size());  // preallocate memory
-    all_methods.insert(all_methods.end(), CMethods::scaling_method_names.begin(), CMethods::scaling_method_names.end());
-    all_methods.insert(all_methods.end(), CMethods::distribution_method_names.begin(), CMethods::distribution_method_names.end());
-
-    for (size_t i = 0; i < all_methods.size(); i++) std::cout << all_methods[i] << " ";
-    std::cout << std::endl;
-    std::cout << YELLOW << "\nNotes: " << RESET
-              << "\n- When not using the " << GREEN << "--no-group" << RESET << " flag it is required that all input files must have 365 days per year (no February 29th.) "
-              << "The Linear Scaling, Variance Scaling and Delta Method need a wrapper script when the " << GREEN << "--no-group" << RESET << " flag is used to apply this program on for example monthly separated files i.e. "
-              << "to adjust 30 years of data, all input files need to be separated into 12 groups, one group for each month, than this program can be applied to every long-term month."
-              << "\n\n- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.";
-
-    std::cout << YELLOW << "\n\n====== References ======" << RESET
-              << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2023) development@b-schwertfeger.de"
-              << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
-              << "\n- Mathematical foundations:"
-              << "\n(1) Beyer, R., Krapp, M., and Manica, A.: An empirical evaluation of bias correction methods for palaeoclimate simulations, Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
-              << "\n\n(2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?, Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
-              << "\n\n(3) Maraun, D.: Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums, Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
-              << "\n\n(4) Teutschbein, C. and Seibert, J.: Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods, Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
-              << "\n\n(5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods, Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021."
-              << std::endl;
-    std::cout.flush();
-}
-
-/**
  * Parses the arguments that were passed to the constructor.
  * This includes loading the input data sets, checking if
  * the respective adjustment conditions met and sets
@@ -218,9 +152,10 @@ void Manager::show_usage() {
  */
 void Manager::parse_args() {
     if (argc == 1) {
-        show_usage();
+        utils::show_usage();
         exit(0);
     }
+
     std::string
         reference_fpath = "",
         control_fpath = "",
@@ -228,7 +163,10 @@ void Manager::parse_args() {
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
-        if (arg == "--ref" || arg == "--reference") {
+        if (arg == "-v" || arg == "--version") {
+            std::cout << utils::get_version() << std::endl;
+            exit(0);
+        } else if (arg == "--ref" || arg == "--reference") {
             if (i + 1 < argc)
                 reference_fpath = argv[++i];
             else
@@ -264,9 +202,12 @@ void Manager::parse_args() {
             } else
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--max-scaling-factor") {
-            if (i + 1 < argc)
-                adjustment_settings.max_scaling_factor = std::stoi(argv[++i]);
-            else
+            if (i + 1 < argc) {
+                int max_scaling_factor = std::stoi(argv[++i]);
+                if (max_scaling_factor == 0)
+                    throw std::runtime_error("max-scaling-factor cannot be 0!");
+                adjustment_settings.max_scaling_factor = max_scaling_factor;
+            } else
                 throw std::runtime_error(arg + " requires one argument!");
         } else if (arg == "--no-group")
             adjustment_settings.interval31_scaling = false;
@@ -280,7 +221,7 @@ void Manager::parse_args() {
         else if (arg == "-p" || arg == "--processes") {
             n_jobs = std::stoi(argv[++i]);
         } else if (arg == "-h" || arg == "--help") {
-            show_usage();
+            utils::show_usage();
             exit(0);
         } else if (arg == "show") {
             if (i + 1 < argc) {

@@ -30,7 +30,7 @@
  *      - save results to .nc file
  *
  * * Compilation:
- *    use the CMakeLists.txt for os-independand compilation.
+ *    Run `make build` in the root of the BiasAdjustCXX repository
  */
 
 /**

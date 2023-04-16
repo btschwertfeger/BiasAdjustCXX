@@ -45,6 +45,7 @@ class TestManager : public ::testing::Test {
     }
 };
 
+// Not tested so far since this would required acceptance tests
 }  // namespace
 }  // namespace Manager
 }  // namespace TestBiasAdjustCXX

@@ -45,11 +45,10 @@ class Log {
 };
 bool isInStrV(std::vector<std::string> v, std::string string);
 void progress_bar(float part, float all);
-void show_license();
+std::string get_version();
+void show_usage();
 void show_copyright_notice(std::string program_name);
+void show_license();
 }  // namespace utils
 
 #endif
-
-/*
- * ----- ----- ----- E O F ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
