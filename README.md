@@ -1,4 +1,4 @@
-# BiasAdjustCXX command-line tool for the application of bias corrections in climatic research
+# BiasadjustCXX Command-Line Tool for the Application of Fast and Efficient Bias Corrections in Climatic Research
 
 <div align="center">
 
@@ -18,7 +18,9 @@
 
 </div>
 
-### Command-line tool to apply different scale- and distribution-based bias adjustment techniques for climatic research. Most of these methods have also been implemented in Python. This can be found [here](https://github.com/btschwertfeger/Bias-Adjustment-Python).
+The BiasAdjustCXX command-line tool is the subject of a publication that provides an insight into the architecture, possible applications and new scientific questions. This publication referencing [BiasAdjustCXX v1.8.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.8.1) was published in the journal SoftwareX in March 2023 and is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
+
+In addition - most of these methods available here have also been implemented in Python. This can be found in the [python-cmethods](https://github.com/btschwertfeger/Bias-Adjustment-Python) package.
 
 ---
 
@@ -39,6 +41,7 @@
 ## 1. About
 
 The BiasAdjustCXX command-line tool is the subject of a publication by Schwertfeger, Benjamin Thomas, Lohmann, Gerrit, and Lipskoch, Henrik (2023) _"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"_. It provides an insight into the architecture, possible applications and new scientific questions. This publication referencing [BiasAdjustCXX v1.8.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.8.1) was published in the journal SoftwareX in March 2023 and is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
+
 
 These tool and data structures are developed with the aim of reducing discrepancies between modeled and observed climate data. Historical data is utilized to calibrate variables from current and future time series to achieve distributional properties that closely resemble the possible actual values.
 
@@ -110,7 +113,7 @@ Für fragen, anmerkungen, hilfestellungne, ideen oder kooperationen, kann jederz
 
 Otherwise - you can build BiasAdjustCXX from source as described below.
 
-### 3.1 Compilation, test, and installation:
+### 3.1 Compilation and installation:
 
 ```bash
 git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
@@ -260,6 +263,7 @@ BiasAdjustCXX --help
 ---
 
 <a name="notes"></a>
+
 
 ## 📍 6. Notes
 
