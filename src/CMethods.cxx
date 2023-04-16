@@ -2,9 +2,10 @@
 
 /**
  * @file CMethods.cxx
- * @brief class/collection of procedures to bias adjust time series climate data
+ * @brief Class/collection of procedures to bias adjust time series climate data
  * @author Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
@@ -19,7 +20,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * * Notes:

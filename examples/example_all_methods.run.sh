@@ -1,9 +1,8 @@
 #!/bin/zsh
 
 # @author Benjamin Thomas Schwertfeger
-# @email development@b-schwertfeger.de
-# @link https://b-schwertfeger.de
-# @github https://github.com/btschwertfeger/BiasAdjustCXX
+# @email contact@b-schwertfeger.de
+# @link  https://github.com/btschwertfeger/BiasAdjustCXX
 #
 #    * Copyright (C) 2023 Benjamin Thomas Schwertfeger
 #

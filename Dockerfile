@@ -2,6 +2,7 @@
 # Copyright (C) 2023 Benjamin Thomas Schwertfeger
 # Github: https://github.com/btschwertfeger
 #
+
 FROM alpine:3.17 AS builder
 
 # hadolint ignore=DL3018

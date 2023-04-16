@@ -1,12 +1,10 @@
 // -*- lsst-c++ -*-
 /**
  * @file TestManager.cxx
- * @brief
+ * @brief Implements the unit tests of the manager class
  * @author Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
- * @copyright Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/BiasAdjustCXX
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  *  * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
@@ -21,7 +19,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "Manager.hxx"

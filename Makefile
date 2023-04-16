@@ -68,5 +68,6 @@ pre-commit:
 ##		Clean the generated files
 ##
 clean:
-	rm -rf build tests/build validation/build \
-		.ipynb_checkpoints
+	rm -rf \
+		build tests/build validation/build \
+		.ipynb_checkpoints examples/.ipynb_checkpoints

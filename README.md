@@ -14,6 +14,7 @@
 ![CMake](https://img.shields.io/badge/required-CMake3.10-green)
 
 [![DOI](https://zenodo.org/badge/495881923.svg)](https://zenodo.org/badge/latestdoi/495881923)
+[![Publication DOI](https://img.shields.io/badge/Documentation-doi.org%2F10.1016%2Fj.softx.2023.101379-blue)](https://doi.org/10.1016/j.softx.2023.101379)
 
 </div>
 
@@ -37,9 +38,9 @@
 
 ## 1. About
 
-This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://epic.awi.de/id/eprint/56689/). A technical publication is currently being prepared to provide a detailed description of the application.
+The BiasAdjustCXX command-line tool is the subject of a publication by Schwertfeger, Benjamin Thomas, Lohmann, Gerrit, and Lipskoch, Henrik (2023) _"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"_. It provides an insight into the architecture, possible applications and new scientific questions. This publication referencing [BiasAdjustCXX v1.8.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.8.1) was published in the journal SoftwareX in March 2023 and is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
 
-These programs and data structures are designed to help minimize discrepancies between modeled and observed climate data. Data from past periods are used to adjust variables from current and future time series so that their distributional properties approximate possible actual values.
+These programs and data structures are developed with the aim of reducing discrepancies between modeled and observed climate data. Historical data is utilized to calibrate variables from current and future time series to achieve distributional properties that closely resemble the possible actual values.
 
 <figure>
   <img
@@ -49,7 +50,7 @@ These programs and data structures are designed to help minimize discrepancies b
   <figcaption>Figure 1: Schematic representation of a bias adjustment procedure</figcaption>
 </figure>
 
-In this way, for example, modeled data, which on average represent values that are too cold, can be adjusted by applying an adjustment procedure. The following figure shows the observed, the modeled, and the adjusted values. It is directly visible that the delta adjusted time series ($T^{*DM}_{sim,p}$) are much more similar to the observed data ($T_{obs,p}$) than the raw modeled data ($T_{sim,p}$).
+For instance, modeled data typically indicate values that are colder than the actual values. To address this issue, an adjustment procedure is employed. The figure below illustrates the observed, modeled, and adjusted values, revealing that the delta adjusted time series ($T^{\*DM}{sim,p}$) are significantly more similar to the observed data ($T{obs,p}$) than the raw modeled data ($T_{sim,p}$).
 
 <figure>
   <img
@@ -58,6 +59,8 @@ In this way, for example, modeled data, which on average represent values that a
   style="background-color: white; border-radius: 7px">
   <figcaption>Figure 2: Temperature per day of year in observed, modeled, and bias-adjusted climate data</figcaption>
 </figure>
+
+Für fragen, anmerkungen, hilfestellungne, ideen oder kooperationen, kann jederzeit ein [BiasAdjustCXX/issues](https://github.com/btschwertfeger/BiasAdjustCXX/issues) auf gemacht, der discussion bereich genutzt [BiasAdjustCXX/discussions](https://github.com/btschwertfeger/BiasAdjustCXX/discussions), oder sich direkt an contact@b-schwertfeger.de gewandt werden
 
 ---
 
@@ -250,7 +253,7 @@ BiasAdjustCXX --help
 
 <a name="notes"></a>
 
-## 6. Notes
+## 📍 6. Notes
 
 - For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
 
@@ -264,14 +267,15 @@ BiasAdjustCXX --help
 
 <a name="references"></a>
 
-## 7. References
+## 🔬 7. References
 
-- Schwertfeger, Benjamin Thomas (2022) The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe (https://epic.awi.de/id/eprint/56689/)
-- Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
-- Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020): An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
-- Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes? (https://doi.org/10.1175/JCLI-D-14-00754.1)
-- Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
-- Schulzweida, U.: CDO User Guide, https://doi.org/10.5281/zenodo.7112925, 2022.
+- Schwertfeger, Benjamin Thomas, Lohmann, Gerrit, and Lipskoch, Henrik (2023): _"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"_. (https://doi.org/10.1016/j.softx.2023.101379)
+- Schwertfeger, Benjamin Thomas (2022) _"The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"_ (https://epic.awi.de/id/eprint/56689/)
+- Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) _"Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods"_ (https://doi.org/10.1016/j.jhydrol.2012.05.052)
+- Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020): _"An empirical evaluation of bias correction methods for palaeoclimate simulations"_ (https://doi.org/10.5194/cp-16-1493-2020)
+- Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock _"Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?"_ (https://doi.org/10.1175/JCLI-D-14-00754.1)
+- Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. _"Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods"_. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
+- Schulzweida, U.: _"CDO User Guide"_, https://doi.org/10.5281/zenodo.7112925, 2022.
 - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
 
 ---

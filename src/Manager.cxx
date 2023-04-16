@@ -4,7 +4,8 @@
  * @file Manager.cxx
  * @brief Manager class which controls the program flow of BiasAdjustCXX
  * @author Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *

@@ -1,4 +1,9 @@
 # Unittests für BiasAdjustCXX
 
-This is the collection of unittests for the BiasAdjustCXX command-line tool.
-They are compiled using the `CMakeLists.txt` file in the root of this repository and can be executed by running the `ctest` command within the `build` directory.
+This is the collection of unit tests for the BiasAdjustCXX command-line tool.
+They are compiled using the `dev` target of the root's Makefile. To run the unit tests, the
+tests must be compiled and executed from the root of the BiasAdjustCXX project.
+
+```bash
+make dev test
+```
