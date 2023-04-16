@@ -2,9 +2,10 @@
 
 /**
  * @file CMethods.cxx
- * @brief class/collection of procedures to bias adjust time series climate data
+ * @brief Class/collection of procedures to bias adjust time series climate data
  * @author Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
@@ -19,7 +20,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * * Notes:
@@ -122,14 +123,15 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
  * Checks and returns the desired scaling factor based on `max_factor`
  *
  * @param factor value to check
- * @param max_factor max allowed factor
+ * @param max_factor max allowed factor (will be casted to positive value, cannot be zero)
  * @return either `factor` if ths ok or `max_factor`
  */
 double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
-    return (factor > 0 && factor > max_factor)
-               ? max_factor
-           : (factor < 0 && factor < -max_factor)
-               ? -max_factor
+    const double abs_max_factor = std::abs(max_factor);
+    return (factor > 0 && factor > abs_max_factor)
+               ? abs_max_factor
+           : (factor < 0 && factor < -abs_max_factor)
+               ? -abs_max_factor
                : factor;
 }
 
@@ -627,11 +629,14 @@ void CMethods::Quantile_Delta_Mapping(
 
     } else {
         // clang-format off
-        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
-            v_output[ts] = (float)(QDM1[ts] * get_adjusted_scaling_factor(
-                v_scenario[ts] / MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false),
-                settings.max_scaling_factor
-            ));  // Eq. 2.3f.
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
+            double delta_basis = MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false);
+            v_output[ts] = (delta_basis == 0)
+                ? (float)(QDM1[ts] * settings.max_scaling_factor)                                                           // Eq. 2.3f.
+                : (float)(QDM1[ts] * get_adjusted_scaling_factor(
+                    v_scenario[ts] / delta_basis, settings.max_scaling_factor  // Eq. 2.3f.
+                ));
+        }
         // clang-format on
     }
 }

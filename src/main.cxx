@@ -4,9 +4,8 @@
  * @file main.cxx
  * @brief Main program to bias adjust NetCDF-based climate data using the `BiasAdjustCXX` command-line tool
  * @author Benjamin Thomas Schwertfeger
- * @email: development@b-schwertfeger.de
- * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/BiasAdjustCXX
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
@@ -31,7 +30,7 @@
  *      - save results to .nc file
  *
  * * Compilation:
- *    use the CMakeLists.txt for os-independand compilation.
+ *    Run `make build` in the root of the BiasAdjustCXX repository
  */
 
 /**

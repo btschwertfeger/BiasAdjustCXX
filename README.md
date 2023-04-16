@@ -5,7 +5,8 @@
 [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/btschwertfeger/BiasAdjustCXX)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![C++](https://img.shields.io/badge/-C++-blue?logo=c%2B%2B)
-![Docker-build](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/docker_build.yaml/badge.svg)
+![Build and Test](https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yml/badge.svg)
+![Docker-pulls](https://img.shields.io/docker/pulls/btschwertfeger/biasadjustcxx.svg)
 
 ![release](https://shields.io/github/release-date/btschwertfeger/BiasAdjustCXX)
 ![release](https://shields.io/github/v/release/btschwertfeger/BiasAdjustCXX?display_name=tag)
@@ -39,9 +40,10 @@ In addition - most of these methods available here have also been implemented in
 
 ## 1. About
 
-This repository started in 2022 as part of a Bachelor Thesis with the topic: ["The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"](https://epic.awi.de/id/eprint/56689/). A technical publication is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
+The BiasAdjustCXX command-line tool is the subject of a publication by Schwertfeger, Benjamin Thomas, Lohmann, Gerrit, and Lipskoch, Henrik (2023) _"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"_. It provides an insight into the architecture, possible applications and new scientific questions. This publication referencing [BiasAdjustCXX v1.8.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.8.1) was published in the journal SoftwareX in March 2023 and is available at [https://doi.org/10.1016/j.softx.2023.101379](https://doi.org/10.1016/j.softx.2023.101379).
 
-These programs and data structures are designed to help minimize discrepancies between modeled and observed climate data. Data from past periods are used to adjust variables from current and future time series so that their distributional properties approximate possible actual values.
+
+These tool and data structures are developed with the aim of reducing discrepancies between modeled and observed climate data. Historical data is utilized to calibrate variables from current and future time series to achieve distributional properties that closely resemble the possible actual values.
 
 <figure>
   <img
@@ -51,7 +53,7 @@ These programs and data structures are designed to help minimize discrepancies b
   <figcaption>Figure 1: Schematic representation of a bias adjustment procedure</figcaption>
 </figure>
 
-In this way, for example, modeled data, which on average represent values that are too cold, can be adjusted by applying an adjustment procedure. The following figure shows the observed, the modeled, and the adjusted values. It is directly visible that the delta adjusted time series ($T^{*DM}_{sim,p}$) are much more similar to the observed data ($T_{obs,p}$) than the raw modeled data ($T_{sim,p}$).
+For instance, modeled data typically indicate values that are colder than the actual values. To address this issue, an adjustment procedure is employed. The figure below illustrates the observed, modeled, and adjusted values, revealing that the delta adjusted time series ($T^{\*DM}{sim,p}$) are significantly more similar to the observed data ($T{obs,p}$) than the raw modeled data ($T_{sim,p}$).
 
 <figure>
   <img
@@ -60,6 +62,8 @@ In this way, for example, modeled data, which on average represent values that a
   style="background-color: white; border-radius: 7px">
   <figcaption>Figure 2: Temperature per day of year in observed, modeled, and bias-adjusted climate data</figcaption>
 </figure>
+
+Für fragen, anmerkungen, hilfestellungne, ideen oder kooperationen, kann jederzeit ein [BiasAdjustCXX/issues](https://github.com/btschwertfeger/BiasAdjustCXX/issues) auf gemacht, der discussion bereich genutzt [BiasAdjustCXX/discussions](https://github.com/btschwertfeger/BiasAdjustCXX/discussions), oder sich direkt an contact@b-schwertfeger.de gewandt werden
 
 ---
 
@@ -74,11 +78,30 @@ In this way, for example, modeled data, which on average represent values that a
 
 ### Scaling-based techniques:
 
-- Delta (Change) Method\* (additive and multiplicative)
-- Linear Scaling\* (additive and multiplicative)
-- Variance Scaling\* (additive)
+- Delta (Change) Method (additive and multiplicative)
+- Linear Scaling (additive and multiplicative)
+- Variance Scaling (additive)
 
-\* All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
+#### General Notes:
+
+- Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
+  climate variables. Variance scaling can only be applied on non-stochastic climate variables.
+
+  - Stochastic climate variables are those that are subject to random fluctuations
+    and are not predictable. They have no predictable trend or pattern. Examples of
+    stochastic climate variables include precipitation, air temperature, and humidity.
+
+  - Non-stochastic climate variables, on the other hand, have clear trend and pattern histories
+    and can be readily predicted. They are often referred to as climate elements and include
+    variables such as water temperature and air pressure.
+
+- The Delta Method requires that the time series of the control period have the same length as the time series to be adjusted.
+
+<a name="notes-scaling"> </a>
+
+#### Notes regarding the scaling-based techniques:
+
+- All data sets must exclude the 29th February and every year must have 365 entries. This is not required when using the `--no-group` flag which can be used to apply the scaling techniques in such a way that the scaling factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX tool to data sets with custom time scales for example to adjust monthly separated time series individually to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer ([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day interval procedures are customized variations and prevent disproportionately high differences in the long-term mean values at the monthly transitions. Thats why the long-term 31-day interval variant is the preferred method and is enabled by default for all scaling-based techniques.
 
 ---
 
@@ -90,17 +113,21 @@ In this way, for example, modeled data, which on average represent values that a
 
 Otherwise - you can build BiasAdjustCXX from source as described below.
 
-### 3.1 Compilation:
+### 3.1 Compilation and installation:
 
 ```bash
 git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
 cd BiasAdjustCXX
 
-mkdir build && cd build
-cmake .. && cmake --build .
+make build
+make install
 ```
 
-<b>Optional</b>: Move the executable file `BiasAdjustCXX` into you binary directory.
+Uninstall using:
+
+```bash
+make uninstall
+```
 
 ### 3.2 Compilation requirements/dependencies:
 
@@ -108,7 +135,7 @@ cmake .. && cmake --build .
 - CMake v3.10+ ([How to install CMake](https://cmake.org/install/))
 - [optional] Climate Data Operators ([How to install cdo](https://www.isimip.org/protocol/preparing-simulation-files/cdo-help/))
 
-Optional for working example notebook `/examples/examples.ipynb`:
+Optional for working example notebook `/examples/examples.ipynb` (only for hardliner):
 
 ```bash
 conda create --name clingenv
@@ -122,28 +149,28 @@ conda install xeus-cling notebook -c conda-forge/label/gcc7
 
 ### 3.3 Alternative: Docker 🐳
 
-The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of NetCDF4 C++ on the local system is not wanted. It also makes easier to access this tool since Docker container can run on nearly every operating system.
+The execution of BiasAdjustCXX is also possiblie within a Docker container. This is the preferred option when the installation of [NetCDF-4 C++](https://github.com/Unidata/netcdf-cxx4), [CMake](https://cmake.org) or BiasAdjustCXX on the local system is not desired. It also makes easier to access this tool since Docker container can run on nearly every operating system.
 
 ```bash
-docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /work/ \
-    && BiasAdjustCXX \
-        --ref input_data/observations.nc \
-        --contr input_data/control.nc    \
-        --scen input_data/scenario.nc    \
-        -o linear_scaling_result.nc      \
-        -m linear_scaling                \
-        -k \"+\"                         \
-        -v tas                           \
-        -p 4                             \
-"
+# remove the comments before execution ...
+docker run -it -v $(PWD):/work btschwertfeger/biasadjustcxx:latest BiasAdjustCXX \
+  --ref input_data/observations.nc  \ # observations/reference time series of the control period
+  --contr input_data/control.nc     \ # simulated time series of the control period
+  --scen input_data/scenario.nc     \ # time series to adjust
+  -o linear_scaling.nc              \ # output file
+  -m linear_scaling                 \ # adjustment method
+  -k "+"                            \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+  -v tas                            \ # variable to adjust
+  -p 2                                # number of threads
 ```
+
+See the Dockerhub registry to access the dev, pinned and older versions: [https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general](https://hub.docker.com/repository/docker/btschwertfeger/biasadjustcxx/general)
 
 ### 3.4 Data requirements:
 
-- All input files must have the same shape, i.e. the same resolution and time span.
 - The variable of interest must have the same name in all data sets.
-- The dimensions must be named 'time', 'lat' and 'lon' (i.e. times, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
-- Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries.
+- The dimensions must be named "time", "lat" and "lon" (i.e. time, latitudes and longitudes) in exactly this order in case the data sets have more than one dimension.
+- Executed scaling-based techniques without the `--no-group` flag require that the data sets exclude the 29th February and every year has exactly 365 entries (see [Notes regarding the scaling-based techniques](#notes-scaling)).
 
 ---
 
@@ -163,7 +190,7 @@ docker run -it -v $(pwd):/work btschwertfeger/biasadjustcxx:latest sh -c "cd /wo
 | `--1dim`                                | [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)                                                                                                                                                                                                                              |
 | `--no-group`                            | [optional] Disables the adjustment based on 31-day long-term moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommended to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
 | `--max-scaling-factor`                  | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating disproportional high scaling factors. (only for multiplicative methods except QM; default: 10)             |
-| `-p`, <br> `--n_processes`              | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                             |
+| `-p`, <br> `--processes`                | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                             |
 | `-h`, `--help`                          | [optional] display usage example, arguments, hints, and exits the program                                                                                                                                                                                                                                                   |
 
 ---
@@ -179,7 +206,7 @@ All methods to bias-adjust climate data can be found in `/src/CMethods.cxx`. The
 
 Examples:
 
-a.) Additive Linear Scaling based on means of long-term 31-day intervals:
+a.) Additive Linear Scaling based on means of long-term 31-day intervals applied on a non-stochastic variable like temperatures ("tas"):
 
 ```bash
 BiasAdjustCXX                        \
@@ -193,9 +220,9 @@ BiasAdjustCXX                        \
     -p 4                             \ # number of threads
 ```
 
-Note/alternative: The regular linear scaling procedure as described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. The `--no-group` flag needs to be used then.
+Note/alternative: The regular linear scaling procedure as described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) needs to be applied on monthly separated data sets. To do so, you have to separate the input data sets into individual long-term months and apply the tool on each of these long-term months using the `--no-group` flag. This is shown in `/examples/example_all_methods.run.sh`.
 
-b.) Multiplicative Delta Method based on means of long-term 31-day intervals:
+b.) Multiplicative Delta Method based on means of long-term 31-day intervals applied on a stochastic variable like precipitation ("pr"):
 
 ```bash
 BiasAdjustCXX                        \
@@ -205,14 +232,14 @@ BiasAdjustCXX                        \
     -o delta_method_result.nc        \
     -m delta_method                  \
     -k "*"                           \
-    -v tas                           \
-    -p 4                             \
+    -v pr                            \
+    -p 4                             \ # use 4 threds (only if the input data is 3-dimensinoal)
     --max-scaling-factor 3             # set custom max-scaling factor to avoid unrealistic results (default: 10)
 ```
 
-Note: The multiplicative variant is only preferred when adjusting ratio based variables like precipitaiton.
+Note: The multiplicative variant is only preferred when adjusting non-stochastic variables like precipitaiton.
 
-c.) Additive Quantile Delta Mapping:
+c.) Additive Quantile Delta Mapping applied on a non-stochastic variable like temperatures ("tas"):
 
 ```bash
 BiasAdjustCXX                           \
@@ -230,19 +257,17 @@ BiasAdjustCXX                           \
 d.) Help
 
 ```bash
-BiasAdjustCXX -h
+BiasAdjustCXX --help
 ```
 
 ---
 
 <a name="notes"></a>
 
-## 6. Notes
 
-- For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag:
+## 📍 6. Notes
 
-> You have to separate the files by month and then apply the correction for each month individually.
-> e.g. For 30 years of data to correct, you need to create a data set that contains all data for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_adjust.run.sh`).
+- For adjusting data using the linear scaling, variance scaling or delta method and the `--no-group` flag: You have to separate the input files by month and then apply the correction for each month individually. e.g. For 30 years of data to correct, you need to prepare the three input data sets so that they first contain all time series for all Januaries and then apply the adjustment for this data set. After that you have to do the same for the rest of the months (see `/examples/example_all_methods.run.sh`).
 
 - Formulas and references can be found below and at the implementation of the corresponding functions.
 
@@ -252,14 +277,15 @@ BiasAdjustCXX -h
 
 <a name="references"></a>
 
-## 7. References
+## 🔬 7. References
 
-- Schwertfeger, Benjamin Thomas (2022) The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe (https://epic.awi.de/id/eprint/56689/)
-- Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
-- Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020): An empirical evaluation of bias correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
-- Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes? (https://doi.org/10.1175/JCLI-D-14-00754.1)
-- Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
-- Schulzweida, U.: CDO User Guide, https://doi.org/10.5281/zenodo.7112925, 2022.
+- Schwertfeger, Benjamin Thomas, Lohmann, Gerrit, and Lipskoch, Henrik (2023): _"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"_. (https://doi.org/10.1016/j.softx.2023.101379)
+- Schwertfeger, Benjamin Thomas (2022) _"The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"_ (https://epic.awi.de/id/eprint/56689/)
+- Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) _"Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods"_ (https://doi.org/10.1016/j.jhydrol.2012.05.052)
+- Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020): _"An empirical evaluation of bias correction methods for palaeoclimate simulations"_ (https://doi.org/10.5194/cp-16-1493-2020)
+- Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock _"Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?"_ (https://doi.org/10.1175/JCLI-D-14-00754.1)
+- Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. _"Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods"_. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
+- Schulzweida, U.: _"CDO User Guide"_, https://doi.org/10.5281/zenodo.7112925, 2022.
 - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
 
 ---

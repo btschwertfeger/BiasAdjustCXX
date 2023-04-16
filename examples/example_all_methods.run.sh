@@ -1,9 +1,8 @@
 #!/bin/zsh
 
 # @author Benjamin Thomas Schwertfeger
-# @email development@b-schwertfeger.de
-# @link https://b-schwertfeger.de
-# @github https://github.com/btschwertfeger/BiasAdjustCXX
+# @email contact@b-schwertfeger.de
+# @link  https://github.com/btschwertfeger/BiasAdjustCXX
 #
 #    * Copyright (C) 2023 Benjamin Thomas Schwertfeger
 #
@@ -95,7 +94,7 @@ done
 # *  ===== Default Scaling Adjustent (long-term 31-day intervals) =====
 # * -------------------------------------------------------------------
 
-# ? Additive linear scaling based on 31 day long-term mean interval instead of 
+# ? Additive linear scaling based on 31 day long-term mean interval instead of
 # long-term monthly means to avoid high deviations between month transitions
 # this only works if every dataset has 365 days per year (no January 29th)
 # this is available for all scaling methods
@@ -108,7 +107,7 @@ $exec_file                             \
     -v $variable                       \
     -k "add"                           \
     -p 4                               \
-    -o "${output_dir}/${variable}_linear_scaling_kind-add_scalingtype-31dayinterval_result_${timespan}.nc" 
+    -o "${output_dir}/${variable}_linear_scaling_kind-add_scalingtype-31dayinterval_result_${timespan}.nc"
 
 
 # * -------------------------------------------------------------------
@@ -143,7 +142,7 @@ for method in "${month_methods[@]}"; do
             -m $method                                      \
             -o "${tmp_results}/${month}_${method}.nc"       \
             -p 4                                            \
-            --no-group                                      
+            --no-group
     done
 
     # ? Merge corrected datasets
@@ -167,7 +166,7 @@ $exec_file                                              \
     -q $n_quantiles                                     \
     -k $kind                                            \
     --1dim                                              \
-    -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc" 
+    -o "${output_dir}/${variable}_1d_quantile_mapping_kind-${kind}_quants-${n_quantiles}_result_${timespan}.nc"
 
 # * -------------------------------------------------------------------
 # *                    ===== clean-up =====

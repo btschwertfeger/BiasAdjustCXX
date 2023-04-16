@@ -2,12 +2,10 @@
 
 /**
  * @file Utils.cxx
- * @brief
+ * @brief Implements the utility functions and classes
  * @author Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
- * @copyright Benjamin Thomas Schwertfeger
- * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/BiasAdjustCXX
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  *  * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
@@ -22,13 +20,8 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- *
+ *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
-/*
- * ----- ----- ----- I N C L U D E ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
 #include "Utils.hxx"
 
@@ -39,9 +32,6 @@
 
 #include "colors.h"
 
-/*
- * ----- ----- ----- L O G G E R ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
-
 namespace utils {
 utils::Log::Log() {}
 utils::Log::~Log() {}
@@ -51,9 +41,6 @@ void utils::Log::info(std::string message) { std::cout << GREEN << "INFO: " << R
 void utils::Log::warning(std::string message) { std::cout << YELLOW << "WARNING: " << RESET << message << std::endl; }
 void utils::Log::error(std::string message) { std::cout << BOLDRED << "ERROR: " << RESET << message << std::endl; }
 }  // namespace utils
-
-/*
- * ----- ----- ----- F U N C T I O N S ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */
 
 namespace utils {
 /** Progress bar to bar the progress
@@ -91,6 +78,10 @@ void progress_bar(float part, float all) {
 
 namespace utils {
 
+std::string get_version() {
+    return "v1.8.2.devX";
+}
+
 void show_copyright_notice(std::string program_name) {
     std::cout << program_name << " Copyright (C) 2023 Benjamin Thomas Schwertfeger"
               << "\nThis program comes with ABSOLUTELY NO WARRANTY."
@@ -99,6 +90,99 @@ void show_copyright_notice(std::string program_name) {
               << "\n"
               << std::endl;
 }
+
+/**
+ * Command-line output of the program usage hints.
+ */
+void show_usage() {
+    std::cout << BOLDBLUE << "Usage: " RESET << "BiasAdjustCXX"
+              << "\t\t\t\\\n"
+              << GREEN << "\t --ref " << RESET << "observation_data.nc\t\\\n"
+              << GREEN << "\t --contr " << RESET << "control_data.nc\t\\\n"
+              << GREEN << "\t --scen " << RESET << "data_to_adjust.nc\t\\\n"
+              << GREEN << "\t -v " << RESET << "tas\t\t\t\t\\\n"
+              << GREEN << "\t -m " << RESET << "linear_scaling\t\t\\\n"
+              << GREEN << "\t -o " << RESET << "result_linear_scaling.nc\n"
+              << std::endl;
+
+    std::cout << BOLDBLUE << "====== Parameters ======\n"
+              << RESET
+              << "    required:\n"
+              << GREEN << "\t--ref, --reference\t\t" << RESET << "observation/reanalysis data => input file/file path\n"
+              << GREEN << "\t--contr, --control\t\t" << RESET << "modeled data (control period) => input file/file path\n"
+              << GREEN << "\t--scen, --scenario\t\t" << RESET << "data to adjust/correct (scenario period) => input file/file path\n"
+              << GREEN << "\t-o, --output\t\t\t" << RESET << "output file/file path\n"
+              << GREEN << "\t-m, --method\t\t\t" << RESET << "the bias correction technique to apply\n"
+              << GREEN << "\t-v, --variable\t\t\t" << RESET << "variable name (e.g.: tas, tsurf, pr) \n"
+              << "    optional:\n"
+              << GREEN << "\t-k, --kind\t\t\t" << RESET << "kind of adjustment e.g.: '+' or '*' for additive or multiplicative method (default: '+')\n"
+              << GREEN << "\t-q, --quantiles\t\t\t" << RESET << "number of quantiles to respect when using a distribution-based techniques\n"
+              << GREEN << "\t    --1dim\t\t\t" << RESET << "select this, when all input data sets only contain the time dimension (i.e. no spatial dimensions)\n"
+              << GREEN << "\t    --no-group\t\t\t" << RESET << "disables the adjustment based on long-term 31-day intervals for the sclaing-based methods; "
+                                                               "mean calculation will be performed on the whole data set\n"
+              << GREEN << "\t    --max-scaling-factor\t" << RESET << "define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables "
+                                                                     "(default: 10)\n"
+              << GREEN << "\t-p, --processes\t\t\t" << RESET << "number of threads to start (only for 3-dimensional adjustments; default: 1)\n"
+              << GREEN << "\t-v, --version\t\t\t" << RESET << "show the executed version of this tool\n"
+              << GREEN << "\t-h, --help\t\t\t" << RESET << "show this help message\n"
+              << std::endl;
+
+    std::cout << BOLDBLUE << "====== Available Methods ======" << RESET << "\n"
+              << "\tDistribuition-based techniques\n"
+              << "\t\t- Quantile Mapping (quantile_mapping)\n"
+              << "\t\t- Quantile Delta Mapping (quantile_delta_mapping)\n"
+              << "\n"
+              << "\tScaling-based techniques\n"
+              << "\t\t- Linear Scaling (linear_scaling)\n"
+              << "\t\t- Variance Scaling (variance_scaling)\n"
+              << "\t\t- Delta Method (delta_method)\n"
+              << std::endl;
+
+    std::cout << BOLDBLUE << "====== Requirements ======\n"
+              << RESET
+              << "- data sets must be file type NetCDF\n"
+              << "- for scaling-based techniques: all input files must have 365 days per year (no February 29th.) otherwise the " << GREEN << "--no-group" << RESET << " flag is needed (see notes section below)\n"
+              << "- all data must be in format: [time][lat][lon] (if " << GREEN << "--1dim" << RESET << " is not slected) and values of type float\n"
+              << "- latitudes, longitudes and times must be named 'lat', 'lon' and 'time'\n"
+              << std::endl;
+
+    std::cout << YELLOW << "====== Notes ======" << RESET << "\n"
+              << "- Except for the variance scaling, all methods can be applied on stochastic and non-stochastic"
+                 "climate variables. Variance scaling can only be applied on non-stochastic climate variables.\n"
+              << "\t- Stochastic climate variables are those that are subject to random fluctuations"
+                 "and are not predictable. They have no predictable trend or pattern. Examples of"
+                 "stochastic climate variables include precipitation, air temperature, and humidity.\n"
+              << "\t- Non-stochastic climate variables, on the other hand, have clear trend and pattern histories"
+                 "and can be readily predicted. They are often referred to as climate elements and include"
+                 "variables such as water temperature and air pressure.\n"
+
+              << "- All data sets must exclude the 29th February and every year must have 365 entries. "
+                 "This is not required when using the "
+              << GREEN << "`--no-group`" << RESET
+              << "flag which can be used to apply the scaling techniques in such a way that the scaling "
+                 "factors are based on the whole time series at once. This enables the possibility to apply the BiasAdjustCXX "
+                 "tool to data sets with custom time scales for example to adjust monthly separated time series individually "
+                 "to match the techniques described by Teutschbein ([2012](https://doi.org/10.1016/j.jhydrol.2012.05.052)) and Beyer "
+                 "([2020](https://doi.org/10.5194/cp-16-1493-2020)). On the other hand the long-term 31-day "
+                 "interval procedures are customized variations and prevent disproportionately high differences "
+                 "in the long-term mean values at the monthly transitions. Thats why the long-term 31-day "
+                 "interval variant is the preferred method and is enabled by default for all scaling-based techniques.\n"
+              << std::endl;
+
+    std::cout << YELLOW << "====== References ======" << RESET
+              << "\n- Copyright (C) Benjamin Thomas Schwertfeger (2023) contact@b-schwertfeger.de"
+              << "\n- Schwertfeger, B. T, Lohmann, G., Lipskoch, H.: \"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research\", (2023) https://doi.org/10.1016/j.softx.2023.101379"
+              << "\n- Unidata's NetCDF Programming Interface NetCDFCxx Data structures: http://doi.org/10.5065/D6H70CW6"
+              << "\n- Mathematical foundations:"
+              << "\n    (1) Beyer, R., Krapp, M., and Manica, A.: \"An empirical evaluation of bias correction methods for palaeoclimate simulations\", Climate of the Past, 16, 1493–1508, https://doi.org/10.5194/cp-16-1493-2020, 2020"
+              << "\n    (2) Cannon, A. J., Sobie, S. R., and Murdock, T. Q.: \"Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?\", Journal of Climate, 28, 6938 – 6959, https://doi.org/10.1175/JCLI-D-14-00754.1, 2015."
+              << "\n    (3) Maraun, D.: \"Nonstationarities of Regional Climate Model Biases in European Seasonal Mean Temperature and Precipitation Sums\", Geophysical Research Letters, 39, 6706–, https://doi.org/10.1029/2012GL051210, 2012."
+              << "\n    (4) Teutschbein, C. and Seibert, J.: \"Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods\", Journal of Hydrology, s 456–457, 12–29, https://doi.org/10.1016/j.jhydrol.2012.05.052, 2012."
+              << "\n    (5) Tong, Y., Gao, X., Han, Z., Xu, Y., Xu, Y., and Giorgi, F.: Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods\", Climate Dynamics, 57, https://doi.org/10.1007/s00382-020-05447-4, 2021."
+              << std::endl;
+    std::cout.flush();
+}
+
 void show_license() {
     const char* license =
         "GNU GENERAL PUBLIC LICENSE\n"
@@ -745,5 +829,3 @@ void show_license() {
     std::cout << license << std::endl;
 }
 }  // namespace utils
-/*
- * ----- ----- ----- E O F ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- */

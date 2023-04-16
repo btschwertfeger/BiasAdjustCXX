@@ -1,5 +1,7 @@
 # Validation/Testing of the adjusted time series
 
+> ⚠️ This part is not actively maintained!
+
 `ComputeIndicator.cxx` enables creating a matrix that contains for example the $RMSE$ of every time series between two data sets.
 
 ## Compilation:

@@ -4,9 +4,8 @@
  * @file ComputeIndicator.cxx
  * @brief Program to compute data sets containing statistical indicator results (like MBE, RMSE, ...)
  * @author Benjamin Thomas Schwertfeger
- * @email: development@b-schwertfeger.de
- * @link https://b-schwertfeger.de
- * @github https://github.com/btschwertfeger/BiasAdjustCXX
+ * @email: contact@b-schwertfeger.de
+ * @link https://github.com/btschwertfeger/BiasAdjustCXX
  *
  * * Copyright (C) 2023 Benjamin Thomas Schwertfeger
  *
@@ -21,7 +20,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 /*

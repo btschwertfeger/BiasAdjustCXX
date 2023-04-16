@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+# Copyright (C) 2023 Benjamin Thomas Schwertfeger
+# Github: https://github.com/btschwertfeger
+#
+# Template workflow to build and install BiasAdjustCXX
+#
+
+name: Build and install BiasAdjustCXX
+
+on:
+  workflow_call:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:3.17
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apk add --update linux-headers libc-dev g++ build-base git cmake libaec-dev netcdf-dev hdf5-dev curl-dev
+          git clone https://github.com/Unidata/netcdf-cxx4.git
+          cd netcdf-cxx4
+          cmake -S . -B build
+          cmake --build build
+          cd build
+          ctest
+          make install
+          cd ../..
+          rm -rf netcdf-cxx4
+
+      - name: Build and install BiasAdjustCXX
+        run: |
+          make build
+          make install
+          make uninstall
