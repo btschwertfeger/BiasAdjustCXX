@@ -54,7 +54,7 @@ test:
 ##
 changelog:
 	docker run -it --rm \
-		-v "$(pwd)":/usr/local/src/my-app \
+		-v $(PWD):/usr/local/src/your-app \
 		githubchangeloggenerator/github-changelog-generator \
 		-u btschwertfeger \
 		-p BiasAdjustCXX \
