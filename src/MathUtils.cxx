@@ -353,26 +353,15 @@ double MathUtils::interpolate(std::vector<double>& xData, std::vector<double>& y
 }
 
 double MathUtils::ensure_devidable(double numerator, double denuminator, double max_scaling_factor) {
-    double result = numerator / denuminator;
-    // check if nan
-    if (result != result)
-        return 0;
-
-    // check if infinite
-    if (std::isinf(result))
+    if (denuminator == (double)0)
         return numerator * max_scaling_factor;
-    return result;
+
+    return numerator / denuminator;
 }
 
 float MathUtils::ensure_devidable(float numerator, float denuminator, double max_scaling_factor) {
-    float result = numerator / denuminator;
-    // check if nan
-    if (result != result)
-        return 0;
-
-    // check if infinite
-    if (std::isinf(result))
+    if (denuminator == (double)0)
         return numerator * max_scaling_factor;
 
-    return result;
+    return numerator / denuminator;
 }
