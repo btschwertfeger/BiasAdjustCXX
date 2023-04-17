@@ -213,6 +213,15 @@ TEST_F(TestMathUtils, CheckLinearInterpolation2d) {
         ASSERT_EQ(targets_with_extrapolation[i], ::MathUtils::interpolate(xData, yData, x[i], true));
     }
 }
+
+TEST_F(TestMathUtils, CheckEnsureDevidable) {
+    ASSERT_EQ(::MathUtils::ensure_devidable((double)5, (double)5, 10), 1);
+    ASSERT_EQ(::MathUtils::ensure_devidable((double)0, (double)5, 10), 0);
+    ASSERT_EQ(::MathUtils::ensure_devidable((double)5, (double)0, 10), 50);
+    ASSERT_EQ(::MathUtils::ensure_devidable((float)5, (float)5, 10), 1);
+    ASSERT_EQ(::MathUtils::ensure_devidable((float)0, (float)5, 10), 0);
+    ASSERT_EQ(::MathUtils::ensure_devidable((float)5, (float)0, 10), 50);
+}
 }  // namespace
 }  // namespace MathUtils
 }  // namespace TestBiasAdjustCXX

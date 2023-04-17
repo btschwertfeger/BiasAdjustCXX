@@ -180,9 +180,8 @@ void CMethods::Linear_Scaling(
 
         } else if (settings.kind == "mult" || settings.kind == "*") {
             const double
-                adjusted_scaling_factor = get_adjusted_scaling_factor(
-                    MathUtils::mean(v_reference) / MathUtils::mean(v_control),
-
+                adjusted_scaling_factor = MathUtils::ensure_devidable(
+                    MathUtils::mean(v_reference), MathUtils::mean(v_control),
                     settings.max_scaling_factor
                 );
             for (unsigned ts = 0; ts < v_scenario.size(); ts++)
@@ -214,8 +213,8 @@ void CMethods::Linear_Scaling(
             std::vector<float> adj_scaling_factors;
             for (unsigned day = 0; day < 365; day++)
                 adj_scaling_factors.push_back(
-                    get_adjusted_scaling_factor(
-                        ref_365_means[day] / contr_365_means[day],
+                    MathUtils::ensure_devidable(
+                        ref_365_means[day], contr_365_means[day],
                         settings.max_scaling_factor
                     )
                 );
@@ -285,8 +284,8 @@ void CMethods::Variance_Scaling(
             VS1_scen[ts] = LS_scen[ts] - LS_scen_mean;  // Eq. 4
 
         const double
-            adjusted_scaling_factor = get_adjusted_scaling_factor(
-                MathUtils::sd(v_reference) / MathUtils::sd(VS1_contr),
+            adjusted_scaling_factor = MathUtils::ensure_devidable(
+                MathUtils::sd(v_reference), MathUtils::sd(VS1_contr),
                 settings.max_scaling_factor
             );
 
@@ -327,8 +326,8 @@ void CMethods::Variance_Scaling(
 
         std::vector<double> adj_scaling_factors;
         for (unsigned day = 0; day < 365; day++)
-            adj_scaling_factors.push_back(get_adjusted_scaling_factor(
-                ref_365_standard_deviations[day] / VS1_contr_365_standard_deviations[day],
+            adj_scaling_factors.push_back(MathUtils::ensure_devidable(
+                ref_365_standard_deviations[day], VS1_contr_365_standard_deviations[day],
                 settings.max_scaling_factor
             ));
 
@@ -378,8 +377,8 @@ void CMethods::Delta_Method(
                 v_output[ts] = v_reference[ts] + scaling_factor;  // Eq. 1
 
         } else if (settings.kind == "mult" || settings.kind == "*") {
-            const double adjusted_scaling_factor = get_adjusted_scaling_factor(
-                MathUtils::mean(v_scenario) / MathUtils::mean(v_control),
+            const double adjusted_scaling_factor = MathUtils::ensure_devidable(
+                MathUtils::mean(v_scenario), MathUtils::mean(v_control),
                 settings.max_scaling_factor
             );
             for (unsigned ts = 0; ts < v_scenario.size(); ts++)
@@ -411,8 +410,8 @@ void CMethods::Delta_Method(
             std::vector<float> adj_scaling_factors;
             for (unsigned day = 0; day < 365; day++)
                 adj_scaling_factors.push_back(
-                    get_adjusted_scaling_factor(
-                        scen_365_means[day] / contr_365_means[day],
+                    MathUtils::ensure_devidable(
+                        scen_365_means[day], contr_365_means[day],
                         settings.max_scaling_factor
                     )
                 );
@@ -630,12 +629,12 @@ void CMethods::Quantile_Delta_Mapping(
     } else {
         // clang-format off
         for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            double delta_basis = MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false);
-            v_output[ts] = (delta_basis == 0)
-                ? (float)(QDM1[ts] * settings.max_scaling_factor)                                                           // Eq. 2.3f.
-                : (float)(QDM1[ts] * get_adjusted_scaling_factor(
-                    v_scenario[ts] / delta_basis, settings.max_scaling_factor  // Eq. 2.3f.
-                ));
+
+            v_output[ts] = QDM1[ts] * MathUtils::ensure_devidable(
+                (double) v_scenario[ts],
+                MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false),
+                settings.max_scaling_factor
+            ); // Eq. 2.3f.
         }
         // clang-format on
     }
