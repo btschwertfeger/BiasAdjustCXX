@@ -351,3 +351,17 @@ double MathUtils::interpolate(std::vector<double>& xData, std::vector<double>& y
         dydx = (yR - yL) / (xR - xL);  // gradient
     return yL + dydx * (x - xL);       // linear interpolation
 }
+
+double MathUtils::ensure_devidable(double numerator, double denuminator, double max_scaling_factor) {
+    if (denuminator == (double)0)
+        return numerator * max_scaling_factor;
+
+    return numerator / denuminator;
+}
+
+float MathUtils::ensure_devidable(float numerator, float denuminator, double max_scaling_factor) {
+    if (denuminator == (double)0)
+        return numerator * max_scaling_factor;
+
+    return numerator / denuminator;
+}
