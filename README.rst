@@ -239,7 +239,7 @@ Please have a look at the following code blocks that demonstrate how to download
 the BiasAdjustCXX tool from source:
 
 
-.. code-block:: bash
+.. code:: bash
     :caption: Compilation and installation
 
     git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
@@ -250,7 +250,7 @@ the BiasAdjustCXX tool from source:
 
 The tool can be uninstalled using the following command within the project directory:
 
-.. code-block:: bash
+.. code:: bash
     :caption: Uninstallation
 
     make uninstall
@@ -263,7 +263,7 @@ The following table lists the available command-line arguments that can be passe
 to the `BiasAdjustCXX`_ tool. Please also have a look at the requirements section below.
 
 .. csv-table:: Command-line arguments
-   :file: ../_static/arguments.csv
+   :file: docs/_static/arguments.csv
    :delim: ;
    :widths: 30, 70
    :header-rows: 1
