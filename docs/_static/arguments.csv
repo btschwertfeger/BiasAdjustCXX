@@ -1,5 +1,5 @@
 Arguments                   ;              Description
- ``--ref``,  ``--reference``;              path to observational/reference data set(control period)
+ ``--ref``,  ``--reference``;              path to observational/reference data set (control period)
  ``--contr``,  ``--control``;              path to modeled data set (control period)
  ``--scen``,  ``--scenario``;              path to data set that is to be adjusted (scenario period)
  ``-v``,  ``--variable``    ;              variable to adjust

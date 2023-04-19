@@ -99,7 +99,7 @@ The following example shows how to apply the additive linear scaling technique o
         --method linear_scaling           \ # adjustment method
         --kind "+"                        \ # kind of adjustment ("+" == "add" and "*" == "mult")
         --variable tas                    \ # variable to adjust
-        --processes 4                       # use 4 threds (only if the input data is 3-dimensional)
+        --processes 4                       # use 4 threads (only if the input data is 3-dimensional)
 
 
 Variance Scaling

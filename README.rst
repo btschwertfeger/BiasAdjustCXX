@@ -237,11 +237,11 @@ also serves example data to test this. See the documentation for more informatio
         --ref input_data/observations.nc  \ # observations/reference time series of the control period
         --contr input_data/control.nc     \ # simulated time series of the control period
         --scen input_data/scenario.nc     \ # time series to adjust
-        -o linear_scaling.nc              \ # output file
-        -m linear_scaling                 \ # adjustment method
-        -k "+"                            \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
-        -v tas                            \ # variable to adjust
-        -p 4                                # number of threads
+        --output linear_scaling.nc        \ # output file
+        --method linear_scaling           \ # adjustment method
+        --kind "+"                        \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+        --variable tas                    \ # variable to adjust
+        --processes 4                       # number of threads
 
 
 Docker 🐳
@@ -259,11 +259,11 @@ container can run on nearly every operating system.
         --ref input_data/observations.nc  \ # observations/reference time series of the control period
         --contr input_data/control.nc     \ # simulated time series of the control period
         --scen input_data/scenario.nc     \ # time series to adjust
-        -o linear_scaling.nc              \ # output file
-        -m linear_scaling                 \ # adjustment method
-        -k "+"                            \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
-        -v tas                            \ # variable to adjust
-        -p 4                                # number of threads
+        --output linear_scaling.nc        \ # output file
+        --method linear_scaling           \ # adjustment method
+        --kind "+"                        \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+        --variable tas                    \ # variable to adjust
+        --processes 4                       # number of threads
 
 
 See the Dockerhub registry to access the dev, pinned and older versions: `Dockerhub`_
