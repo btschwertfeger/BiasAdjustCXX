@@ -88,9 +88,9 @@ BiasadjustCXX command-line tool for the application of fast and efficient bias c
 |Docker pulls badge| |GCC badge| |CMake badge|
 |Release date badge| |Release tag badge| |DOI badge| |Publication bage|
 
-The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest/.
+**The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest/.**
 
-This software is tested using Google's testing framework (https://github.com/google/googletest).
+*This software is tested using Google's testing framework (https://github.com/google/googletest).*
 
 About
 -----
@@ -196,7 +196,7 @@ Notes regarding the scaling-based techniques
 
 
 Compilation and Installation
---------------
+------------------------------------------
 
 Docker 🐳
 ~~~~~~~~~~~~~~~
@@ -206,8 +206,7 @@ This is the preferred option when the installation of `NetCDF-4 C++`_, `CMake`_ 
 on the local system is not desired. It also makes easier to access this tool since Docker
 container can run on nearly every operating system.
 
-.. code-block:: bash
-    :caption: Run the BiasAdjustCXX tool using the provided Docker image
+.. code:: bash
 
     # remove the comments before execution ...
     docker run -it -v $(PWD):/work btschwertfeger/biasadjustcxx:latest BiasAdjustCXX \
@@ -254,6 +253,22 @@ The tool can be uninstalled using the following command within the project direc
     make uninstall
 
 
+After the installation, the tool can be executed using the command listed below. This repository
+also serves example data to test this. See the documentation for more information (https://biasadjustcxx.readthedocs.io/en/latest/).
+
+.. code:: bash
+
+  BiasAdjustCXX \
+        --ref input_data/observations.nc  \ # observations/reference time series of the control period
+        --contr input_data/control.nc     \ # simulated time series of the control period
+        --scen input_data/scenario.nc     \ # time series to adjust
+        -o linear_scaling.nc              \ # output file
+        -m linear_scaling                 \ # adjustment method
+        -k "+"                            \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+        -v tas                            \ # variable to adjust
+        -p 4                                # number of threads
+
+
 Arguments
 -------------
 
@@ -261,39 +276,58 @@ The following table lists the available command-line arguments that can be passe
 to the `BiasAdjustCXX`_ tool. Please also have a look at the requirements section below.
 
 
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Argument                   | Description                                                                                                                                                                                                                                                                                                                 |
-+============================+=============================================================================================================================================================================================================================================================================================================================+
-| ``--ref``, ``--reference`` | path to observational/reference data set (control period)                                                                                                                                                                                                                                                                   |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--contr``, ``--control`` | path to modeled data set (control period)                                                                                                                                                                                                                                                                                   |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--scen``, ``--scenario`` | path to data set that is to be adjusted (scenario period)                                                                                                                                                                                                                                                                   |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``-v``, ``--variable``     | variable to adjust                                                                                                                                                                                                                                                                                                          |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``-k``, ``--kind``         | kind of adjustment - one of: ``+`` or ``add`` and ``*`` or ``mult``                                                                                                                                                                                                                                                         |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``-m``, ``--method``       | adjustment method name - one of: ``linear_scaling``, ``variance_scaling``, ``delta_method``, ``quantile_mapping`` and ``quantile_delta_mapping``                                                                                                                                                                            |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``-q``, ``--quantiles``    | [optional] number of quantiles to respect (only required for distribution-based methods)                                                                                                                                                                                                                                    |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--1dim``                 | [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)                                                                                                                                                                                                                              |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--no-group``             | [optional] Disables the adjustment based on 31-day long-term moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommended to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--no-group``             | [optional] Disables the adjustment based on 31-day long-term moving windows for the scaling-based methods. Scaling will be performed on the whole data set at once, so it is recommended to separate the input files for example by month and apply this program to every long-term month. (only for scaling-based methods) |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``--max-scaling-factor``   | [optional] Define the maximum scaling factor to avoid unrealistic results when adjusting ratio based variables for example in regions where heavy rainfall is not included in the modeled data and thus creating disproportional high scaling factors. (only for multiplicative methods except QM, default: 10)             |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``-p``, ``--processes``    | [optional] How many threads to use (default: 1)                                                                                                                                                                                                                                                                             |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``-h``, ``--help``         | [optional] display usage example, arguments, hints, and exits the program                                                                                                                                                                                                                                                   |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 30%                        | 70%                                                                                                                                                                                                                                                                                                                         |
-+----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+``--ref``, ``--reference``
+  path to observational/reference data set (control period)
+
+``--contr``, ``--control``
+  path to modeled data set (control period)
+``--scen``, ``--scenario``
+  path to data set that is to be adjusted (scenario period)
+``-v``, ``--variable``
+  variable to adjust
+``-k``, ``--kind``
+  kind of adjustment - one of: ``+`` or ``add`` and ``*`` or ``mult``
+``-m``, ``--method``
+  adjustment method name - one of: ``linear_scaling``, ``variance_scaling``,
+  ``delta_method``, ``quantile_mapping`` and ``quantile_delta_mapping``
+``-q``, ``--quantiles``
+  [optional] number of quantiles to respect (only required for distribution-based methods)
+``--1dim``
+  [optional] required if the data sets have no spatial dimensions (i.e. only one time dimension)
+``--no-group``
+  [optional] Disables the adjustment based on 31-day long-term moving
+  windows for the scaling-based methods. Scaling will be performed on the whole data set
+  at once, so it is recommended to separate the input files for example by month
+  and apply this program to every long-term month. (only for scaling-based methods)
+``--max-scaling-factor``
+  [optional] Define the maximum scaling factor to avoid unrealistic results when
+  adjusting ratio based variables for example in regions where heavy rainfall is not included in the
+  modeled data and thus creating disproportional high scaling factors.
+  (only for multiplicative methods except QM, default: 10)
+``-p``, ``--processes``
+  [optional] How many threads to use (default: 1)
+``-h``, ``--help``
+  [optional] display usage example, arguments, hints, and exits the program
 
 
+
+Requirements
+~~~~~~~~~~~~
+
+See the documentation for more information (https://biasadjustcxx.readthedocs.io/en/latest/).
+
+- The variable of interest must have the same name in all data sets.
+- The dimensions must be named "time", "lat" and "lon" (i.e., time, latitudes and longitudes)
+  in exactly this order - in case the data sets have more than one dimension.
+- Executed scaling-based techniques without the ``--no-group`` flag require that the data
+  sets exclude the 29th February and every year has exactly 365 entries.
+- For adjusting data using the linear scaling, variance scaling or delta method and
+  the ``--no-group`` flag: You have to separate the input files by month and then apply
+  the correction for each month individually e.g., for 30 years of data to correct,
+  you need to prepare the three input data sets so that they first contain all time series for
+  all Januaries and then apply the adjustment for this data set. After that you have to
+  do the same for the rest of the months (see ``/examples/example_all_methods.run.sh`` in
+  the repository).
 
 References
 ------------
