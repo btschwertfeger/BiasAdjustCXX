@@ -240,7 +240,6 @@ the BiasAdjustCXX tool from source:
 
 
 .. code:: bash
-    :caption: Compilation and installation
 
     git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
     cd BiasAdjustCXX
@@ -251,7 +250,6 @@ the BiasAdjustCXX tool from source:
 The tool can be uninstalled using the following command within the project directory:
 
 .. code:: bash
-    :caption: Uninstallation
 
     make uninstall
 
