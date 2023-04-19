@@ -28,6 +28,15 @@ jobs:
     needs: [Pre-Commit]
     uses: ./.github/workflows/_build.yml
 
+  ##    Build the documentation
+  ##
+  Build-Doc:
+    needs: [Pre-Commit]
+    uses: ./.github/workflows/_build_doc.yml
+    with:
+      os: "ubuntu-latest"
+      python-version: "3.11"
+
   ## Build the test suite and run the unit tests
   ##
   Test:

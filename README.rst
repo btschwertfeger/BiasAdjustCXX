@@ -90,6 +90,8 @@ BiasadjustCXX command-line tool for the application of fast and efficient bias c
 
 The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest/.
 
+This software is tested using Google's testing framework (https://github.com/google/googletest).
+
 About
 -----
 
@@ -173,7 +175,6 @@ General Notes
   within this documentation.
 
 - Speed/Performance tests and comparison to other tools can be found here: `tool comparison`_
-
 
 
 
