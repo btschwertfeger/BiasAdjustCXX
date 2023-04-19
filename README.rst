@@ -263,7 +263,6 @@ to the `BiasAdjustCXX`_ tool. Please also have a look at the requirements sectio
 .. csv-table:: Command-line arguments
    :file: docs/_static/arguments.csv
    :delim: ;
-   :widths: 30, 70
    :header-rows: 1
 
 
