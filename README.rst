@@ -3,8 +3,6 @@ BiasadjustCXX command-line tool for the application of fast and efficient bias c
 ===============================================================================================================
 
 
-
-
 .. BADGES
 .. |GitHub badge| image:: https://badgen.net/badge/icon/github?icon=github&label
    :target: https://github.com/btschwertfeger/BiasAdjustCXX
@@ -92,8 +90,8 @@ BiasadjustCXX command-line tool for the application of fast and efficient bias c
 
 *This software is tested using Google's testing framework (https://github.com/google/googletest).*
 
-About
------
+1. About
+----------
 
 The command-line tool `BiasAdjustCXX`_ is the subject of a publication that provides an
 insight into the architecture, possible applications and new scientific questions. This publication referencing
@@ -137,8 +135,8 @@ you can always create an issue on `BiasAdjustCXX/issues`_, utilize the discussio
 `BiasAdjustCXX/discussions`_, or directly contact me at contact@b-schwertfeger.de.
 
 
-Available bias correction methods
----------------------------------
+2. Available bias correction methods
+-------------------------------------
 
 The following bias correction techniques are available:
     Scaling-based techniques:
@@ -155,7 +153,7 @@ This module also provides the possibility that enables
 the application of the desired bias correction method on 3-dimensinoal data sets.
 
 General Notes
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
   climate variables. Variance scaling can only be applied on non-stochastic climate variables.
@@ -195,7 +193,7 @@ Notes regarding the scaling-based techniques
 
 
 
-Compilation and Installation
+3. Compilation and Installation
 ------------------------------------------
 
 Build from source
@@ -270,8 +268,8 @@ See the Dockerhub registry to access the dev, pinned and older versions: `Docker
 
 
 
-Arguments
--------------
+4. Arguments and Parameters
+---------------------------------------
 
 The following table lists the available command-line arguments that can be passed
 to the `BiasAdjustCXX`_ tool. Please also have a look at the requirements section below.
@@ -330,7 +328,7 @@ See the documentation for more information (https://biasadjustcxx.readthedocs.io
   do the same for the rest of the months (see ``/examples/example_all_methods.run.sh`` in
   the repository).
 
-References
+5. References
 ------------
 - Schwertfeger, Benjamin Thomas and Lohmann, Gerrit and Lipskoch, Henrik (2023) *"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"*, SoftwareX, Volume 22, 101379, ISSN 2352-7110, (https://doi.org/10.1016/j.softx.2023.101379)
 - Schwertfeger, Benjamin Thomas (2022) *"The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"* (https://epic.awi.de/id/eprint/56689/)
