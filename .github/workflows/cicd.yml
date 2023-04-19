@@ -28,6 +28,15 @@ jobs:
     needs: [Pre-Commit]
     uses: ./.github/workflows/_build.yml
 
+  ##    Build the documentation
+  ##
+  Build-Doc:
+    needs: [Pre-Commit]
+    uses: ./.github/workflows/_build_doc.yml
+    with:
+      os: "ubuntu-latest"
+      python-version: "3.11"
+
   ## Build the test suite and run the unit tests
   ##
   Test:
@@ -37,7 +46,7 @@ jobs:
   ##  Create and upload a docker image
   ##
   Docker:
-    if: success() && github.ref != 'refs/heads/master'
+    if: success() && github.ref == 'refs/heads/dev'
     needs: [Build, Test]
     uses: ./.github/workflows/_build_docker.yml
     with:
