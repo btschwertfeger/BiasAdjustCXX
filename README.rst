@@ -195,24 +195,89 @@ Notes regarding the scaling-based techniques
 
 
 
-.. include:: docs/src/quickstart.rst
+Compilation and Installation
+--------------
 
-.. include:: docs/src/arguments.rst
+Docker 🐳
+~~~~~~~~~~~~~~~
+
+The execution of BiasAdjustCXX is also possiblie within a Docker container.
+This is the preferred option when the installation of `NetCDF-4 C++`_, `CMake`_ or `BiasAdjustCXX`_
+on the local system is not desired. It also makes easier to access this tool since Docker
+container can run on nearly every operating system.
+
+.. code-block:: bash
+    :caption: Run the BiasAdjustCXX tool using the provided Docker image
+
+    # remove the comments before execution ...
+    docker run -it -v $(PWD):/work btschwertfeger/biasadjustcxx:latest BiasAdjustCXX \
+        --ref input_data/observations.nc  \ # observations/reference time series of the control period
+        --contr input_data/control.nc     \ # simulated time series of the control period
+        --scen input_data/scenario.nc     \ # time series to adjust
+        -o linear_scaling.nc              \ # output file
+        -m linear_scaling                 \ # adjustment method
+        -k "+"                            \ # kind of adjustment ('+' == 'add' and '*' == 'mult')
+        -v tas                            \ # variable to adjust
+        -p 4                                # number of threads
 
 
-.. include:: docs/src/examples.rst
+See the Dockerhub registry to access the dev, pinned and older versions: `Dockerhub`_
 
 
-.. include:: docs/src/references.rst
+Build from source
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since this tool is written in C++ it must be compiled and installed, before it can be used.
+The following libraries and tools must be installed to successfully compile and install
+the BiasAdjustCXX command-line tool.
+
+- NetCDF-4 C++ library (`How to install NetCDF-4 C++`_)
+- CMake v3.10+ (`How to install CMake`_)
+- [optional] Climate Data Operators (`How to install cdo`_)
+
+Please have a look at the following code blocks that demonstrate how to download, build and install
+the BiasAdjustCXX tool from source:
 
 
-.. References
-.. ------------
-.. - Schwertfeger, Benjamin Thomas and Lohmann, Gerrit and Lipskoch, Henrik (2023) *"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"*, SoftwareX, Volume 22, 101379, ISSN 2352-7110, (https://doi.org/10.1016/j.softx.2023.101379)
-.. - Schwertfeger, Benjamin Thomas (2022) *"The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"* (https://epic.awi.de/id/eprint/56689/)
-.. - Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020) *"An empirical evaluation of bias correction methods for palaeoclimate simulations"* (https://doi.org/10.5194/cp-16-1493-2020)
-.. - Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) *"Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods"* (https://doi.org/10.1016/j.jhydrol.2012.05.052)
-.. - Quantile and Detrended Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock (2015) *"Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?"* (https://doi.org/10.1175/JCLI-D-14-00754.1)
-.. - Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. *"Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods"*. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
-.. - Schulzweida, U.: *"CDO User Guide"*, (https://doi.org/10.5281/zenodo.7112925), 2022.
-.. - This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
+.. code-block:: bash
+    :caption: Compilation and installation
+
+    git clone https://github.com/btschwertfeger/BiasAdjustCXX.git
+    cd BiasAdjustCXX
+
+    make build
+    make install
+
+The tool can be uninstalled using the following command within the project directory:
+
+.. code-block:: bash
+    :caption: Uninstallation
+
+    make uninstall
+
+
+Arguments
+-------------
+
+The following table lists the available command-line arguments that can be passed
+to the `BiasAdjustCXX`_ tool. Please also have a look at the requirements section below.
+
+.. csv-table:: Command-line arguments
+   :file: ../_static/arguments.csv
+   :delim: ;
+   :widths: 30, 70
+   :header-rows: 1
+
+
+
+
+References
+------------
+- Schwertfeger, Benjamin Thomas and Lohmann, Gerrit and Lipskoch, Henrik (2023) *"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"*, SoftwareX, Volume 22, 101379, ISSN 2352-7110, (https://doi.org/10.1016/j.softx.2023.101379)
+- Schwertfeger, Benjamin Thomas (2022) *"The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"* (https://epic.awi.de/id/eprint/56689/)
+- Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020) *"An empirical evaluation of bias correction methods for palaeoclimate simulations"* (https://doi.org/10.5194/cp-16-1493-2020)
+- Linear Scaling and Variance Scaling based on: Teutschbein, Claudia and Seibert, Jan (2012) *"Bias correction of regional climate model simulations for hydrological climate-change impact studies: Review and evaluation of different methods"* (https://doi.org/10.1016/j.jhydrol.2012.05.052)
+- Quantile and Detrended Quantile Mapping based on: Alex J. Cannon and Stephen R. Sobie and Trevor Q. Murdock (2015) *"Bias Correction of GCM Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in Quantiles and Extremes?"* (https://doi.org/10.1175/JCLI-D-14-00754.1)
+- Quantile Delta Mapping based on: Tong, Y., Gao, X., Han, Z. et al. *"Bias correction of temperature and precipitation over China for RCM simulations using the QM and QDM methods"*. Clim Dyn 57, 1425–1443 (2021). (https://doi.org/10.1007/s00382-020-05447-4)
+- Schulzweida, U.: *"CDO User Guide"*, (https://doi.org/10.5281/zenodo.7112925), 2022.
+- This project took advantage of netCDF software developed by UCAR/Unidata (http://doi.org/10.5065/D6H70CW6).
