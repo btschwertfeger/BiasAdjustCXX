@@ -106,7 +106,7 @@ properties approximate possible actual values.
 
 
 .. figure:: docs/_static/images/biasCdiagram.png
-    :width: 600
+    :width: 800
     :align: center
     :alt: Schematic representation of a bias adjustment procedure
 
@@ -121,7 +121,7 @@ It is directly visible that the delta adjusted time series
 than the raw modeled data (:math:`T_{sim,p}`).
 
 .. figure:: docs/_static/images/dm-doy-plot.png
-    :width: 600
+    :width: 800
     :align: center
     :alt: Temperature per day of year in modeled, observed and bias-adjusted climate data
 

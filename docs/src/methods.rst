@@ -1,4 +1,5 @@
 .. _section-available-methods:
+
 Available Methods
 =================
 
