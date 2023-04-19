@@ -6,51 +6,65 @@
 PROJECT := BiasAdjustCXX
 TEST_PROJECT := TestBiasAdjustCXX
 TEST_DIR := tests
-.PHONY := build rebuild dev redev install uninstall test changelog clean
+.PHONY := build rebuild dev redev install uninstall test build-val changelog pre-commit clean help
 
-### 	Building
+help:
+	@grep "^##" Makefile | sed -e "s/##//"
 
-##		Compile the BiasAdjustCXX command-line tool
+## ======= B U I L D I N G =======
+## build		Compile the BiasAdjustCXX command-line tool
 ##
 build:
 	cmake -S . -B build && cmake --build build --target $(PROJECT)
 
+## rebuild	Rebuild BiasAdjustCXX
+##
 rebuild: clean build
 
-##		Build and Compile the testsuite
+## dev		Build and Compile the testsuite
 ##
 dev:
 	cmake -S . -B build && cmake --build build --target $(TEST_PROJECT)
 
+## redev 		Rebuild the testsuite
+##
 redev: clean dev
 
-##		Build the validation tool (not actively maintained!)
+## build-val	Build the validation tool (not actively maintained!)
 ##
 build-val:
 	cmake -S validation/ -B validation/build && cmake --build validation/build
 
-### 	Un-/installation
+## doc 		Build the documentation
+##
+doc:
+	cd docs && make html
 
-##		Installation
+## redoc	Rebuild the documentation
+##
+redoc: clean doc
+
+## ======= U N -/ I N S T A L L A T I O N =======
+## install	Installation of the BiasAdjustCXX tool
+##		(after a successfull the build)
 ##
 install:
 	cd build && make install
 
-##		Uninstallation
+## uninstall	Uninstallation of the BiasAdjustCXX tool
 ##
 uninstall:
 	cd build && make uninstall
 
-### 	Testing
-
-##		Run the unit tests
+## ======= T E S T I N G =======
+## test		Run the unit tests
+##		(after executing the `dev`-target)
 ##
 test:
 	cd build/tests && ctest
 
-### 	Misc
-
-## 		Create the changelog
+## ======= M I S C E L A N I O U S =======
+## changelog	Create the changelog
 ##
 changelog:
 	docker run -it --rm \
@@ -62,12 +76,15 @@ changelog:
 		--breaking-labels Breaking \
 		--enhancement-labels Feature
 
+## pre-commit 	Run the pre-commit hooks
+##
 pre-commit:
 	pre-commit run -a
 
-##		Clean the generated files
+## Clean		Delete the generated files
 ##
 clean:
 	rm -rf \
 		build tests/build validation/build \
-		.ipynb_checkpoints examples/.ipynb_checkpoints
+		.ipynb_checkpoints examples/.ipynb_checkpoints\
+		docs/_build

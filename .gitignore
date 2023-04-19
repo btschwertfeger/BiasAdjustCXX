@@ -41,3 +41,10 @@ qdm_result.nc
 del/
 del.cxx
 del.nc
+
+# python related
+venv
+__pycache__
+
+# sphinx
+_build
