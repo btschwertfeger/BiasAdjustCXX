@@ -1,5 +1,5 @@
 
-BiasadjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research
+BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research
 ===============================================================================================================
 
 
@@ -80,15 +80,13 @@ BiasadjustCXX command-line tool for the application of fast and efficient bias c
 .. _Tong et al. (2021): https://doi.org/10.1007/s00382-020-05447-4
 
 
-
-
 |GitHub badge| |License badge| |C++ badge| |CICD badge|
 |Docker pulls badge| |GCC badge| |CMake badge|
 |Release date badge| |Release tag badge| |DOI badge| |Publication bage|
 
 **The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest.**
 
-*This software is tested using Google's testing framework (https://github.com/google/googletest).*
+This software is tested using Google's testing framework *googletest* (https://github.com/google/googletest).
 
 1. About
 ----------
