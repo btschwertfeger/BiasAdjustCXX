@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/btschwertfeger/BiasAdjustCXX/tree/HEAD)
+## [v1.9.0](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.0) (2023-04-20)
 
-[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.8.1...HEAD)
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.8.1...v1.9.0)
 
 **Breaking changes:**
 
