@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/btschwertfeger/BiasAdjustCXX/tree/HEAD)
+## [v1.9.0](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.0) (2023-04-20)
 
-[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.8.1...HEAD)
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.8.1...v1.9.0)
 
 **Breaking changes:**
 
@@ -10,22 +10,27 @@
 
 **Implemented enhancements:**
 
+- Create a Documentation using sphinx [\#16](https://github.com/btschwertfeger/BiasAdjustCXX/issues/16)
 - Create install and uninstall target / command [\#12](https://github.com/btschwertfeger/BiasAdjustCXX/issues/12)
 - Add unit tests [\#8](https://github.com/btschwertfeger/BiasAdjustCXX/issues/8)
 - Change Docker base image from Ubuntu22.04 to Alpine3.17 [\#7](https://github.com/btschwertfeger/BiasAdjustCXX/issues/7)
+- Add a sphinx-based documentation [\#23](https://github.com/btschwertfeger/BiasAdjustCXX/pull/23) ([btschwertfeger](https://github.com/btschwertfeger))
 
 **Fixed bugs:**
 
 - Quantile Delta Mapping return nan values because of zero-devision error [\#19](https://github.com/btschwertfeger/BiasAdjustCXX/issues/19)
+- Added a function to ensure the zero-devision and devision by zero [\#22](https://github.com/btschwertfeger/BiasAdjustCXX/pull/22) ([btschwertfeger](https://github.com/btschwertfeger))
 
 **Closed issues:**
 
 - Raise exception when `--max-scaling-factor` is set to `0`  [\#18](https://github.com/btschwertfeger/BiasAdjustCXX/issues/18)
 - Create a basic CI [\#15](https://github.com/btschwertfeger/BiasAdjustCXX/issues/15)
+- Add a Changelog [\#14](https://github.com/btschwertfeger/BiasAdjustCXX/issues/14)
 - Add the related publication as documentation   [\#11](https://github.com/btschwertfeger/BiasAdjustCXX/issues/11)
 
 **Merged pull requests:**
 
+- Add a Changelog [\#21](https://github.com/btschwertfeger/BiasAdjustCXX/pull/21) ([btschwertfeger](https://github.com/btschwertfeger))
 - Adjusted the issue template [\#20](https://github.com/btschwertfeger/BiasAdjustCXX/pull/20) ([btschwertfeger](https://github.com/btschwertfeger))
 - Added the DOI of the publication at SoftwareX in the README [\#13](https://github.com/btschwertfeger/BiasAdjustCXX/pull/13) ([btschwertfeger](https://github.com/btschwertfeger))
 - Add Unit Tests; Simplify the Installation; Create the CI [\#9](https://github.com/btschwertfeger/BiasAdjustCXX/pull/9) ([btschwertfeger](https://github.com/btschwertfeger))

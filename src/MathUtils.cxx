@@ -352,16 +352,25 @@ double MathUtils::interpolate(std::vector<double>& xData, std::vector<double>& y
     return yL + dydx * (x - xL);       // linear interpolation
 }
 
+/**
+ * Ensures that the devision does not return nans or to
+ * high scaling factors.
+ *
+ * It will return the `numerator` times the `max_scaling_factor` in case
+ * the denuminator is zero instead of nan.
+ *
+ * @param numerator Numerator
+ * @param denuminator Denuminator
+ * @param extrapolate behaviour outside xData range
+ * @return the interpolated value
+ */
 double MathUtils::ensure_devidable(double numerator, double denuminator, double max_scaling_factor) {
     if (denuminator == (double)0)
         return numerator * max_scaling_factor;
-
     return numerator / denuminator;
 }
-
 float MathUtils::ensure_devidable(float numerator, float denuminator, double max_scaling_factor) {
     if (denuminator == (double)0)
         return numerator * max_scaling_factor;
-
     return numerator / denuminator;
 }

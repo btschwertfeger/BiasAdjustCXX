@@ -6,7 +6,7 @@
 PROJECT := BiasAdjustCXX
 TEST_PROJECT := TestBiasAdjustCXX
 TEST_DIR := tests
-.PHONY := build rebuild dev redev install uninstall test build-val changelog pre-commit clean help
+.PHONY := build rebuild dev redev install uninstall test build-val doc redoc changelog pre-commit clean help
 
 help:
 	@grep "^##" Makefile | sed -e "s/##//"
@@ -55,6 +55,16 @@ install:
 ##
 uninstall:
 	cd build && make uninstall
+
+## install-val	Install the validation tool
+##
+install-val:
+	cd validation/build && make install
+
+## uninstall-val	Uninstall the validation tool
+##
+uninstall-val:
+	cd validation/build && make uninstall
 
 ## ======= T E S T I N G =======
 ## test		Run the unit tests

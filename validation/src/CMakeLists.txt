@@ -14,28 +14,33 @@
 #  along with this program. If not, see <https://www.gnu.org/licenses/>.
 # ================================================================================
 
-cmake_minimum_required(VERSION 3.10)
+set(BINARY ${CMAKE_PROJECT_NAME})
 
-project(BiasAdjustCXX
-    VERSION 1.9.0
-    DESCRIPTION "Bias correction command-line tool for NetCDF-based climate data"
-    LANGUAGES CXX
+# set sources
+set(SOURCES
+    ComputeIndicator.cxx
+    ../../src/Utils.cxx
+    ../../src/NcFileHandler.cxx
+    ../../src/MathUtils.cxx
 )
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED OFF)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# add executable
+add_executable(${BINARY} ${SOURCES})
 
-# find_package(netCDFCxx REQUIRED) # missing in cmake modules list (2022)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
-include(FindNetCDFCxx)
+# Include the netcdf headers
+target_include_directories(${BINARY}
+    PUBLIC ${netCDFCxx_INCLUDE_DIRS}
+    PRIVATE ../../include
+)
 
-if(netCDFCxx_FOUND)
-    message (STATUS "NetCDFCxx found!")
-    include_directories(${NetCDFCxx_INCLUDE_DIRS})
-else()
-    message (FATAL_ERROR "Cannot find NetCDFCxx!")
-endif()
+target_link_libraries(${BINARY}
+    PUBLIC
+        ${netCDFCxx_LIBRARIES}
+)
 
-add_subdirectory(src)
-add_subdirectory(tests EXCLUDE_FROM_ALL) # disables the binary from the ALL target
+install(TARGETS ${BINARY})
+
+# Uninstall target
+add_custom_target(uninstall
+    "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/uninstall.cmake"
+)

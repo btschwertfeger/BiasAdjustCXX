@@ -22,6 +22,7 @@ project(ComputeIndicatorCXX
     LANGUAGES CXX
 )
 
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -39,24 +40,4 @@ else()
     message (FATAL_ERROR "Cannot find netCDFCxx!")
 endif()
 
-# set sources
-set(SOURCES
-    src/ComputeIndicator.cxx
-    ../src/Utils.cxx
-    ../src/NcFileHandler.cxx
-    ../src/MathUtils.cxx
-)
-
-# add executable
-add_executable( ComputeIndicatorCXX ${SOURCES})
-
-# Include the netcdf headers
-target_include_directories( ComputeIndicatorCXX
-    PUBLIC ${netCDFCxx_INCLUDE_DIRS}
-    PRIVATE ../include
-)
-
-target_link_libraries( ComputeIndicatorCXX
-    PUBLIC
-        ${netCDFCxx_LIBRARIES}
-)
+add_subdirectory(src)
