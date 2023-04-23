@@ -112,6 +112,27 @@ class TestCMethods : public ::testing::Test {
         return result * (double(1.0) / (int)x.size());
     }
 
+    /** Returns the Root Mean Square Error
+     *   RMSE = \sqrt{
+     *             \frac{
+     *                \sum_{i=1}^{n}(T_{y,i} - T_{x,i})^{2}
+     *             }{
+     *                 n
+     *             }
+     *         }
+     *
+     * @param x 1D reference time series/vector
+     * @param y 1D prediction time series/vector
+     * @return root mean square error
+     */
+    double rmse(std::vector<float> &x, std::vector<float> &y) {
+        if (x.size() != y.size()) throw std::runtime_error("Cannot calculate rmse of vectors with different size.");
+
+        double result = 0;
+        for (unsigned ts = 0; ts < x.size(); ts++) result += pow(y[ts] - x[ts], 2) / (int)x.size();
+        return sqrt(result);
+    }
+
     void TearDown() override {
         delete reference_temp;
         delete target_temp;
@@ -172,8 +193,12 @@ TEST_F(TestCMethods, CheckLinearScalingAdditive) {
 
     const double mbe_before = std::abs(mbe(*target_temp, *scenario_temp));
     const double mbe_after = std::abs(mbe(*target_temp, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_temp, *scenario_temp);
+    const double rmse_after = rmse(*target_temp, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -189,8 +214,12 @@ TEST_F(TestCMethods, CheckLinearScalingMultiplicative) {
 
     const double mbe_before = std::abs(mbe(*target_prec, *scenario_prec));
     const double mbe_after = std::abs(mbe(*target_prec, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_prec, *scenario_prec);
+    const double rmse_after = rmse(*target_prec, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -206,8 +235,12 @@ TEST_F(TestCMethods, CheckVarianceScalingAdditive) {
 
     const double mbe_before = std::abs(mbe(*target_temp, *scenario_temp));
     const double mbe_after = std::abs(mbe(*target_temp, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_temp, *scenario_temp);
+    const double rmse_after = rmse(*target_temp, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -223,8 +256,12 @@ TEST_F(TestCMethods, CheckDeltaMethodAdditive) {
 
     const double mbe_before = std::abs(mbe(*target_temp, *scenario_temp));
     const double mbe_after = std::abs(mbe(*target_temp, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_temp, *scenario_temp);
+    const double rmse_after = rmse(*target_temp, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -240,8 +277,12 @@ TEST_F(TestCMethods, CheckDeltaMethodMultiplicative) {
 
     const double mbe_before = std::abs(mbe(*target_prec, *scenario_prec));
     const double mbe_after = std::abs(mbe(*target_prec, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_prec, *scenario_prec);
+    const double rmse_after = rmse(*target_prec, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -257,8 +298,12 @@ TEST_F(TestCMethods, CheckQuantileMappingAdditive) {
 
     const double mbe_before = std::abs(mbe(*target_temp, *scenario_temp));
     const double mbe_after = std::abs(mbe(*target_temp, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_temp, *scenario_temp);
+    const double rmse_after = rmse(*target_temp, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -274,8 +319,12 @@ TEST_F(TestCMethods, CheckQuantileMappingMultiplicative) {
 
     const double mbe_before = std::abs(mbe(*target_prec, *scenario_prec));
     const double mbe_after = std::abs(mbe(*target_prec, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_prec, *scenario_prec);
+    const double rmse_after = rmse(*target_prec, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -291,8 +340,12 @@ TEST_F(TestCMethods, CheckQuantileDeltaMappingAdditive) {
 
     const double mbe_before = std::abs(mbe(*target_temp, *scenario_temp));
     const double mbe_after = std::abs(mbe(*target_temp, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_temp, *scenario_temp);
+    const double rmse_after = rmse(*target_temp, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 
@@ -308,8 +361,12 @@ TEST_F(TestCMethods, CheckQuantileDeltaMappingMultiplicative) {
 
     const double mbe_before = std::abs(mbe(*target_prec, *scenario_prec));
     const double mbe_after = std::abs(mbe(*target_prec, *result));
-
     ASSERT_LE(mbe_after, mbe_before);
+
+    const double rmse_before = rmse(*target_prec, *scenario_prec);
+    const double rmse_after = rmse(*target_prec, *result);
+    ASSERT_LE(rmse_after, rmse_before);
+
     delete result;
 }
 }  // namespace
