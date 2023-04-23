@@ -168,7 +168,7 @@ General Notes
   as the time series to be adjusted.
 
 - Examples can be found in the `BiasAdjustCXX`_ repository and of course
-  within this documentation.
+  within the `Documentation`_.
 
 - Speed/Performance tests and comparison to other tools can be found here: `tool comparison`_
 
