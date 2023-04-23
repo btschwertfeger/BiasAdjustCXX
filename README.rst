@@ -156,13 +156,14 @@ General Notes
 - Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
   climate variables. Variance scaling can only be applied on non-stochastic climate variables.
 
-  - Stochastic climate variables are those that are subject to random fluctuations
-    and are not predictable. They have no predictable trend or pattern. Examples of
-    stochastic climate variables include precipitation, air temperature, and humidity.
+  - Non-stochastic climate variables are those that can be predicted with relative certainty based
+    on factors such as location, elevation, and season. Examples of non-stochastic climate variables
+    include air temperature, air pressure, and solar radiation.
 
-  - Non-stochastic climate variables, on the other hand, have clear trend and pattern histories
-    and can be readily predicted. They are often referred to as climate elements and include
-    variables such as water temperature and air pressure.
+  - Stochastic climate variables, on the other hand, are those that exhibit a high degree of
+    variability and unpredictability, making them difficult to forecast accurately.
+    Precipitation is an example of a stochastic climate variable because it can vary greatly in timing,
+    intensity, and location due to complex atmospheric and meteorological processes.
 
 - The Delta Method requires that the time series of the control period have the same length
   as the time series to be adjusted.
@@ -191,7 +192,7 @@ Notes regarding the scaling-based techniques
 
 
 
-3. Compilation and Installation
+1. Compilation and Installation
 ------------------------------------------
 
 Build from source
