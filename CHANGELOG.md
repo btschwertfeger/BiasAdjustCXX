@@ -30,6 +30,7 @@
 
 **Merged pull requests:**
 
+- Prepare the release [\#24](https://github.com/btschwertfeger/BiasAdjustCXX/pull/24) ([btschwertfeger](https://github.com/btschwertfeger))
 - Add a Changelog [\#21](https://github.com/btschwertfeger/BiasAdjustCXX/pull/21) ([btschwertfeger](https://github.com/btschwertfeger))
 - Adjusted the issue template [\#20](https://github.com/btschwertfeger/BiasAdjustCXX/pull/20) ([btschwertfeger](https://github.com/btschwertfeger))
 - Added the DOI of the publication at SoftwareX in the README [\#13](https://github.com/btschwertfeger/BiasAdjustCXX/pull/13) ([btschwertfeger](https://github.com/btschwertfeger))
