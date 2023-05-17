@@ -1,0 +1,56 @@
+##    Checks the code logic, style and more
+# -*- coding: utf-8 -*-
+# Copyright (C) 2023 Benjamin Thomas Schwertfeger
+# Github: https://github.com/btschwertfeger
+#
+# Workflow to apply pre-commit, build, test and upload the docker
+# image(s).
+
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: CICD-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ##  Run the pre-commit content
+  Pre-Commit:
+    uses: ./.github/workflows/_pre_commit.yaml
+
+  ##  Build the BiasAdjustCXX command-line tool
+  ##
+  Build:
+    needs: [Pre-Commit]
+    uses: ./.github/workflows/_build.yaml
+
+  ##    Build the documentation
+  ##
+  Build-Doc:
+    needs: [Pre-Commit]
+    uses: ./.github/workflows/_build_doc.yaml
+    with:
+      os: "ubuntu-latest"
+      python-version: "3.11"
+
+  ## Build the test suite and run the unit tests
+  ##
+  Test:
+    needs: [Pre-Commit]
+    uses: ./.github/workflows/_test.yaml
+
+  ##  Create and upload a docker image
+  ##
+  Docker:
+    if: success() && github.ref == 'refs/heads/dev'
+    needs: [Build, Test]
+    uses: ./.github/workflows/_build_docker.yaml
+    with:
+      TAG: ${{ github.ref_name }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

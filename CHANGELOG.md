@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased](https://github.com/btschwertfeger/BiasAdjustCXX/tree/HEAD)
+
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.0...HEAD)
+
+**Merged pull requests:**
+
+- Add release workflow [\#27](https://github.com/btschwertfeger/BiasAdjustCXX/pull/27) ([btschwertfeger](https://github.com/btschwertfeger))
+- Clarified difference between stochastic and non-stochastic climate variables in doc and readme [\#26](https://github.com/btschwertfeger/BiasAdjustCXX/pull/26) ([btschwertfeger](https://github.com/btschwertfeger))
+- Added more checks during testing [\#25](https://github.com/btschwertfeger/BiasAdjustCXX/pull/25) ([btschwertfeger](https://github.com/btschwertfeger))
+
 ## [v1.9.0](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.0) (2023-04-20)
 
 [Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.8.1...v1.9.0)

@@ -4,35 +4,34 @@
 # Github: https://github.com/btschwertfeger
 #
 # Workflow to apply pre-commit, build, test and upload the docker
-# image(s).
+# image. This job is only triggered during a release.
 
-name: CI/CD
+name: Release
 
 on:
-  push:
-    branches:
-      - "**"
+  release:
+    types: [created]
 
 concurrency:
-  group: CICD-${{ github.ref }}
+  group: Release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   ##  Run the pre-commit content
   Pre-Commit:
-    uses: ./.github/workflows/_pre_commit.yml
+    uses: ./.github/workflows/_pre_commit.yaml
 
   ##  Build the BiasAdjustCXX command-line tool
   ##
   Build:
     needs: [Pre-Commit]
-    uses: ./.github/workflows/_build.yml
+    uses: ./.github/workflows/_build.yaml
 
   ##    Build the documentation
   ##
   Build-Doc:
     needs: [Pre-Commit]
-    uses: ./.github/workflows/_build_doc.yml
+    uses: ./.github/workflows/_build_doc.yaml
     with:
       os: "ubuntu-latest"
       python-version: "3.11"
@@ -41,14 +40,13 @@ jobs:
   ##
   Test:
     needs: [Pre-Commit]
-    uses: ./.github/workflows/_test.yml
+    uses: ./.github/workflows/_test.yaml
 
-  ##  Create and upload a docker image
+  ##  Create and upload the tagged docker image
   ##
-  Docker:
-    if: success() && github.ref == 'refs/heads/dev'
+  Docker-tag:
     needs: [Build, Test]
-    uses: ./.github/workflows/_build_docker.yml
+    uses: ./.github/workflows/_build_docker.yaml
     with:
       TAG: ${{ github.ref_name }}
     secrets:
@@ -59,8 +57,7 @@ jobs:
   ##
   Docker-latest:
     needs: [Build, Test]
-    if: success() && github.ref == 'refs/heads/master'
-    uses: ./.github/workflows/_build_docker.yml
+    uses: ./.github/workflows/_build_docker.yaml
     with:
       TAG: latest
     secrets:

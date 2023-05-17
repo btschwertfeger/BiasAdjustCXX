@@ -36,6 +36,7 @@
 .ipynb_checkpoints
 build/
 output/
+.vscode/
 *tmp*
 qdm_result.nc
 del/
