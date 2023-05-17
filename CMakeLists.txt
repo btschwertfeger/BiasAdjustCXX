@@ -31,10 +31,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 include(FindNetCDFCxx)
 
 if(netCDFCxx_FOUND)
-    message (STATUS "NetCDFCxx found!")
+    message (STATUS "NetCDFCXX found!")
     include_directories(${NetCDFCxx_INCLUDE_DIRS})
 else()
-    message (FATAL_ERROR "Cannot find NetCDFCxx!")
+    message (FATAL_ERROR "Cannot find NetCDFCXX. Make sure that `ncxx4-config` is globally executable!")
 endif()
 
 add_subdirectory(src)
