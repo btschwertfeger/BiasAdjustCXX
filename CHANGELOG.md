@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased](https://github.com/btschwertfeger/BiasAdjustCXX/tree/HEAD)
+
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.0...HEAD)
+
+**Merged pull requests:**
+
+- Add release workflow [\#27](https://github.com/btschwertfeger/BiasAdjustCXX/pull/27) ([btschwertfeger](https://github.com/btschwertfeger))
+- Clarified difference between stochastic and non-stochastic climate variables in doc and readme [\#26](https://github.com/btschwertfeger/BiasAdjustCXX/pull/26) ([btschwertfeger](https://github.com/btschwertfeger))
+- Added more checks during testing [\#25](https://github.com/btschwertfeger/BiasAdjustCXX/pull/25) ([btschwertfeger](https://github.com/btschwertfeger))
+
 ## [v1.9.0](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.0) (2023-04-20)
 
 [Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.8.1...v1.9.0)
@@ -30,6 +40,7 @@
 
 **Merged pull requests:**
 
+- Prepare the release [\#24](https://github.com/btschwertfeger/BiasAdjustCXX/pull/24) ([btschwertfeger](https://github.com/btschwertfeger))
 - Add a Changelog [\#21](https://github.com/btschwertfeger/BiasAdjustCXX/pull/21) ([btschwertfeger](https://github.com/btschwertfeger))
 - Adjusted the issue template [\#20](https://github.com/btschwertfeger/BiasAdjustCXX/pull/20) ([btschwertfeger](https://github.com/btschwertfeger))
 - Added the DOI of the publication at SoftwareX in the README [\#13](https://github.com/btschwertfeger/BiasAdjustCXX/pull/13) ([btschwertfeger](https://github.com/btschwertfeger))
