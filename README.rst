@@ -29,7 +29,7 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 .. |DOI badge| image:: https://zenodo.org/badge/495881923.svg
    :target: https://zenodo.org/badge/latestdoi/495881923
 
-.. |Publication bage| image:: https://img.shields.io/badge/Publication-doi.org%2F10.1016%2Fj.softx.2023.101379-blue
+.. |Publication badge| image:: https://img.shields.io/badge/Publication-doi.org%2F10.1016%2Fj.softx.2023.101379-blue
    :target: https://doi.org/10.1016/j.softx.2023.101379
 
 .. LINKS
@@ -82,7 +82,7 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 |GitHub badge| |License badge| |C++ badge| |CICD badge|
 |Docker pulls badge| |GCC badge| |CMake badge|
-|Release date badge| |Release tag badge| |DOI badge| |Publication bage|
+|Release date badge| |Release tag badge| |DOI badge| |Publication badge|
 
 **The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest.**
 
@@ -186,7 +186,7 @@ Notes regarding the scaling-based techniques
   match the techniques described by `Teutschbein et al. (2012)`_ and `Beyer et al. (2020)`_. On the other hand the
   long-term 31-day interval procedures are customized variations and prevent
   disproportionately high differences in the long-term mean values at the monthly transitions.
-  Thats why the long-term 31-day interval variant is the preferred method and is enabled by
+  That's why the long-term 31-day interval variant is the preferred method and is enabled by
   default for all scaling-based techniques.
 
 
@@ -204,6 +204,7 @@ the BiasAdjustCXX command-line tool.
 
 - NetCDF-4 C++ library (`How to install NetCDF-4 C++`_)
 - CMake v3.10+ (`How to install CMake`_)
+- GNU Make (see https://www.gnu.org/software/make/)
 - [optional] Climate Data Operators (`How to install cdo`_)
 
 Please have a look at the following code blocks that demonstrate how to download, build and install
@@ -228,6 +229,9 @@ The tool can be uninstalled using the following command within the project direc
 After the installation, the tool can be executed using the command listed below. This repository
 also serves example data to test this. See the documentation for more information (https://biasadjustcxx.readthedocs.io/en/latest).
 
+If the netcdf-cxx4 libraries cannot be found - make sure that ``ncxx4-config`` is globally executable, since this tool is used
+to determine the location of these libraries.
+
 .. code:: bash
 
   BiasAdjustCXX \
@@ -244,7 +248,7 @@ also serves example data to test this. See the documentation for more informatio
 Docker 🐳
 ~~~~~~~~~~~~~~~
 
-The execution of BiasAdjustCXX is also possiblie within a Docker container.
+The execution of BiasAdjustCXX is also possible within a Docker container.
 This is the preferred option when the installation of `NetCDF-4 C++`_, `CMake`_ or `BiasAdjustCXX`_
 on the local system is not desired. It also makes easier to access this tool since Docker
 container can run on nearly every operating system.

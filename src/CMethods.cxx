@@ -124,7 +124,7 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
  *
  * @param factor value to check
  * @param max_factor max allowed factor (will be casted to positive value, cannot be zero)
- * @return either `factor` if ths ok or `max_factor`
+ * @return either `factor` if it's ok or `max_factor`
  */
 double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
     const double abs_max_factor = std::abs(max_factor);
@@ -339,7 +339,7 @@ void CMethods::Variance_Scaling(
 /**
  * Method to adjust 1-dimensional climate data by the delta method.
  * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias
- * correction methods for palaeoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
+ * correction methods for paleoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
  *
  * NOTE: `v_reference.size()` must be equal to `v_scenario.size()`
  * @param v_output 1D output vector that stores the adjusted time series
@@ -426,8 +426,8 @@ void CMethods::Delta_Method(
 
 /**
  * Returns the probability boundaries based on two input time series
- * -> This is required to compute the bin boundaries for the Probability Density and Cumulative Distribution Funtion.
- * -> Used by Quantile and Quantile Delta Mapping by invoking this funtion to get the bins based on the time
+ * -> This is required to compute the bin boundaries for the Probability Density and Cumulative Distribution Function.
+ * -> Used by Quantile and Quantile Delta Mapping by invoking this function to get the bins based on the time
  *    series of the control period.
  *
  * @param a time series
@@ -534,7 +534,7 @@ void CMethods::Quantile_Mapping(
                 MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], false)
             );  // Eq. 1
 
-        // ? Invert in inversed CDF and return
+        // ? Invert in invers CDF and return
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], false);  // Eq. 1
 
@@ -544,7 +544,7 @@ void CMethods::Quantile_Mapping(
             cdf_values.push_back((y >= 0) ? y : 0);
         }
 
-        // ? Invert in inversed CDF and return
+        // ? Invert in invers CDF and return
         for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
             float y = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], true);  // Eq. 1
             v_output[ts] = (y >= 0) ? y : 0;
@@ -621,7 +621,7 @@ void CMethods::Quantile_Delta_Mapping(
     for (unsigned ts = 0; ts < v_scenario.size(); ts++)
         QDM1.push_back(MathUtils::interpolate(ref_cdf, v_xbins, epsilon[ts], false));  // Eq. 1.2
 
-    // ? Invert, insert in inversed CDF and return
+    // ? Invert, insert in invers CDF and return
     if (isAdd) {
         for (unsigned ts = 0; ts < v_scenario.size(); ts++)
             v_output[ts] = (float)(QDM1[ts] + v_scenario[ts] - MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false));  // Eq. 1.3f.

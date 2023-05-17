@@ -54,7 +54,7 @@
  */
 
 /**
- * Command-line output of the duraton between a start time
+ * Command-line output of the duration between a start time
  *
  * @param start_time start time to calculate the duration
  */

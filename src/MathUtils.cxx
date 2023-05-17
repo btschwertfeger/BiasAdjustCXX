@@ -65,7 +65,7 @@ MathUtils::~MathUtils() {}
 /**
  * Returns the pointer to a function based on `name`
  *
- * @param name name of the desired funtion
+ * @param name name of the desired function
  * @return point to desired funciton
  */
 Func_one MathUtils::get_method_for_1_ds(std::string name) {
@@ -81,8 +81,8 @@ Func_one MathUtils::get_method_for_1_ds(std::string name) {
 /**
  * Returns the pointer to a function based on `name`
  *
- * @param name name of the desired funtion
- * @return point to desired funciton
+ * @param name name of the desired function
+ * @return point to desired function
  */
 Func_two MathUtils::get_method_for_2_ds(std::string name) {
     if (name == "rmse")
