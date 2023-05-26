@@ -67,7 +67,7 @@
 
 .. |Release tag badge| image:: https://shields.io/github/v/release/btschwertfeger/BiasAdjustCXX?display_name=tag
 
-.. |GCC badge| image:: https://img.shields.io/badge/required-c%2B%2B11%2B-brightgreen
+.. |GCC badge| image:: https://img.shields.io/badge/required-C%2B%2B11%2B-brightgreen
 
 .. |CMake badge| image:: https://img.shields.io/badge/required-CMake3.10%2B-brightgreen
 
