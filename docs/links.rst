@@ -57,8 +57,8 @@
 
 .. |C++ badge| image:: https://img.shields.io/badge/-C++-blue?logo=c%2B%2B
 
-.. |CICD badge| image:: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yml/badge.svg
-   :target: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yml
+.. |CICD badge| image:: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yaml/badge.svg
+   :target: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yaml
 
 .. |Docker pulls badge| image:: https://img.shields.io/docker/pulls/btschwertfeger/biasadjustcxx.svg
    :target: https://hub.docker.com/r/btschwertfeger/biasadjustcxx
@@ -67,9 +67,9 @@
 
 .. |Release tag badge| image:: https://shields.io/github/v/release/btschwertfeger/BiasAdjustCXX?display_name=tag
 
-.. |GCC badge| image:: https://img.shields.io/badge/required-C%2B%2B11-green
+.. |GCC badge| image:: https://img.shields.io/badge/required-C%2B%2B11%2B-brightgreen
 
-.. |CMake badge| image:: https://img.shields.io/badge/required-CMake3.10-green
+.. |CMake badge| image:: https://img.shields.io/badge/required-CMake3.10%2B-brightgreen
 
 .. |DOI badge| image:: https://zenodo.org/badge/495881923.svg
    :target: https://zenodo.org/badge/latestdoi/495881923

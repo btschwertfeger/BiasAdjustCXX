@@ -12,8 +12,8 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 .. |C++ badge| image:: https://img.shields.io/badge/-C++-blue?logo=c%2B%2B
 
-.. |CICD badge| image:: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yml/badge.svg
-   :target: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yml
+.. |CICD badge| image:: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yaml/badge.svg
+   :target: https://github.com/btschwertfeger/BiasAdjustCXX/actions/workflows/cicd.yaml
 
 .. |Docker pulls badge| image:: https://img.shields.io/docker/pulls/btschwertfeger/biasadjustcxx.svg
    :target: https://hub.docker.com/r/btschwertfeger/biasadjustcxx
@@ -22,9 +22,9 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 .. |Release tag badge| image:: https://shields.io/github/v/release/btschwertfeger/BiasAdjustCXX?display_name=tag
 
-.. |GCC badge| image:: https://img.shields.io/badge/required-C%2B%2B11-green
+.. |GCC badge| image:: https://img.shields.io/badge/required-C%2B%2B11%2B-brightgreen
 
-.. |CMake badge| image:: https://img.shields.io/badge/required-CMake3.10-green
+.. |CMake badge| image:: https://img.shields.io/badge/required-CMake3.10%2B-brightgreen
 
 .. |DOI badge| image:: https://zenodo.org/badge/495881923.svg
    :target: https://zenodo.org/badge/latestdoi/495881923
@@ -88,8 +88,10 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 This software is tested using Google's testing framework *googletest* (https://github.com/google/googletest).
 
+.. contents:: :local:
+
 1. About
-----------
+--------
 
 The command-line tool `BiasAdjustCXX`_ is the subject of a publication that provides an
 insight into the architecture, possible applications and new scientific questions. This publication referencing
@@ -134,7 +136,7 @@ you can always create an issue on `BiasAdjustCXX/issues`_, utilize the discussio
 
 
 2. Available bias correction methods
--------------------------------------
+------------------------------------
 
 The following bias correction techniques are available:
     Scaling-based techniques:
@@ -151,7 +153,7 @@ This module also provides the possibility that enables
 the application of the desired bias correction method on 3-dimensinoal data sets.
 
 General Notes
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 - Except for the variance scaling, all methods can be applied on stochastic and non-stochastic
   climate variables. Variance scaling can only be applied on non-stochastic climate variables.
@@ -176,7 +178,7 @@ General Notes
 
 
 Notes regarding the scaling-based techniques
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - All data sets must exclude the 29th February and every year must have 365 entries.
   This is not required when using the ``--no-group`` flag which can be used to apply
@@ -192,11 +194,11 @@ Notes regarding the scaling-based techniques
 
 
 
-1. Compilation and Installation
-------------------------------------------
+3. Compilation and Installation
+-------------------------------
 
 Build from source
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Since this tool is written in C++ it must be compiled and installed, before it can be used.
 The following libraries and tools must be installed to successfully compile and install
@@ -246,7 +248,7 @@ to determine the location of these libraries.
 
 
 Docker 🐳
-~~~~~~~~~~~~~~~
+~~~~~~~~~
 
 The execution of BiasAdjustCXX is also possible within a Docker container.
 This is the preferred option when the installation of `NetCDF-4 C++`_, `CMake`_ or `BiasAdjustCXX`_
@@ -272,7 +274,7 @@ See the Dockerhub registry to access the dev, pinned and older versions: `Docker
 
 
 4. Arguments and Parameters
----------------------------------------
+---------------------------
 
 The following table lists the available command-line arguments that can be passed
 to the `BiasAdjustCXX`_ tool. Please also have a look at the requirements section below.
@@ -332,7 +334,7 @@ See the documentation for more information (https://biasadjustcxx.readthedocs.io
   the repository).
 
 5. References
-------------
+-------------
 - Schwertfeger, Benjamin Thomas and Lohmann, Gerrit and Lipskoch, Henrik (2023) *"Introduction of the BiasAdjustCXX command-line tool for the application of fast and efficient bias corrections in climatic research"*, SoftwareX, Volume 22, 101379, ISSN 2352-7110, (https://doi.org/10.1016/j.softx.2023.101379)
 - Schwertfeger, Benjamin Thomas (2022) *"The influence of bias corrections on variability, distribution, and correlation of temperatures in comparison to observed and modeled climate data in Europe"* (https://epic.awi.de/id/eprint/56689/)
 - Delta Method based on: Beyer, R. and Krapp, M. and Manica, A. (2020) *"An empirical evaluation of bias correction methods for palaeoclimate simulations"* (https://doi.org/10.5194/cp-16-1493-2020)
