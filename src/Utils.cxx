@@ -79,7 +79,7 @@ void progress_bar(float part, float all) {
 namespace utils {
 
 std::string get_version() {
-    return "v1.9.0";
+    return "v1.9.1";
 }
 
 void show_copyright_notice(std::string program_name) {
