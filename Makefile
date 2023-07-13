@@ -1,7 +1,7 @@
 #!make
 # -*- coding: utf-8 -*-
 # Copyright (C) 2023 Benjamin Thomas Schwertfeger
-# Github: https://github.com/btschwertfeger
+# GitHub: https://github.com/btschwertfeger
 
 PROJECT := BiasAdjustCXX
 TEST_PROJECT := TestBiasAdjustCXX
@@ -46,12 +46,12 @@ redoc: clean doc
 
 ## ======= U N -/ I N S T A L L A T I O N =======
 ## install	Installation of the BiasAdjustCXX tool
-##		(after a successfull the build)
+##		(after a successful the build)
 ##
 install:
 	cd build && make install
 
-## uninstall	Uninstallation of the BiasAdjustCXX tool
+## uninstall	Remove of the BiasAdjustCXX tool
 ##
 uninstall:
 	cd build && make uninstall
@@ -72,6 +72,8 @@ uninstall-val:
 ##
 test:
 	cd build/tests && ctest
+
+retest: dev test
 
 ## ======= M I S C E L A N I O U S =======
 ## changelog	Create the changelog

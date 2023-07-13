@@ -38,7 +38,9 @@
 #include "CMethods.hxx"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 #include "MathUtils.hxx"
@@ -425,6 +427,48 @@ void CMethods::Delta_Method(
 }
 
 /**
+ * Helper function used in `get_xbins`
+ *
+ * It takes two float values and returns a bool indicating whether the first
+ * value is considered smaller than the second.
+ * example:
+ *     a_max = *std::max_element(a.begin(), a.end(), is_smaller),
+ *
+ * @param a some value
+ * @param b what a wonder... another value to compare to
+ *
+ * … will return the maximum value without failing if any value is NaN
+ */
+bool is_smaller(double a, double b) {
+    if (std::isnan(a))
+        return false;  // a is NaN, consider it as larger
+    if (std::isnan(b))
+        return true;  // b is NaN, consider a as smaller
+    return a < b;     // neither a nor b is NaN, compare normally
+}
+
+/**
+ * Helper function used in `get_xbins`
+ *
+ * It takes two float values and returns a bool indicating whether the first
+ * value is considered larger than the second.
+ * example:
+ *     a_max = *std::min_element(a.begin(), a.end(), is_larger),
+ *
+ * @param a some value
+ * @param b what a wonder... another value to compare to
+ *
+ * … will return the minimum value without failing if any value is NaN.
+ */
+bool is_larger(double a, double b) {
+    if (std::isnan(a))
+        return true;
+    if (std::isnan(b))
+        return false;
+    return a < b;
+}
+
+/**
  * Returns the probability boundaries based on two input time series
  * -> This is required to compute the bin boundaries for the Probability Density and Cumulative Distribution Function.
  * -> Used by Quantile and Quantile Delta Mapping by invoking this function to get the bins based on the time
@@ -433,7 +477,7 @@ void CMethods::Delta_Method(
  * @param a time series
  * @param b another time series
  * @param n_quantiles number of quantiles to use/respect
- * @param kind regular or bounded: defines if mininum value of a (climate) variable can be lower than in the data
+ * @param kind regular or bounded: defines if minimum value of a (climate) variable can be lower than in the data
  *             or is set to 0 (ratio based variables => 0)
  * @return the probability boundaries mentioned above
  */
@@ -445,10 +489,10 @@ std::vector<double> CMethods::get_xbins(
 ) {
     if (kind == "regular") {
         const double
-            a_max = *std::max_element(std::begin(a), std::end(a)),
-            a_min = *std::min_element(std::begin(a), std::end(a)),
-            b_max = *std::max_element(std::begin(b), std::end(b)),
-            b_min = *std::min_element(std::begin(b), std::end(b));
+            a_max = *std::max_element(a.begin(), a.end(), is_smaller),
+            a_min = *std::min_element(a.begin(), a.end(), is_larger),
+            b_max = *std::max_element(b.begin(), b.end(), is_smaller),
+            b_min = *std::min_element(b.begin(), b.end(), is_larger);
 
         const double
             global_max = std::max(a_max, b_max),
@@ -463,8 +507,8 @@ std::vector<double> CMethods::get_xbins(
 
     } else if (kind == "bounded") {
         const double
-            a_max = *std::max_element(std::begin(a), std::end(a)),
-            b_max = *std::max_element(std::begin(b), std::end(b));
+            a_max = *std::max_element(std::begin(a), std::end(a), is_smaller),
+            b_max = *std::max_element(std::begin(b), std::end(b), is_smaller);
         const double global_max = std::max(a_max, b_max);
         const double wide = global_max / n_quantiles;
 
