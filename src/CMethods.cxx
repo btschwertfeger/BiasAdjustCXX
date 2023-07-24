@@ -24,9 +24,9 @@
  *
  *
  * * Notes:
- *  - Methods does not have to match the description of the mentioned papers
- *      - some of them are derived and improved
- *      - the references are just the base of the methods
+ *   * Methods does not have to match the description of the mentioned papers
+ *      * some of them are derived and improved
+ *      * the references are just the base of the methods
  */
 
 /**
@@ -44,6 +44,7 @@
 #include <vector>
 
 #include "MathUtils.hxx"
+#include "Utils.hxx"
 #include "math.h"
 
 /**
@@ -52,8 +53,10 @@
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
  */
 
-std::vector<std::string> CMethods::scaling_method_names = {"linear_scaling", "variance_scaling", "delta_method"};
-std::vector<std::string> CMethods::distribution_method_names = {"quantile_mapping", "quantile_delta_mapping"};
+std::vector<std::string> CMethods::scaling_method_names = {
+    "linear_scaling", "variance_scaling", "delta_method"};
+std::vector<std::string> CMethods::distribution_method_names = {
+    "quantile_mapping", "quantile_delta_mapping"};
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -72,10 +75,12 @@ CMethods::~CMethods() {}
 
 /**
  * Get 365 long-term 31-day moving windows
- * When using long-term 31-day intervals, leap years should not be included and every year must be complete.
+ * When using long-term 31-day intervals, leap years should not be included and
+ * every year must be complete.
  *
  * @param v_in input vector containing 365 entries for $n$ years
- * @return 2D vector (dimensions: [365, 31 * y]) containing the values with index -15...0...+15 around a day over all years
+ * @return 2D vector (dimensions: [365, 31 * y]) containing the values with
+ *         index -15...0...+15 around a day over all years
  */
 std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<float>& v_in) {
     std::vector<std::vector<float>> v_out(365, std::vector<float>());
@@ -125,7 +130,8 @@ std::vector<std::vector<float>> CMethods::get_long_term_dayofyear(std::vector<fl
  * Checks and returns the desired scaling factor based on `max_factor`
  *
  * @param factor value to check
- * @param max_factor max allowed factor (will be casted to positive value, cannot be zero)
+ * @param max_factor max allowed factor (will be casted to positive value, can't
+ *                   be zero)
  * @return either `factor` if it's ok or `max_factor`
  */
 double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
@@ -146,8 +152,9 @@ double CMethods::get_adjusted_scaling_factor(double factor, double max_factor) {
 /**
  * Method to adjust 1-dimensional climate data by the linear scaling method.
  * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
- * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
- * Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
+ * Bias correction of regional climate model simulations for hydrological
+ * climate-change impact studies: Review and evaluation of different methods
+ * (https://doi.org/10.1016/j.jhydrol.2012.05.052)
  *
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
@@ -232,8 +239,9 @@ void CMethods::Linear_Scaling(
 /**
  * Method to adjust 1 dimensional climate data by variance scaling method.
  * Based on the equations of Teutschbein, Claudia and Seibert, Jan (2012)
- * Bias correction of regional climate model simulations for hydrological climate-change impact studies:
- * Review and evaluation of different methods (https://doi.org/10.1016/j.jhydrol.2012.05.052)
+ * Bias correction of regional climate model simulations for hydrological
+ * climate-change impact studies: Review and evaluation of different methods
+ * (https://doi.org/10.1016/j.jhydrol.2012.05.052)
  *
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
@@ -340,8 +348,9 @@ void CMethods::Variance_Scaling(
 
 /**
  * Method to adjust 1-dimensional climate data by the delta method.
- * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of bias
- * correction methods for paleoclimate simulations (https://doi.org/10.5194/cp-16-1493-2020)
+ * Based on Beyer, R. and Krapp, M. and Manica, A.: An empirical evaluation of
+ * bias correction methods for paleoclimate simulations
+ * (https://doi.org/10.5194/cp-16-1493-2020)
  *
  * NOTE: `v_reference.size()` must be equal to `v_scenario.size()`
  * @param v_output 1D output vector that stores the adjusted time series
@@ -470,14 +479,16 @@ bool is_larger(double a, double b) {
 
 /**
  * Returns the probability boundaries based on two input time series
- * -> This is required to compute the bin boundaries for the Probability Density and Cumulative Distribution Function.
- * -> Used by Quantile and Quantile Delta Mapping by invoking this function to get the bins based on the time
- *    series of the control period.
+ * -> This is required to compute the bin boundaries for the Probability Density
+ *    and Cumulative Distribution Function.
+ * -> Used by Quantile and Quantile Delta Mapping by invoking this function to
+ *    get the bins based on the time series of the control period.
  *
  * @param a time series
  * @param b another time series
  * @param n_quantiles number of quantiles to use/respect
- * @param kind regular or bounded: defines if minimum value of a (climate) variable can be lower than in the data
+ * @param kind regular or bounded: defines if minimum value of a (climate)
+ *             variable can be lower than in the data
  *             or is set to 0 (ratio based variables => 0)
  * @return the probability boundaries mentioned above
  */
@@ -494,6 +505,16 @@ std::vector<double> CMethods::get_xbins(
             b_max = *std::max_element(b.begin(), b.end(), is_smaller),
             b_min = *std::min_element(b.begin(), b.end(), is_larger);
 
+        // check if probability boundaries can be determined
+        // clang-format off
+        if (
+               std::isnan(a_max) || std::isnan(b_max)
+            || std::isnan(a_min) || std::isnan(b_min)
+            || a_max == b_max    || a_min == b_min
+        )
+            throw utils::NaNException();
+         // clang-format off
+
         const double
             global_max = std::max(a_max, b_max),
             global_min = std::min(a_min, b_min);
@@ -509,6 +530,11 @@ std::vector<double> CMethods::get_xbins(
         const double
             a_max = *std::max_element(std::begin(a), std::end(a), is_smaller),
             b_max = *std::max_element(std::begin(b), std::end(b), is_smaller);
+
+        // check if probability boundaries can be determined
+        if (std::isnan(a_max) or std::isnan(b_max) || a_max == b_max)
+            throw utils::NaNException();
+
         const double global_max = std::max(a_max, b_max);
         const double wide = global_max / n_quantiles;
 
@@ -526,8 +552,9 @@ std::vector<double> CMethods::get_xbins(
 
 /**
  * Quantile Mapping bias correction based on
- * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM
- * simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
+ * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and
+ * precipitation over China for RCM simulations using the QM and QDM methods.
+ * Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
@@ -553,15 +580,28 @@ void CMethods::Quantile_Mapping(
 ) {
     const bool isAdd = (settings.kind == "add" || settings.kind == "+") ? true : false;
     if (!isAdd && !(settings.kind == "mult" || settings.kind == "*"))
-        throw std::runtime_error("Adjustment kind " + settings.kind + " unknown for quantile mapping!");
+        throw("Adjustment kind " + settings.kind + " unknown for quantile mapping!");
 
-    std::vector<double>
+    // -------------------------------------------------------------------------
+    // If the xbins / probability boundaries can't be determined, because
+    // at least one of the time series only consists of nan values
+    // just return the uncorrected scenario time series.
+
+    std::vector<double> v_xbins;
+    try {
         v_xbins = get_xbins(
             v_reference,
             v_control,
             settings.n_quantiles,
             (isAdd) ? "regular" : "bounded"
         );
+    } catch (const utils::NaNException& e) {
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = v_scenario[ts];
+        return;
+    }
+
+    // -------------------------------------------------------------------------
 
     std::vector<int>  // ? create CDFs
         vi_ref_cdf = MathUtils::get_cdf(v_reference, v_xbins),
@@ -598,8 +638,9 @@ void CMethods::Quantile_Mapping(
 
 /**
  * Quantile Delta Mapping bias correction based on
- * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and precipitation over China for RCM
- * simulations using the QM and QDM methods. Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
+ * Tong, Y., Gao, X., Han, Z. et al. Bias correction of temperature and
+ * precipitation over China for RCM simulations using the QM and QDM methods.
+ * Clim Dyn 57, 1425–1443 (2021). https://doi.org/10.1007/s00382-020-05447-4
  *
  * @param v_output 1D output vector that stores the adjusted time series
  * @param v_reference 1D reference time series (control period)
@@ -636,13 +677,26 @@ void CMethods::Quantile_Delta_Mapping(
     if (!isAdd && !(settings.kind == "mult" || settings.kind == "*"))
         throw std::runtime_error("Adjustment kind " + settings.kind + " unknown for quantile delta mapping!");
 
-    std::vector<double>
+    // -------------------------------------------------------------------------
+    // If the xbins / probability boundaries can't be determined, because
+    // at least one of the time series only consists of nan values
+    // just return the uncorrected scenario time series.
+
+    std::vector<double> v_xbins;
+    try {
         v_xbins = get_xbins(
             v_reference,
             v_control,
             settings.n_quantiles,
             (isAdd) ? "regular" : "bounded"
         );
+    } catch (const utils::NaNException& e) {
+        for (unsigned ts = 0; ts < v_scenario.size(); ts++)
+            v_output[ts] = v_scenario[ts];
+        return;
+    }
+
+    // -------------------------------------------------------------------------
 
     // ? create CDF
     std::vector<int>
@@ -673,7 +727,6 @@ void CMethods::Quantile_Delta_Mapping(
     } else {
         // clang-format off
         for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-
             v_output[ts] = QDM1[ts] * MathUtils::ensure_devidable(
                 (double) v_scenario[ts],
                 MathUtils::interpolate(contr_cdf, v_xbins, epsilon[ts], false),

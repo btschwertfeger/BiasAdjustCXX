@@ -40,15 +40,14 @@ void utils::Log::debug(std::string message) { std::cout << WHITE << "DEBUG: " <<
 void utils::Log::info(std::string message) { std::cout << GREEN << "INFO: " << RESET << message << std::endl; }
 void utils::Log::warning(std::string message) { std::cout << YELLOW << "WARNING: " << RESET << message << std::endl; }
 void utils::Log::error(std::string message) { std::cout << BOLDRED << "ERROR: " << RESET << message << std::endl; }
+
+const char* utils::NaNException::what() const noexcept {
+    return "Value is NaN!";
+};
+
 }  // namespace utils
 
 namespace utils {
-/** Progress bar to bar the progress
- *  inspired by: https://stackoverflow.com/a/14539953/13618168
- *
- * @param part fraction of the process that is done
- * @param all total number of processes
- */
 
 bool isInStrV(std::vector<std::string> v, std::string string) {
     if (std::find(v.begin(), v.end(), string) != v.end())
@@ -56,6 +55,12 @@ bool isInStrV(std::vector<std::string> v, std::string string) {
     else
         return false;
 }
+/** Progress bar to bar the progress
+ *  inspired by: https://stackoverflow.com/a/14539953/13618168
+ *
+ * @param part fraction of the process that is done
+ * @param all total number of processes
+ */
 void progress_bar(float part, float all) {
     const float progress = part / all;
     const unsigned barWidth = 70;
