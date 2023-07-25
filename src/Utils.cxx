@@ -33,6 +33,9 @@
 #include "colors.h"
 
 namespace utils {
+
+// -----------------------------------------------------------------------------
+// LOGGING
 utils::Log::Log() {}
 utils::Log::~Log() {}
 
@@ -41,14 +44,14 @@ void utils::Log::info(std::string message) { std::cout << GREEN << "INFO: " << R
 void utils::Log::warning(std::string message) { std::cout << YELLOW << "WARNING: " << RESET << message << std::endl; }
 void utils::Log::error(std::string message) { std::cout << BOLDRED << "ERROR: " << RESET << message << std::endl; }
 
+// -----------------------------------------------------------------------------
+// EXCEPTIONS
 const char* utils::NaNException::what() const noexcept {
     return "Value is NaN!";
 };
 
-}  // namespace utils
-
-namespace utils {
-
+// -----------------------------------------------------------------------------
+// UTILITY FUNCTIONS
 bool isInStrV(std::vector<std::string> v, std::string string) {
     if (std::find(v.begin(), v.end(), string) != v.end())
         return true;
@@ -78,10 +81,6 @@ void progress_bar(float part, float all) {
     std::cout << " ] " << int(progress * 100.0) << " %\r";
     std::cout.flush();
 }
-
-}  // namespace utils
-
-namespace utils {
 
 std::string get_version() {
     return "v1.9.1";
