@@ -30,7 +30,7 @@
 #include <iostream>
 
 namespace utils {
-/** Class to create log files */
+// Class to create log files
 class Log {
    public:
     Log();
@@ -43,6 +43,13 @@ class Log {
 
    private:
 };
+
+// Custom exception for NaN values
+class NaNException : public std::exception {
+   public:
+    const char* what() const noexcept override;
+};
+
 bool isInStrV(std::vector<std::string> v, std::string string);
 void progress_bar(float part, float all);
 std::string get_version();

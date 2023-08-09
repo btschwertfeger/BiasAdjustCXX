@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(BiasAdjustCXX
-    VERSION 1.9.0
+    VERSION 1.9.1
     DESCRIPTION "Bias correction command-line tool for NetCDF-based climate data"
     LANGUAGES CXX
 )

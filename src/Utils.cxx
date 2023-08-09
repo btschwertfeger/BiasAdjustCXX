@@ -33,6 +33,9 @@
 #include "colors.h"
 
 namespace utils {
+
+// -----------------------------------------------------------------------------
+// LOGGING
 utils::Log::Log() {}
 utils::Log::~Log() {}
 
@@ -40,22 +43,27 @@ void utils::Log::debug(std::string message) { std::cout << WHITE << "DEBUG: " <<
 void utils::Log::info(std::string message) { std::cout << GREEN << "INFO: " << RESET << message << std::endl; }
 void utils::Log::warning(std::string message) { std::cout << YELLOW << "WARNING: " << RESET << message << std::endl; }
 void utils::Log::error(std::string message) { std::cout << BOLDRED << "ERROR: " << RESET << message << std::endl; }
-}  // namespace utils
 
-namespace utils {
-/** Progress bar to bar the progress
- *  inspired by: https://stackoverflow.com/a/14539953/13618168
- *
- * @param part fraction of the process that is done
- * @param all total number of processes
- */
+// -----------------------------------------------------------------------------
+// EXCEPTIONS
+const char* utils::NaNException::what() const noexcept {
+    return "Value is NaN!";
+};
 
+// -----------------------------------------------------------------------------
+// UTILITY FUNCTIONS
 bool isInStrV(std::vector<std::string> v, std::string string) {
     if (std::find(v.begin(), v.end(), string) != v.end())
         return true;
     else
         return false;
 }
+/** Progress bar to bar the progress
+ *  inspired by: https://stackoverflow.com/a/14539953/13618168
+ *
+ * @param part fraction of the process that is done
+ * @param all total number of processes
+ */
 void progress_bar(float part, float all) {
     const float progress = part / all;
     const unsigned barWidth = 70;
@@ -74,12 +82,8 @@ void progress_bar(float part, float all) {
     std::cout.flush();
 }
 
-}  // namespace utils
-
-namespace utils {
-
 std::string get_version() {
-    return "v1.9.0";
+    return "v1.9.1";
 }
 
 void show_copyright_notice(std::string program_name) {

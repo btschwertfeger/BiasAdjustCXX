@@ -6,6 +6,8 @@
 
 **Merged pull requests:**
 
+- Readme: add table of content; fix wrong section numbering; fix badge [\#30](https://github.com/btschwertfeger/BiasAdjustCXX/pull/30) ([btschwertfeger](https://github.com/btschwertfeger))
+- Add hints for NetCDFcxx not found error; fix typos [\#29](https://github.com/btschwertfeger/BiasAdjustCXX/pull/29) ([btschwertfeger](https://github.com/btschwertfeger))
 - Add release workflow [\#27](https://github.com/btschwertfeger/BiasAdjustCXX/pull/27) ([btschwertfeger](https://github.com/btschwertfeger))
 - Clarified difference between stochastic and non-stochastic climate variables in doc and readme [\#26](https://github.com/btschwertfeger/BiasAdjustCXX/pull/26) ([btschwertfeger](https://github.com/btschwertfeger))
 - Added more checks during testing [\#25](https://github.com/btschwertfeger/BiasAdjustCXX/pull/25) ([btschwertfeger](https://github.com/btschwertfeger))
