@@ -1,0 +1,8 @@
+*
+!cmake
+!src
+!include
+!Makefile
+!tests
+!validation
+!CMakeLists.txt

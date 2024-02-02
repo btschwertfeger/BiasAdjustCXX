@@ -54,9 +54,11 @@
  */
 
 std::vector<std::string> CMethods::scaling_method_names = {
-    "linear_scaling", "variance_scaling", "delta_method"};
+    "linear_scaling", "variance_scaling", "delta_method"
+};
 std::vector<std::string> CMethods::distribution_method_names = {
-    "quantile_mapping", "quantile_delta_mapping"};
+    "quantile_mapping", "quantile_delta_mapping"
+};
 
 /**
  * * ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -624,13 +626,13 @@ void CMethods::Quantile_Mapping(
 
     } else {
         for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            double y = MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], true);  // Eq. 1
+            double y = MathUtils::interpolate(v_xbins, contr_cdf, (double)v_scenario[ts], true);  // Eq. 2
             cdf_values.push_back((y >= 0) ? y : 0);
         }
 
         // ? Invert in invers CDF and return
         for (unsigned ts = 0; ts < v_scenario.size(); ts++) {
-            float y = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], true);  // Eq. 1
+            float y = (float)MathUtils::interpolate(ref_cdf, v_xbins, cdf_values[ts], true);  // Eq. 2
             v_output[ts] = (y >= 0) ? y : 0;
         }
     }
