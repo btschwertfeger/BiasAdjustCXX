@@ -8,16 +8,16 @@ Compilation and Installation
 
 Build from source
 ----------------------------
-Since this tool is written in C++ it must be compiled and installed, before it can be used.
-The following libraries and tools must be installed to successfully compile and install
-the BiasAdjustCXX command-line tool.
+Since this tool is written in C++ it must be compiled and installed, before it
+can be used. The following libraries and tools must be installed to successfully
+compile and install the BiasAdjustCXX command-line tool.
 
 - NetCDF-4 C++ library (`How to install NetCDF-4 C++`_)
 - CMake v3.10+ (`How to install CMake`_)
 - [optional] Climate Data Operators (`How to install cdo`_)
 
-Please have a look at the following code blocks that demonstrate how to download, build and install
-the BiasAdjustCXX tool from source:
+Please have a look at the following code blocks that demonstrate how to
+download, build and install the BiasAdjustCXX tool from source:
 
 
 .. code-block:: bash
@@ -42,10 +42,11 @@ The tool can be uninstalled using the following command within the project direc
 Docker 🐳
 --------------
 
-The execution of BiasAdjustCXX is also possiblie within a Docker container.
-This is the preferred option when the installation of `NetCDF-4 C++`_, `CMake`_ or `BiasAdjustCXX`_
-on the local system is not desired. It also makes easier to access this tool since Docker
-container can run on nearly every operating system.
+The execution of BiasAdjustCXX is also possible within a Docker container. This
+is the preferred option when the installation of `NetCDF-4 C++`_, `CMake`_ or
+`BiasAdjustCXX`_ on the local system is not desired. It also makes easier to
+access this tool since Docker container can run on nearly every operating
+system.
 
 .. code-block:: bash
     :caption: Run the BiasAdjustCXX tool using the provided Docker image
@@ -62,4 +63,5 @@ container can run on nearly every operating system.
         -p 4                                # number of threads
 
 
-See the Dockerhub registry to access the dev, pinned and older versions: `Dockerhub`_
+See the Dockerhub registry to access the dev, pinned and older versions:
+`Dockerhub`_

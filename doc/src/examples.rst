@@ -41,10 +41,11 @@ non-stochastic variable like temperatures ("tas"):
         -p 4                               # use 4 threads (only if the input data is 3-dimensional)
 
 
-Note/alternative: The regular linear scaling procedure as described by `Teutschbein et al. (2012)`_
-needs to be applied on monthly separated data sets. To do so, you have to separate the input data sets into
-individual long-term months and apply the tool on each of these long-term months using
-the ``--no-group`` flag. This is shown in `/examples/example_all_methods.run.sh`_.
+Note/alternative: The regular linear scaling procedure as described by
+`Teutschbein et al. (2012)`_ needs to be applied on monthly separated data sets.
+To do so, you have to separate the input data sets into individual long-term
+months and apply the tool on each of these long-term months using the
+``--no-group`` flag. This is shown in `/examples/example_all_methods.run.sh`_.
 
 Multiplicative Delta Method
 ------------------------------------------------
@@ -65,8 +66,8 @@ stochastic variable like precipitation ("pr"):
         --max-scaling-factor 3             # set custom max-scaling factor to avoid unrealistic results (default: 10)
 
 
-Note: The multiplicative variant is only preferred when adjusting non-stochastic variables like precipitaiton,
-air pressure or wind speed.
+Note: The multiplicative variant is only preferred when adjusting non-stochastic
+variables like precipitation, air pressure or wind speed.
 
 Additive Quantile Delta Mapping
 ------------------------------------
