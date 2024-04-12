@@ -85,10 +85,10 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 **The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest.**
 
+Related project: `python-cmethods`_
+
 This software is tested using Google's testing framework *googletest*
 (https://github.com/google/googletest).
-
-.. contents:: :local:
 
 1. About
 --------
@@ -106,7 +106,7 @@ future time series so that their distributional properties approximate possible
 actual values.
 
 
-.. figure:: docs/_static/images/biasCdiagram.png
+.. figure:: doc/_static/images/biasCdiagram.png
     :width: 800
     :align: center
     :alt: Schematic representation of a bias adjustment procedure
@@ -121,7 +121,7 @@ It is directly visible that the delta adjusted time series
 (:math:`T^{*DM}_{sim,p}`) are much more similar to the observed data
 (:math:`T_{obs,p}`) than the raw modeled data (:math:`T_{sim,p}`).
 
-.. figure:: docs/_static/images/dm-doy-plot.png
+.. figure:: doc/_static/images/dm-doy-plot.png
     :width: 800
     :align: center
     :alt: Temperature per day of year in modeled, observed and bias-adjusted climate data
