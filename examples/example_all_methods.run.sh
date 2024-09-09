@@ -45,7 +45,7 @@ variable="tas"
 kind="+"
 n_quantiles=100
 
-exec_file="${work_dir}/../build/BiasAdjustCXX"
+exec_file="${work_dir}/../build/src/BiasAdjustCXX"
 
 declare -a month_methods=("delta_method" "linear_scaling" "variance_scaling")
 declare -a quant_methods=("quantile_mapping" "quantile_delta_mapping")
@@ -72,7 +72,7 @@ declare -a datasets=("${observations}" "${control}" "${scenario}")
 declare -a ds_paths=("${tmp_ref}" "${tmp_contr}" "${tmp_scen}")
 
 # * -------------------------------------------------------------------
-# *            ===== Distribution-based Adjustent =====
+# *            ===== Distribution-based Adjustment =====
 # * -------------------------------------------------------------------
 
 for method in "${quant_methods[@]}"; do
@@ -91,7 +91,7 @@ done
 
 
 # * -------------------------------------------------------------------
-# *  ===== Default Scaling Adjustent (long-term 31-day intervals) =====
+# *  === Default Scaling Adjustment (long-term 31-day intervals) ===
 # * -------------------------------------------------------------------
 
 # ? Additive linear scaling based on 31 day long-term mean interval instead of
