@@ -163,7 +163,7 @@ void Manager::parse_args() {
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
-        if (arg == "-v" || arg == "--version") {
+        if (arg == "--version") {
             std::cout << utils::get_version() << std::endl;
             exit(0);
         } else if (arg == "--ref" || arg == "--reference") {
