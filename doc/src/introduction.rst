@@ -95,6 +95,12 @@ General Notes
 - same length as the time series to be adjusted.
 - Examples can be found in the `BiasAdjustCXX`_ repository and of course
   within this documentation.
+- The related project `python-cmethods`_ is a Python package that  is
+  implemented in Python and is way more flexible in terms of parameters, input
+  data, shapes, and customization. For those who know Python at least a bit,
+  this might be the better option, as it not only provides a command-line
+  interface but also enables accessing its API in order to apply custom bias
+  corrections.
 - Speed/Performance tests and comparison to other tools can be found here: `tool
   comparison`_
 - References can be found in the :ref:`References` section.

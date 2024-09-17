@@ -2,7 +2,37 @@
 
 ## [Unreleased](https://github.com/btschwertfeger/BiasAdjustCXX/tree/HEAD)
 
-[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.0...HEAD)
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.3...HEAD)
+
+**Fixed bugs:**
+
+- The -v option is used twice, for `--variable` and `--version` [\#39](https://github.com/btschwertfeger/BiasAdjustCXX/issues/39)
+
+## [v1.9.3](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.3) (2024-09-09)
+
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.2...v1.9.3)
+
+**Fixed bugs:**
+
+- The -v option is used twice, for `--variable` and `--version` [\#39](https://github.com/btschwertfeger/BiasAdjustCXX/issues/39)
+- Resolve "The -v option is used twice, for `--variable` and `--version`" [\#40](https://github.com/btschwertfeger/BiasAdjustCXX/pull/40) ([btschwertfeger](https://github.com/btschwertfeger))
+
+## [v1.9.2](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.2) (2024-02-02)
+
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.1...v1.9.2)
+
+**Merged pull requests:**
+
+- Update documentation, readme and update workflows [\#37](https://github.com/btschwertfeger/BiasAdjustCXX/pull/37) ([btschwertfeger](https://github.com/btschwertfeger))
+
+## [v1.9.1](https://github.com/btschwertfeger/BiasAdjustCXX/tree/v1.9.1) (2023-08-09)
+
+[Full Changelog](https://github.com/btschwertfeger/BiasAdjustCXX/compare/v1.9.0...v1.9.1)
+
+**Fixed bugs:**
+
+- The tool runs into segmentation faults when the input data contains NAN values [\#32](https://github.com/btschwertfeger/BiasAdjustCXX/issues/32)
+- Fix segmentation fault for time series including NaN values [\#31](https://github.com/btschwertfeger/BiasAdjustCXX/pull/31) ([btschwertfeger](https://github.com/btschwertfeger))
 
 **Merged pull requests:**
 
