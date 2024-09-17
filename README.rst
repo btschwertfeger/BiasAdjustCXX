@@ -25,6 +25,8 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 .. |CMake badge| image:: https://img.shields.io/badge/required-CMake3.10%2B-brightgreen
 
+.. |GoogleTest badge| image:: https://img.shields.io/badge/GoogleTest-1.11.0-blue
+
 .. |DOI badge| image:: https://zenodo.org/badge/495881923.svg
    :target: https://zenodo.org/badge/latestdoi/495881923
 
@@ -80,15 +82,20 @@ BiasAdjustCXX command-line tool for the application of fast and efficient bias c
 
 
 |GitHub badge| |License badge| |C++ badge| |CICD badge|
-|Docker pulls badge| |GCC badge| |CMake badge|
+|Docker pulls badge| |GCC badge| |CMake badge| |GoogleTest badge|
 |Release date badge| |Release tag badge| |DOI badge| |Publication badge|
 
 **The documentation can be found here: https://biasadjustcxx.readthedocs.io/en/latest.**
 
-Related project: `python-cmethods`_
-
 This software is tested using Google's testing framework *googletest*
 (https://github.com/google/googletest).
+
+The related project `python-cmethods`_ is a Python package that  is implemented
+in Python and is way more flexible in terms of parameters, input data, shapes,
+and customization. For those who know Python at least a bit, this might be the
+better option, as it not only provides a command-line interface but also enables
+accessing its API in order to apply custom bias corrections.
+
 
 1. About
 --------
