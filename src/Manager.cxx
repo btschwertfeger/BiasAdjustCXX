@@ -243,7 +243,7 @@ void Manager::parse_args() {
     if (scenario_fpath.empty()) throw std::runtime_error("No scenario file defined!");
     if (output_filepath.empty()) throw std::runtime_error("No output file defined!");
     if (adjustment_method_name.empty()) throw std::runtime_error("No method specified!");
-    if (adjustment_settings.kind.empty()) throw std::runtime_error("Adjustmend kind is empty!");
+    if (adjustment_settings.kind.empty()) throw std::runtime_error("Adjustment kind is empty!");
 
     // 1- or 3-dimensional adjustment
     if (one_dim) {
@@ -257,23 +257,25 @@ void Manager::parse_args() {
 
         // latitudes and longitudes must have the same lengths in all input files
         if (ds_reference->n_lat != ds_control->n_lat || ds_reference->n_lat != ds_scenario->n_lat)
-            throw std::runtime_error("Input files have unqual lengths of the `lat` (latitude) dimension.");
+            throw std::runtime_error("Input files have unequal lengths of the `lat` (latitude) dimension.");
         else if (ds_reference->n_lon != ds_control->n_lon || ds_reference->n_lon != ds_scenario->n_lon)
-            throw std::runtime_error("Input files have unqual lengths of the `lon` (longitude) dimension.");
+            throw std::runtime_error("Input files have unequal lengths of the `lon` (longitude) dimension.");
     }
 
-    // Time dimensions can have different lenghts but it is not recommanded
+    // Time dimensions can have different lengths but it is not recommended
     if (ds_reference->n_time != ds_control->n_time || ds_reference->n_time != ds_scenario->n_time)
         log.warning("Input files have different sizes for the time dimension.");
 
-    // Delta Method needs same length of time dimension for reference and scenario
+    // Delta Method needs same length of time dimension for reference and
+    // scenario
     if (ds_reference->n_time != ds_scenario->n_time && adjustment_method_name == std::string("delta_method"))
         throw std::runtime_error(
             "Time dimension of reference and scenario input files "
             "does not have the same length! This is required for the delta method."
         );
 
-    // When using long-term 31-day interval scaling, leap years should not be included and every year must be complete.
+    // When using long-term 31-day interval scaling, leap years should not be
+    // included and every year must be complete.
     if (adjustment_settings.interval31_scaling &&
         !(ds_reference->n_time % 365 == 0 &&
           ds_control->n_time % 365 == 0 &&
@@ -304,7 +306,7 @@ void Manager::parse_args() {
         else
             throw std::runtime_error("Method " + adjustment_method_name + "(" + adjustment_settings.kind + ") not found!");
     } else
-        throw std::runtime_error("Unkonwn adjustment kind " + adjustment_settings.kind + "!");
+        throw std::runtime_error("Unknown adjustment kind " + adjustment_settings.kind + "!");
 }
 
 /**
