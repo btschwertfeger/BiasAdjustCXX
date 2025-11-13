@@ -275,8 +275,11 @@ void Manager::parse_args() {
         );
 
     // When using long-term 31-day interval scaling, leap years should not be
-    // included and every year must be complete.
+    // included and every year must be complete (only for scaling methods).
     if (adjustment_settings.interval31_scaling &&
+        (adjustment_method_name == "linear_scaling" ||
+         adjustment_method_name == "variance_scaling" ||
+         adjustment_method_name == "delta_method") &&
         !(ds_reference->n_time % 365 == 0 &&
           ds_control->n_time % 365 == 0 &&
           ds_scenario->n_time % 365 == 0))
