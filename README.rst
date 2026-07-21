@@ -96,11 +96,11 @@ and customization. For those who know Python at least a bit, this might be the
 better option, as it not only provides a command-line interface but also enables
 accessing its API in order to apply custom bias corrections.
 
-**Which project should I cite?** This repository and its `SoftwareX paper
-<https://doi.org/10.1016/j.softx.2023.101379>`_ describe the C++ command-line tool
-BiasAdjustCXX. If you used the Python package instead, please cite `python-cmethods`_
-via its Zenodo DOI ``10.5281/zenodo.7652755``. The SoftwareX paper is not the correct
-reference for the Python package.
+   **Which project should I cite?** This repository and its `SoftwareX paper
+   <https://doi.org/10.1016/j.softx.2023.101379>`_ describe the C++ command-line
+   tool BiasAdjustCXX. If you used the Python package instead, please cite
+   `python-cmethods`_ via its Zenodo DOI ``10.5281/zenodo.7652755``. The SoftwareX
+   paper is not the correct reference for the Python package.
 
 
 1. About
